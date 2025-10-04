@@ -48,6 +48,7 @@ I have the domain with cloudflare
 * Database is MongoDB, hosted with Atlas
 * Static files hosted with Vercel (Hobby)
 * Storybook tests for every client component
+* A "yarn test" command allows the storybook tests to be run as tests, confirming all pass
 * Vitest tests for every server component
 * Yarn workspaces monorepo, with client and server packages
 
