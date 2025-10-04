@@ -36,7 +36,6 @@
   * Shows a list of people who have asked to follow you  
   * You can click on them to see their profile and ask to follow them  
   * You can choose which of them to give the “close friend” post  
-* 
 
 
 ## Implementation
@@ -53,4 +52,9 @@ I have the domain with cloudflare
 * Yarn workspaces monorepo, with client and server packages
 
 
+## Database Model
+
+* A "profile" collection contains one document for each person
+* A "follow" collecton contains one element for peach follow relationship, with a key saying whether it is a "close" follow, and indexes to look up follow relationships in both directions
+* Also have whatever collections you might need to manage login
 
