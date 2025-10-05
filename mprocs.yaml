@@ -2,6 +2,9 @@ procs:
   client:
     cwd: packages/client
     cmd: ["yarn", "dev"]
+  data-types:
+    cwd: packages/data
+    cmd: ["yarn", "tsc", "--watch", "--preserveWatchOutput"]
   server-types:
     cwd: packages/server
     cmd: ["yarn", "tsc", "--watch", "--preserveWatchOutput"]
