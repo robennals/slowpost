@@ -5,14 +5,28 @@ procs:
   data-types:
     cwd: packages/data
     cmd: ["yarn", "tsc", "--watch", "--preserveWatchOutput"]
+  mongo-types:
+    cwd: packages/mongo
+    cmd: ["yarn", "tsc", "--watch", "--preserveWatchOutput"]
   server-types:
     cwd: packages/server
     cmd: ["yarn", "tsc", "--watch", "--preserveWatchOutput"]
-  server-run:
-    cwd: packages/server
+  mongo-memory:
+    cwd: packages/mongo
     cmd:
       [
         "bash",
         "-lc",
-        "while [ ! -f dist/src/devServer.js ]; do sleep 0.2; done; node --watch dist/src/devServer.js"
+        "while [ ! -f dist/src/devMemory.js ]; do sleep 0.2; done; node dist/src/devMemory.js"
+      ]
+  server-run:
+    cwd: packages/mongo
+    env:
+      MONGODB_URI: "mongodb://127.0.0.1:37017"
+      MONGODB_DB: "slowpost-dev"
+    cmd:
+      [
+        "bash",
+        "-lc",
+        "while [ ! -f dist/src/runServer.js ]; do sleep 0.2; done; node --watch dist/src/runServer.js"
       ]

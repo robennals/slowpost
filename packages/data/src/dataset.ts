@@ -2,6 +2,7 @@ import { randomBytes } from 'crypto';
 import type {
   Follow,
   Group,
+  GroupJoinRequest,
   LoginSession,
   Membership,
   Notification,
@@ -16,6 +17,7 @@ export interface StandardDataset {
   follows: Follow[];
   loginSessions: LoginSession[];
   notifications: Notification[];
+  groupJoinRequests: GroupJoinRequest[];
 }
 
 export function getStandardDataset(): StandardDataset {
@@ -80,8 +82,9 @@ export function getStandardDataset(): StandardDataset {
   ];
 
   const notifications: Notification[] = [];
+  const groupJoinRequests: GroupJoinRequest[] = [];
 
-  return { profiles, groups, memberships, follows, loginSessions, notifications };
+  return { profiles, groups, memberships, follows, loginSessions, notifications, groupJoinRequests };
 }
 
 export function toProfileViewModel(profile: Profile, memberships: Membership[], groups: Group[]): ProfileViewModel {

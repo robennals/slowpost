@@ -1,5 +1,5 @@
-import { connectToMongoStore } from '@slowpost/data';
-import { createServer } from './server.js';
+import { connectToMongoStore } from './index.js';
+import { createServer } from '@slowpost/server';
 
 async function main() {
   const uri = process.env.MONGODB_URI;
@@ -13,6 +13,7 @@ async function main() {
 
   const server = app.listen(port, () => {
     console.log(`Slowpost API listening on http://localhost:${port}`);
+    console.log(`Connected to MongoDB at ${uri} (database: ${dbName}).`);
   });
 
   const shutdown = async () => {
@@ -24,4 +25,7 @@ async function main() {
   process.on('SIGTERM', shutdown);
 }
 
-await main();
+main().catch((error) => {
+  console.error('Failed to start Slowpost API server:', error);
+  process.exit(1);
+});

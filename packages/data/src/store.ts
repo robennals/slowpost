@@ -1,5 +1,4 @@
 import { randomBytes } from 'crypto';
-import { MongoClient, type Db, type Collection, ObjectId } from 'mongodb';
 import {
   type Follow,
   type FollowersView,
@@ -9,10 +8,11 @@ import {
   type HomeView,
   type LoginSession,
   type Membership,
+  type Notification,
   type Profile,
   type ProfileView,
   type SlowpostStore,
-  type Notification
+  type GroupJoinRequest
 } from './types.js';
 import {
   generateRequestId,
@@ -21,27 +21,37 @@ import {
   toProfileViewModel
 } from './dataset.js';
 
-interface GroupJoinRequestDoc {
-  _id: ObjectId;
-  requestId: string;
-  username: string;
-  groupKey: string;
-  status: 'pending' | 'approved' | 'rejected';
-  createdAt: Date;
+export type Query<T> = Record<string, unknown>;
+
+export interface Update<T> {
+  $set?: Partial<T>;
 }
 
-interface MongoCollections {
-  profiles: Collection<Profile>;
-  groups: Collection<Group>;
-  memberships: Collection<Membership>;
-  follows: Collection<Follow>;
-  loginSessions: Collection<LoginSession>;
-  notifications: Collection<Notification>;
-  groupJoinRequests: Collection<GroupJoinRequestDoc>;
+export interface CursorLike<T> {
+  toArray(): Promise<T[]>;
 }
 
-class MongoStore implements SlowpostStore {
-  constructor(private readonly collections: MongoCollections) {}
+export interface CollectionLike<T> {
+  find(query: Query<T>): CursorLike<T>;
+  findOne(query: Query<T>): Promise<T | null>;
+  insertOne(document: T): Promise<void>;
+  insertMany(documents: readonly T[]): Promise<void>;
+  updateOne(filter: Query<T>, update: Update<T>): Promise<void>;
+  deleteMany(filter: Query<T>): Promise<void>;
+}
+
+export interface SlowpostCollections {
+  profiles: CollectionLike<Profile>;
+  groups: CollectionLike<Group>;
+  memberships: CollectionLike<Membership>;
+  follows: CollectionLike<Follow>;
+  loginSessions: CollectionLike<LoginSession>;
+  notifications: CollectionLike<Notification>;
+  groupJoinRequests: CollectionLike<GroupJoinRequest>;
+}
+
+class SlowpostStoreImpl implements SlowpostStore {
+  constructor(private readonly collections: SlowpostCollections) {}
 
   private async requireProfile(username: string): Promise<Profile> {
     const profile = await this.collections.profiles.findOne({ username });
@@ -55,9 +65,7 @@ class MongoStore implements SlowpostStore {
     if (groupKeys.length === 0) {
       return new Map();
     }
-    const groups = await this.collections.groups
-      .find({ key: { $in: groupKeys } })
-      .toArray();
+    const groups = await this.collections.groups.find({ key: { $in: groupKeys } }).toArray();
     return new Map(groups.map((group) => [group.key, group] as const));
   }
 
@@ -69,9 +77,7 @@ class MongoStore implements SlowpostStore {
     username: string,
     status: Follow['status']
   ): Promise<{ profile: Profile; follow: Follow }[]> {
-    const follows = await this.collections.follows
-      .find({ following: username, status })
-      .toArray();
+    const follows = await this.collections.follows.find({ following: username, status }).toArray();
     if (follows.length === 0) {
       return [];
     }
@@ -189,14 +195,14 @@ class MongoStore implements SlowpostStore {
       throw new Error('Already a member');
     }
     const requestId = generateRequestId();
-    await this.collections.groupJoinRequests.insertOne({
-      _id: new ObjectId(),
+    const request: GroupJoinRequest = {
       requestId,
       username,
       groupKey,
       status: 'pending',
       createdAt: new Date()
-    });
+    };
+    await this.collections.groupJoinRequests.insertOne(request);
     return { requestId };
   }
 
@@ -251,94 +257,43 @@ class MongoStore implements SlowpostStore {
   }
 }
 
-export interface MongoStoreConnection {
-  client: MongoClient;
-  db: Db;
-  store: SlowpostStore;
-  close(): Promise<void>;
+export function createSlowpostStore(collections: SlowpostCollections): SlowpostStore {
+  return new SlowpostStoreImpl(collections);
 }
 
-export async function connectToMongoStore(options: {
-  uri: string;
-  dbName: string;
-}): Promise<MongoStoreConnection> {
-  const client = new MongoClient(options.uri);
-  await client.connect();
-  const db = client.db(options.dbName);
-  const collections: MongoCollections = {
-    profiles: db.collection<Profile>('profiles'),
-    groups: db.collection<Group>('groups'),
-    memberships: db.collection<Membership>('memberships'),
-    follows: db.collection<Follow>('follows'),
-    loginSessions: db.collection<LoginSession>('loginSessions'),
-    notifications: db.collection<Notification>('notifications'),
-    groupJoinRequests: db.collection<GroupJoinRequestDoc>('groupJoinRequests')
-  };
-  const store = new MongoStore(collections);
-  return {
-    client,
-    db,
-    store,
-    close: async () => {
-      await client.close();
-    }
-  };
-}
+export async function seedCollections(
+  collections: SlowpostCollections,
+  dataset: StandardDataset = getStandardDataset()
+): Promise<void> {
+  await Promise.all([
+    collections.profiles.deleteMany({}),
+    collections.groups.deleteMany({}),
+    collections.memberships.deleteMany({}),
+    collections.follows.deleteMany({}),
+    collections.loginSessions.deleteMany({}),
+    collections.notifications.deleteMany({}),
+    collections.groupJoinRequests.deleteMany({})
+  ]);
 
-export async function seedDataset(db: Db, dataset: StandardDataset = getStandardDataset()): Promise<void> {
-  const operations = [
-    db.collection('profiles').deleteMany({}),
-    db.collection('groups').deleteMany({}),
-    db.collection('memberships').deleteMany({}),
-    db.collection('follows').deleteMany({}),
-    db.collection('loginSessions').deleteMany({}),
-    db.collection('notifications').deleteMany({}),
-    db.collection('groupJoinRequests').deleteMany({})
-  ];
-  await Promise.all(operations);
   if (dataset.profiles.length) {
-    await db.collection<Profile>('profiles').insertMany(dataset.profiles);
+    await collections.profiles.insertMany(dataset.profiles);
   }
   if (dataset.groups.length) {
-    await db.collection<Group>('groups').insertMany(dataset.groups);
+    await collections.groups.insertMany(dataset.groups);
   }
   if (dataset.memberships.length) {
-    await db.collection<Membership>('memberships').insertMany(dataset.memberships);
+    await collections.memberships.insertMany(dataset.memberships);
   }
   if (dataset.follows.length) {
-    await db.collection<Follow>('follows').insertMany(dataset.follows);
+    await collections.follows.insertMany(dataset.follows);
   }
   if (dataset.loginSessions.length) {
-    await db.collection<LoginSession>('loginSessions').insertMany(dataset.loginSessions);
+    await collections.loginSessions.insertMany(dataset.loginSessions);
   }
   if (dataset.notifications.length) {
-    await db.collection<Notification>('notifications').insertMany(dataset.notifications);
+    await collections.notifications.insertMany(dataset.notifications);
   }
-}
-
-export interface InMemoryMongoOptions {
-  dbName?: string;
-  seed?: boolean;
-  dataset?: StandardDataset;
-}
-
-export async function startInMemoryMongo(options: InMemoryMongoOptions = {}): Promise<
-  MongoStoreConnection & {
-    stop(): Promise<void>;
+  if (dataset.groupJoinRequests.length) {
+    await collections.groupJoinRequests.insertMany(dataset.groupJoinRequests);
   }
-> {
-  const { MongoMemoryServer } = await import('mongodb-memory-server');
-  const memory = await MongoMemoryServer.create();
-  const dbName = options.dbName ?? 'slowpost-dev';
-  const connection = await connectToMongoStore({ uri: memory.getUri(), dbName });
-  if (options.seed !== false) {
-    await seedDataset(connection.db, options.dataset ?? getStandardDataset());
-  }
-  return {
-    ...connection,
-    stop: async () => {
-      await connection.close();
-      await memory.stop();
-    }
-  };
 }

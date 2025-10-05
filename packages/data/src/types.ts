@@ -38,6 +38,14 @@ export interface Notification {
   createdAt: Date;
 }
 
+export interface GroupJoinRequest {
+  requestId: string;
+  username: string;
+  groupKey: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: Date;
+}
+
 export interface GroupMembershipView {
   groupKey: string;
   role: 'member' | 'owner';

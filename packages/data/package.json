@@ -7,10 +7,6 @@
   "scripts": {
     "build": "tsc -p tsconfig.json"
   },
-  "dependencies": {
-    "mongodb": "^6.5.0",
-    "mongodb-memory-server": "^9.0.0"
-  },
   "devDependencies": {
     "@types/node": "^20.11.19",
     "typescript": "^5.3.3"

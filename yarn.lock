@@ -1206,13 +1206,24 @@ __metadata:
   resolution: "@slowpost/data@workspace:packages/data"
   dependencies:
     "@types/node": "npm:^20.11.19"
+    typescript: "npm:^5.3.3"
+  languageName: unknown
+  linkType: soft
+
+"@slowpost/mongo@workspace:packages/mongo":
+  version: 0.0.0-use.local
+  resolution: "@slowpost/mongo@workspace:packages/mongo"
+  dependencies:
+    "@slowpost/data": "npm:^0.1.0"
+    "@slowpost/server": "npm:^0.1.0"
+    "@types/node": "npm:^20.11.19"
     mongodb: "npm:^6.5.0"
     mongodb-memory-server: "npm:^9.0.0"
     typescript: "npm:^5.3.3"
   languageName: unknown
   linkType: soft
 
-"@slowpost/server@workspace:packages/server":
+"@slowpost/server@npm:^0.1.0, @slowpost/server@workspace:packages/server":
   version: 0.0.0-use.local
   resolution: "@slowpost/server@workspace:packages/server"
   dependencies:
