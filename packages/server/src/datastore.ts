@@ -266,6 +266,7 @@ export class InMemoryStore {
     if (existing) {
       existing.pin = pin;
       existing.verified = false;
+      existing.loginToken = undefined;
       return existing;
     }
     const username = email.split('@')[0];
@@ -292,6 +293,16 @@ export class InMemoryStore {
     const newSession = this.createLoginSession(email);
     newSession.verified = true;
     return newSession;
+  }
+
+  issueLoginToken(session: LoginSession): string {
+    const token = randomBytes(16).toString('hex');
+    session.loginToken = token;
+    return token;
+  }
+
+  findSessionByToken(token: string): Optional<LoginSession> {
+    return this.sessions.find((record) => record.loginToken === token && record.verified);
   }
 }
 
