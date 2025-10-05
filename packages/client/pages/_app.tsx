@@ -1,17 +1,25 @@
 import type { AppProps } from 'next/app';
 import '../styles/globals.css';
 import StatusBar from '../components/StatusBar';
+import { AuthProvider, useAuth } from '../lib/auth';
 
-export default function SlowpostApp({ Component, pageProps }: AppProps) {
-  const { viewer } = pageProps as { viewer?: { username?: string } };
-  const isLoggedIn = Boolean(viewer?.username);
+function AppLayout({ Component, pageProps }: AppProps) {
+  const { isLoggedIn, username } = useAuth();
 
   return (
     <>
-      <StatusBar isLoggedIn={isLoggedIn} username={viewer?.username} />
+      <StatusBar isLoggedIn={isLoggedIn} username={username} />
       <main>
         <Component {...pageProps} />
       </main>
     </>
+  );
+}
+
+export default function SlowpostApp(appProps: AppProps) {
+  return (
+    <AuthProvider>
+      <AppLayout {...appProps} />
+    </AuthProvider>
   );
 }

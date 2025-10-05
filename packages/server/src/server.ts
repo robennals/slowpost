@@ -1,6 +1,7 @@
 import express from 'express';
 import { ServerClient } from 'postmark';
 import { z } from 'zod';
+import type { CookieOptions, Request, Response } from 'express';
 import { store } from './datastore.js';
 import type { LoginSession } from './types.js';
 
@@ -8,6 +9,15 @@ const isDev = process.env.NODE_ENV !== 'production';
 const postmarkServerToken = process.env.POSTMARK_SERVER_TOKEN;
 const postmarkFromEmail = process.env.POSTMARK_FROM_EMAIL;
 const postmarkClient = !isDev && postmarkServerToken ? new ServerClient(postmarkServerToken) : undefined;
+
+const loginCookieName = 'slowpost_login';
+const loginCookieOptions: CookieOptions = {
+  httpOnly: true,
+  sameSite: 'lax',
+  secure: !isDev,
+  path: '/',
+  ...(isDev ? {} : { maxAge: 60 * 60 * 24 * 30 })
+};
 
 if (!isDev && !postmarkServerToken) {
   console.warn('POSTMARK_SERVER_TOKEN is not set. Login emails will fail until it is configured.');
@@ -38,6 +48,29 @@ async function deliverLoginPin(session: LoginSession) {
 
 const app = express();
 app.use(express.json());
+
+function setLoginCookie(res: Response, token: string) {
+  res.cookie(loginCookieName, token, loginCookieOptions);
+}
+
+function clearLoginCookie(res: Response) {
+  res.clearCookie(loginCookieName, loginCookieOptions);
+}
+
+function readLoginToken(req: Request): string | undefined {
+  const cookieHeader = req.headers.cookie;
+  if (!cookieHeader) {
+    return undefined;
+  }
+  const cookies = cookieHeader.split(';');
+  for (const cookie of cookies) {
+    const [rawName, ...valueParts] = cookie.trim().split('=');
+    if (rawName === loginCookieName) {
+      return decodeURIComponent(valueParts.join('='));
+    }
+  }
+  return undefined;
+}
 
 app.get('/api/home/:username', (req, res) => {
   try {
@@ -138,6 +171,8 @@ app.post('/api/login/verify', (req, res) => {
     const schema = z.object({ email: z.string().email(), pin: z.string() });
     const { email, pin } = schema.parse(req.body);
     const session = store.verifyLogin(email, pin);
+    const token = store.issueLoginToken(session);
+    setLoginCookie(res, token);
     res.json({ username: session.username });
   } catch (error) {
     res.status(400).json({ message: (error as Error).message });
@@ -155,10 +190,27 @@ app.post('/api/login/dev-skip', (req, res) => {
     const { email } = schema.parse(req.body);
     console.log(`[dev] Skipping PIN verification for ${email}`);
     const session = store.forceVerifyLogin(email);
+    const token = store.issueLoginToken(session);
+    setLoginCookie(res, token);
     res.json({ username: session.username });
   } catch (error) {
     res.status(400).json({ message: (error as Error).message });
   }
+});
+
+app.get('/api/login/session', (req, res) => {
+  const token = readLoginToken(req);
+  if (!token) {
+    res.json({ isLoggedIn: false });
+    return;
+  }
+  const session = store.findSessionByToken(token);
+  if (!session) {
+    clearLoginCookie(res);
+    res.json({ isLoggedIn: false });
+    return;
+  }
+  res.json({ isLoggedIn: true, username: session.username });
 });
 
 export function createServer() {

@@ -32,6 +32,7 @@ export interface LoginSession {
   username: string;
   pin: string;
   verified: boolean;
+  loginToken?: string;
 }
 
 export interface HomeFollower {
