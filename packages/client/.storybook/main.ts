@@ -1,4 +1,5 @@
 import type { StorybookConfig } from '@storybook/react-vite';
+import { mergeConfig } from 'vite';
 
 const config: StorybookConfig = {
   stories: ['../components/**/*.stories.@(ts|tsx)'],
@@ -9,6 +10,13 @@ const config: StorybookConfig = {
   },
   docs: {
     autodocs: 'tag'
+  },
+  async viteFinal(config) {
+    return mergeConfig(config, {
+      esbuild: {
+        jsxInject: "import React from 'react'"
+      }
+    });
   }
 };
 
