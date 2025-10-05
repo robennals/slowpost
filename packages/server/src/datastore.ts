@@ -282,6 +282,17 @@ export class InMemoryStore {
     session.verified = true;
     return session;
   }
+
+  forceVerifyLogin(email: string): LoginSession {
+    const session = this.sessions.find((record) => record.email === email);
+    if (session) {
+      session.verified = true;
+      return session;
+    }
+    const newSession = this.createLoginSession(email);
+    newSession.verified = true;
+    return newSession;
+  }
 }
 
 export const store = new InMemoryStore();

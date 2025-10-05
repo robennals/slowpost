@@ -47,4 +47,11 @@ describe('InMemoryStore', () => {
     const verified = store.verifyLogin('test@example.com', session.pin);
     expect(verified.verified).toBe(true);
   });
+
+  it('force verifies login sessions for development', () => {
+    const email = 'devskip@example.com';
+    store.createLoginSession(email);
+    const forced = store.forceVerifyLogin(email);
+    expect(forced.verified).toBe(true);
+  });
 });
