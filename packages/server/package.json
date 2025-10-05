@@ -1,14 +1,17 @@
 {
   "name": "@slowpost/server",
   "version": "0.1.0",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "type": "module",
   "scripts": {
+    "prebuild": "yarn workspace @slowpost/data build",
     "build": "tsc -p tsconfig.json",
+    "pretest": "yarn workspace @slowpost/data build",
     "test": "vitest run"
   },
   "dependencies": {
+    "@slowpost/data": "^0.1.0",
     "express": "^4.19.2",
     "postmark": "^4.0.4",
     "zod": "^3.23.8"

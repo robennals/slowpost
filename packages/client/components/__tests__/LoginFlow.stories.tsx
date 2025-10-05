@@ -34,6 +34,9 @@ export const Default: Story = {
     await userEvent.clear(emailInput);
     await userEvent.type(emailInput, 'ada@slowpost.org{enter}');
 
+    const continueButton = await canvas.findByRole('button', { name: /enter pin/i });
+    await userEvent.click(continueButton);
+
     const pinInput = await canvas.findByLabelText(/enter the pin/i);
     await userEvent.clear(pinInput);
     await userEvent.type(pinInput, '123456{enter}');
