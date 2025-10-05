@@ -54,4 +54,12 @@ describe('InMemoryStore', () => {
     const forced = store.forceVerifyLogin(email);
     expect(forced.verified).toBe(true);
   });
+
+  it('updates profile photos', () => {
+    const newPhoto = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA';
+    const profile = store.updateProfilePhoto('ada', newPhoto);
+    expect(profile.photoUrl).toBe(newPhoto);
+    const updatedView = store.getProfileView('ada');
+    expect(updatedView.profile.photoUrl).toBe(newPhoto);
+  });
 });

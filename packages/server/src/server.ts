@@ -37,7 +37,7 @@ async function deliverLoginPin(session: LoginSession) {
 }
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 app.get('/api/home/:username', (req, res) => {
   try {
@@ -78,6 +78,32 @@ app.post('/api/profile/:username/follow', (req, res) => {
     const follow = store.requestFollow(follower, req.params.username);
     res.json(follow);
   } catch (error) {
+    res.status(400).json({ message: (error as Error).message });
+  }
+});
+
+app.post('/api/profile/:username/photo', (req, res) => {
+  try {
+    const schema = z.object({
+      photoData: z
+        .string()
+        .refine(
+          (value) => /^data:image\/[a-zA-Z0-9.+-]+;base64,/.test(value),
+          'Photo must be a base64 encoded image data URL.'
+        )
+    });
+    const { photoData } = schema.parse(req.body);
+    const profile = store.updateProfilePhoto(req.params.username, photoData);
+    res.json({ photoUrl: profile.photoUrl });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ message: error.issues[0]?.message ?? 'Invalid photo upload.' });
+      return;
+    }
+    if ((error as Error).message.startsWith('Profile not found')) {
+      res.status(404).json({ message: (error as Error).message });
+      return;
+    }
     res.status(400).json({ message: (error as Error).message });
   }
 });

@@ -19,6 +19,7 @@ type Story = StoryObj<typeof ProfileSummary>;
 export const OwnProfile: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
+    await expect(canvas.getByRole('button', { name: /change photo/i })).toBeInTheDocument();
     await expect(canvas.getByRole('button', { name: /edit profile/i })).toBeInTheDocument();
   }
 };
@@ -30,5 +31,6 @@ export const OtherProfile: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByRole('button', { name: /follow/i })).toBeInTheDocument();
+    expect(canvas.queryByRole('button', { name: /change photo/i })).not.toBeInTheDocument();
   }
 };

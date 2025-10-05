@@ -17,12 +17,13 @@
     * Has a button to export the list of people as a string you can use in your email client  
     * Shows a list of groups you are in
     * Has a button to create a new group
-* Profile  
-  * URL is slowpost.org/username  
-  * Shows a person’s name, photo, and blurb  
-  * Lists public groups that they are part of, and private groups you are both in  
-  * Has a button to follow their posts  
-  * If it’s your profile, can edit your name, photo, blurb  
+* Profile
+  * URL is slowpost.org/username
+  * Shows a person’s name, photo, and blurb
+  * Lists public groups that they are part of, and private groups you are both in
+  * Has a button to follow their posts
+  * If it’s your profile, can edit your name, photo, blurb
+  * Uploading a new profile photo supports common image formats up to 5MB and updates the photo immediately on your profile page
 * Login  
   * URL is slowpast.org/p/login  
   * Asks for the user’s email address  

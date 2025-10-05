@@ -1,18 +1,35 @@
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import type { Profile } from '../lib/data';
 import { Avatar, Button, Card, HorizBox, Pad, PadBox, Text, TileGrid, VertBox } from '../style';
+import { ProfilePhotoUploader } from './ProfilePhotoUploader';
 
 export type ProfileSummaryProps = {
   profile: Profile;
 };
 
 export function ProfileSummary({ profile }: ProfileSummaryProps) {
+  const [photoUrl, setPhotoUrl] = useState(profile.photoUrl);
+
+  useEffect(() => {
+    setPhotoUrl(profile.photoUrl);
+  }, [profile.photoUrl]);
+
   return (
     <Card tone="gradient" maxWidth={720} margin="lg">
       <PadBox vert="xl" horiz="xl">
         <VertBox gap="xl">
           <HorizBox gap="lg" align="center">
-            <Avatar src={profile.photoUrl} alt={profile.name} size={96} tone="bold" />
+            {profile.isSelf ? (
+              <ProfilePhotoUploader
+                username={profile.username}
+                name={profile.name}
+                initialPhotoUrl={photoUrl}
+                onPhotoUpdated={setPhotoUrl}
+              />
+            ) : (
+              <Avatar src={photoUrl} alt={profile.name} size={96} tone="bold" />
+            )}
             <VertBox gap="sm">
               <h1>
                 <Link href={`/${profile.username}`}>{profile.name}</Link>

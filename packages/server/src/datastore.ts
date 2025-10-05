@@ -100,6 +100,15 @@ export class InMemoryStore {
     return this.profiles.get(username);
   }
 
+  updateProfilePhoto(username: string, photoUrl: string): Profile {
+    const profile = this.getProfile(username);
+    if (!profile) {
+      throw new Error(`Profile not found: ${username}`);
+    }
+    profile.photoUrl = photoUrl;
+    return profile;
+  }
+
   getGroup(groupKey: string): Optional<Group> {
     return this.groups.get(groupKey);
   }
