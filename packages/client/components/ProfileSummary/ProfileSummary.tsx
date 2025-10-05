@@ -1,5 +1,5 @@
 import styles from './ProfileSummary.module.css';
-import type { Profile } from '../lib/data';
+import type { Profile } from '../../lib/data';
 
 export type ProfileSummaryProps = {
   profile: Profile;

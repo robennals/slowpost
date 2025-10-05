@@ -1,5 +1,5 @@
 import styles from './GroupMembers.module.css';
-import type { Group } from '../lib/data';
+import type { Group } from '../../lib/data';
 
 type GroupMembersProps = {
   group: Group;
