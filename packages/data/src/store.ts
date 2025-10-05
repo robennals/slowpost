@@ -53,6 +53,46 @@ export interface SlowpostCollections {
 class SlowpostStoreImpl implements SlowpostStore {
   constructor(private readonly collections: SlowpostCollections) {}
 
+  private normalizeEmail(email: string): string {
+    return email.trim().toLowerCase();
+  }
+
+  private sanitizeUsername(username: string): string {
+    return username.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+  }
+
+  private sanitizeName(name: string): string {
+    return name.trim();
+  }
+
+  private async getLoginSession(email: string): Promise<LoginSession | null> {
+    const normalizedEmail = this.normalizeEmail(email);
+    return this.collections.loginSessions.findOne({ email: normalizedEmail });
+  }
+
+  private async isUsernameAvailableInternal(username: string): Promise<boolean> {
+    const normalized = this.sanitizeUsername(username);
+    if (!normalized) {
+      return false;
+    }
+    const [profile, session] = await Promise.all([
+      this.collections.profiles.findOne({ username: normalized }),
+      this.collections.loginSessions.findOne({ username: normalized })
+    ]);
+    return !profile && !session;
+  }
+
+  private async generateUsernameSuggestion(seed: string): Promise<string> {
+    const normalizedSeed = this.sanitizeUsername(seed) || 'friend';
+    let attempt = normalizedSeed;
+    let counter = 1;
+    while (!(await this.isUsernameAvailableInternal(attempt))) {
+      attempt = `${normalizedSeed}${counter}`;
+      counter += 1;
+    }
+    return attempt;
+  }
+
   private async requireProfile(username: string): Promise<Profile> {
     const profile = await this.collections.profiles.findOne({ username });
     if (!profile) {
@@ -234,26 +274,112 @@ class SlowpostStoreImpl implements SlowpostStore {
     return { username: profile.username, pendingFollowers };
   }
 
-  async createLoginSession(email: string): Promise<LoginSession> {
+  async createLoginSession(email: string, intent: 'login' | 'signup'): Promise<LoginSession> {
+    const normalizedEmail = this.normalizeEmail(email);
     const pin = randomBytes(3).toString('hex');
-    const existing = await this.collections.loginSessions.findOne({ email });
-    if (existing) {
-      await this.collections.loginSessions.updateOne({ email }, { $set: { pin, verified: false } });
-      return { ...existing, pin, verified: false };
+    const existing = await this.getLoginSession(normalizedEmail);
+
+    let username = existing?.username ?? this.sanitizeUsername(normalizedEmail.split('@')[0] ?? '');
+
+    if (intent === 'login') {
+      if (!existing || existing.intent !== 'login') {
+        throw new Error('Account not found');
+      }
+      username = this.sanitizeUsername(existing.username);
+    } else {
+      if (existing && existing.intent === 'login') {
+        throw new Error('Account already exists');
+      }
+      if (!existing) {
+        username = await this.generateUsernameSuggestion(normalizedEmail.split('@')[0] ?? 'friend');
+      } else {
+        username = this.sanitizeUsername(existing.username) ||
+          (await this.generateUsernameSuggestion(normalizedEmail.split('@')[0] ?? 'friend'));
+      }
     }
-    const username = email.split('@')[0];
-    const session: LoginSession = { email, username, pin, verified: false };
-    await this.collections.loginSessions.insertOne(session);
+
+    const sanitizedUsername = this.sanitizeUsername(username);
+    if (!sanitizedUsername) {
+      throw new Error('Unable to generate username');
+    }
+
+    const session: LoginSession = {
+      email: normalizedEmail,
+      username: sanitizedUsername,
+      pin,
+      verified: false,
+      intent
+    };
+
+    if (existing) {
+      await this.collections.loginSessions.updateOne(
+        { email: normalizedEmail },
+        { $set: { pin, verified: false, intent, username: sanitizedUsername } }
+      );
+    } else {
+      await this.collections.loginSessions.insertOne(session);
+    }
+
     return session;
   }
 
   async verifyLogin(email: string, pin: string): Promise<LoginSession> {
-    const session = await this.collections.loginSessions.findOne({ email });
+    const normalizedEmail = this.normalizeEmail(email);
+    const session = await this.getLoginSession(normalizedEmail);
     if (!session || session.pin !== pin) {
       throw new Error('Invalid login');
     }
-    await this.collections.loginSessions.updateOne({ email }, { $set: { verified: true } });
+    await this.collections.loginSessions.updateOne({ email: normalizedEmail }, { $set: { verified: true } });
     return { ...session, verified: true };
+  }
+
+  async forceVerifyLogin(email: string, intent: 'login' | 'signup' = 'login'): Promise<LoginSession> {
+    const session = await this.createLoginSession(email, intent);
+    await this.collections.loginSessions.updateOne(
+      { email: session.email },
+      { $set: { verified: true, intent } }
+    );
+    return { ...session, verified: true, intent };
+  }
+
+  async completeSignup(email: string, username: string, name: string): Promise<LoginSession> {
+    const normalizedEmail = this.normalizeEmail(email);
+    const sanitizedUsername = this.sanitizeUsername(username);
+    const sanitizedName = this.sanitizeName(name);
+    if (!sanitizedUsername) {
+      throw new Error('Username is required');
+    }
+    if (!sanitizedName) {
+      throw new Error('Name is required');
+    }
+    if (!(await this.isUsernameAvailableInternal(sanitizedUsername))) {
+      throw new Error('Username is already taken');
+    }
+    const session = await this.getLoginSession(normalizedEmail);
+    if (!session || session.intent !== 'signup' || !session.verified) {
+      throw new Error('Signup session is not verified');
+    }
+
+    const profile: Profile = {
+      username: sanitizedUsername,
+      name: sanitizedName,
+      photoUrl: '',
+      blurb: ''
+    };
+
+    await Promise.all([
+      this.collections.profiles.insertOne(profile),
+      this.collections.loginSessions.updateOne(
+        { email: normalizedEmail },
+        { $set: { username: sanitizedUsername, intent: 'login' } }
+      )
+    ]);
+
+    return { ...session, username: sanitizedUsername, intent: 'login' };
+  }
+
+  async isUsernameAvailable(username: string): Promise<boolean> {
+    return this.isUsernameAvailableInternal(username);
   }
 }
 

@@ -2,6 +2,7 @@ export type {
   Follow,
   FollowersView,
   Group,
+  GroupJoinRequest,
   GroupMembershipView,
   GroupView,
   HomeFollower,

@@ -49,11 +49,33 @@ describe('Slowpost data store', () => {
     expect(followers.pendingFollowers[0].username).toBe('ada');
   });
 
-  it('creates and verifies login sessions', async () => {
+  it('creates and completes signup sessions', async () => {
     const store = createMemoryStore();
-    const session = await store.createLoginSession('test@example.com');
+    const session = await store.createLoginSession('new@example.com', 'signup');
     expect(session.pin).toHaveLength(6);
-    const verified = await store.verifyLogin('test@example.com', session.pin);
+    const verified = await store.verifyLogin('new@example.com', session.pin);
     expect(verified.verified).toBe(true);
+    expect(verified.intent).toBe('signup');
+    const completed = await store.completeSignup('new@example.com', 'newuser', 'New User');
+    expect(completed.username).toBe('newuser');
+    const profile = await store.getProfileView('newuser');
+    expect(profile.profile.username).toBe('newuser');
+  });
+
+  it('creates login sessions for existing accounts', async () => {
+    const store = createMemoryStore();
+    const session = await store.createLoginSession('ada@example.com', 'login');
+    expect(session.username).toBe('ada');
+    const verifiedLogin = await store.verifyLogin('ada@example.com', session.pin);
+    expect(verifiedLogin.intent).toBe('login');
+  });
+
+  it('force verifies login sessions for development', async () => {
+    const store = createMemoryStore();
+    const email = 'devskip@example.com';
+    await store.createLoginSession(email, 'signup');
+    const forced = await store.forceVerifyLogin(email, 'signup');
+    expect(forced.verified).toBe(true);
+    expect(forced.intent).toBe('signup');
   });
 });
