@@ -122,8 +122,8 @@ describe('POST /api/login/dev-skip', () => {
             }
           },
           (res) => {
-            const chunks: Uint8Array[] = [];
-            res.on('data', (chunk) => chunks.push(chunk));
+            const chunks: Buffer[] = [];
+            res.on('data', (chunk: Buffer) => chunks.push(chunk));
             res.on('end', () => {
               const body = Buffer.concat(chunks).toString('utf8');
               resolve({ status: res.statusCode ?? 0, body });
