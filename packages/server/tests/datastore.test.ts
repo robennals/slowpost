@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { createMemoryStore } from '@slowpost/data';
+import { createMemoryStore, type HomeFollower, type Profile } from '@slowpost/data';
 
 describe('Slowpost data store', () => {
   it('generates a home view with followers', async () => {
     const store = createMemoryStore();
     const home = await store.getHomeView('ada');
     expect(home.followers).toHaveLength(2);
-    const followerNames = home.followers.map((follower) => follower.username).sort();
+    const followerNames = home.followers
+      .map((follower: HomeFollower) => follower.username)
+      .sort();
     expect(followerNames).toEqual(['elon', 'grace']);
   });
 
@@ -20,7 +22,9 @@ describe('Slowpost data store', () => {
   it('allows toggling close friend status', async () => {
     const store = createMemoryStore();
     const updated = await store.setCloseFriend('ada', 'elon', true);
-    const elon = updated.followers.find((follower) => follower.username === 'elon');
+    const elon = updated.followers.find(
+      (follower: HomeFollower) => follower.username === 'elon'
+    );
     expect(elon?.isCloseFriend).toBe(true);
   });
 
@@ -35,7 +39,7 @@ describe('Slowpost data store', () => {
     const store = createMemoryStore();
     const group = await store.getGroupView('future-society');
     expect(group.group.isPrivate).toBe(true);
-    expect(group.members.map((member) => member.username)).toContain('grace');
+    expect(group.members.map((member: Profile) => member.username)).toContain('grace');
   });
 
   it('tracks pending follower requests', async () => {

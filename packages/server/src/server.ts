@@ -23,6 +23,68 @@ const loginCookieOptions: CookieOptions = {
 type SessionSnapshot = Pick<LoginSession, 'username' | 'email'>;
 const loginTokens = new Map<string, SessionSnapshot>();
 
+const localHostnames = new Set(['localhost', '127.0.0.1', '::1']);
+const localIpAddresses = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
+
+function normalizeHost(value: string): string | undefined {
+  try {
+    const url = new URL(value);
+    return url.hostname.toLowerCase();
+  } catch {
+    const [host] = value.split(':');
+    return host.toLowerCase();
+  }
+}
+
+function isLocalHostname(value: string | undefined | null): boolean {
+  if (!value) {
+    return false;
+  }
+  const normalized = normalizeHost(value.trim());
+  if (!normalized) {
+    return false;
+  }
+  return localHostnames.has(normalized);
+}
+
+function isLocalAddress(value: string | undefined | null): boolean {
+  if (!value) {
+    return false;
+  }
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return false;
+  }
+  const normalized = trimmed.startsWith('::ffff:') ? trimmed.slice('::ffff:'.length) : trimmed;
+  return localIpAddresses.has(normalized);
+}
+
+function requestFromLocalEnvironment(req: Request): boolean {
+  if (isLocalHostname(req.hostname)) {
+    return true;
+  }
+
+  const forwardedHost = req.get('x-forwarded-host');
+  if (forwardedHost && forwardedHost.split(',').some((candidate) => isLocalHostname(candidate))) {
+    return true;
+  }
+
+  const origin = req.get('origin');
+  if (origin && isLocalHostname(origin)) {
+    return true;
+  }
+
+  const forwardedFor = req.get('x-forwarded-for');
+  if (forwardedFor) {
+    const forwardedIps = forwardedFor.split(',');
+    if (forwardedIps.some((ip) => isLocalAddress(ip))) {
+      return true;
+    }
+  }
+
+  return isLocalAddress(req.ip);
+}
+
 if (!isDev && !postmarkServerToken) {
   console.warn('POSTMARK_SERVER_TOKEN is not set. Login emails will fail until it is configured.');
 }
@@ -246,7 +308,7 @@ export function createServer(dataStore: SlowpostStore = store) {
   });
 
   app.post('/api/login/dev-skip', async (req, res) => {
-    if (!isDev) {
+    if (!isDev && !requestFromLocalEnvironment(req)) {
       res.status(404).json({ message: 'Not found' });
       return;
     }

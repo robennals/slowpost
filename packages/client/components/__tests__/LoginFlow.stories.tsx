@@ -128,3 +128,46 @@ export const Signup: Story = {
     }
   }
 };
+
+export const SkipPinFromEmailStep: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    onCompleteSpy.calls.length = 0;
+
+    const emailInput = canvas.getByLabelText(/email address/i);
+    await userEvent.clear(emailInput);
+    await userEvent.type(emailInput, 'local-new@slowpost.org');
+
+    const skipButton = await canvas.findByRole('button', { name: /skip pin/i });
+    await userEvent.click(skipButton);
+
+    const usernameInput = await canvas.findByLabelText(/choose a username/i);
+    expect(usernameInput).toHaveValue('local-new');
+    await userEvent.type(usernameInput, '{enter}');
+
+    await waitFor(() => expect(onCompleteSpy.calls).toContainEqual(['local-new']));
+  }
+};
+
+export const SkipPinAfterRequestingPin: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    onCompleteSpy.calls.length = 0;
+
+    const emailInput = canvas.getByLabelText(/email address/i);
+    await userEvent.clear(emailInput);
+    await userEvent.type(emailInput, 'grace@example.com{enter}');
+
+    const enterPinButton = await canvas.findByRole('button', { name: /enter pin/i });
+    await userEvent.click(enterPinButton);
+
+    const skipButton = await canvas.findByRole('button', { name: /skip pin/i });
+    await userEvent.click(skipButton);
+
+    const usernameInput = await canvas.findByLabelText(/choose a username/i);
+    expect(usernameInput).toHaveValue('grace');
+    await userEvent.type(usernameInput, '{enter}');
+
+    await waitFor(() => expect(onCompleteSpy.calls).toContainEqual(['grace']));
+  }
+};

@@ -14,5 +14,6 @@
   "devDependencies": {
     "vitest": "^1.6.1"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "packageManager": "yarn@4.1.1"
 }

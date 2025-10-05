@@ -13,34 +13,36 @@ import {
   getStandardDataset,
   seedCollections,
   type CollectionLike,
+  type Query,
   type SlowpostCollections,
   type SlowpostStore,
-  type StandardDataset
+  type StandardDataset,
+  type Update
 } from '@slowpost/data';
 
 function wrapCollection<T extends Document>(collection: Collection<T>): CollectionLike<T> {
   return {
-    find(query) {
+    find(query: Query<T>) {
       return {
         toArray: async () => collection.find(query as Filter<T>).toArray() as unknown as T[]
       };
     },
-    findOne(query) {
+    findOne(query: Query<T>) {
       return collection.findOne(query as Filter<T>) as Promise<T | null>;
     },
-    async insertOne(document) {
+    async insertOne(document: T) {
       await collection.insertOne(document as OptionalUnlessRequiredId<T>);
     },
-    async insertMany(documents) {
+    async insertMany(documents: readonly T[]) {
       if (documents.length === 0) {
         return;
       }
       await collection.insertMany(documents as OptionalUnlessRequiredId<T>[]);
     },
-    async updateOne(filter, update) {
+    async updateOne(filter: Query<T>, update: Update<T>) {
       await collection.updateOne(filter as Filter<T>, update as UpdateFilter<T>);
     },
-    async deleteMany(filter) {
+    async deleteMany(filter: Query<T>) {
       await collection.deleteMany(filter as Filter<T>);
     }
   };
