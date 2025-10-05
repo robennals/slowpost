@@ -27,13 +27,48 @@ const localHostnames = new Set(['localhost', '127.0.0.1', '::1']);
 const localIpAddresses = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
 
 function normalizeHost(value: string): string | undefined {
-  try {
-    const url = new URL(value);
-    return url.hostname.toLowerCase();
-  } catch {
-    const [host] = value.split(':');
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return undefined;
+  }
+
+  const parse = (input: string): string | undefined => {
+    const url = new URL(input);
+    const host = url.hostname;
+    if (!host) {
+      return undefined;
+    }
+    if (host.startsWith('[') && host.endsWith(']')) {
+      return host.slice(1, -1).toLowerCase();
+    }
+    return host.toLowerCase();
+  };
+
+  for (const candidate of [trimmed, `http://${trimmed}`]) {
+    try {
+      const normalized = parse(candidate);
+      if (normalized) {
+        return normalized;
+      }
+    } catch {
+      // ignore parse errors and try the next strategy
+    }
+  }
+
+  if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+    return trimmed.slice(1, -1).toLowerCase();
+  }
+
+  if (!trimmed.includes(':')) {
+    return trimmed.toLowerCase();
+  }
+
+  const [host] = trimmed.split(':');
+  if (host) {
     return host.toLowerCase();
   }
+
+  return trimmed.toLowerCase();
 }
 
 function isLocalHostname(value: string | undefined | null): boolean {
@@ -315,10 +350,26 @@ export function createServer(dataStore: SlowpostStore = store) {
 
     try {
       const schema = z.object({ email: z.string().email(), intent: z.enum(['login', 'signup']).optional() });
-      const { email, intent = 'login' } = schema.parse(req.body);
-      console.log(`[dev] Skipping PIN verification for ${email} (${intent})`);
-      const session = await dataStore.forceVerifyLogin(email, intent);
-      if (intent === 'login') {
+      const { email, intent: requestedIntent = 'login' } = schema.parse(req.body);
+      console.log(`[dev] Skipping PIN verification for ${email} (${requestedIntent})`);
+
+      const session = await (async () => {
+        try {
+          return await dataStore.forceVerifyLogin(email, requestedIntent);
+        } catch (error) {
+          if (
+            requestedIntent === 'login' &&
+            error instanceof Error &&
+            error.message === 'Account not found'
+          ) {
+            console.log(`[dev] Account not found for ${email}; creating signup session instead.`);
+            return await dataStore.forceVerifyLogin(email, 'signup');
+          }
+          throw error;
+        }
+      })();
+
+      if (session.intent === 'login') {
         const token = issueLoginToken({ username: session.username, email: session.email });
         setLoginCookie(res, token);
       }
