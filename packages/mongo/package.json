@@ -7,6 +7,7 @@
   "scripts": {
     "prebuild": "yarn workspace @slowpost/server build",
     "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "dev:mongo": "node dist/src/devMemory.js",
     "dev:server": "node dist/src/runServer.js"
   },
