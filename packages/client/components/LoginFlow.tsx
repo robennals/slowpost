@@ -182,17 +182,21 @@ export function LoginFlow({ onComplete }: LoginFlowProps) {
         await readError(response);
       }
       let suggestedUsername = email.split('@')[0] ?? '';
+      let sessionIntent: Mode = activeIntent;
       try {
-        const payload = (await response.json()) as { username?: string };
+        const payload = (await response.json()) as { username?: string; intent?: Mode };
         if (payload?.username) {
           suggestedUsername = payload.username;
+        }
+        if (payload?.intent === 'login' || payload?.intent === 'signup') {
+          sessionIntent = payload.intent;
         }
       } catch {
         // ignore parsing errors and fall back to the email prefix
       }
       setPin('');
-      if (activeIntent === 'login') {
-        setIntent('login');
+      setIntent(sessionIntent);
+      if (sessionIntent === 'login') {
         onComplete?.(suggestedUsername);
         return;
       }
@@ -200,7 +204,6 @@ export function LoginFlow({ onComplete }: LoginFlowProps) {
       setStatusMessage('PIN skipped for development. Choose a username and add your name to finish creating your account.');
       setStatusKind('success');
       setStep('signupDetails');
-      setIntent('signup');
     } catch (error) {
       if (error instanceof Error && /not found/i.test(error.message)) {
         setErrorMessage('Skipping the PIN is only available when Slowpost is running locally.');

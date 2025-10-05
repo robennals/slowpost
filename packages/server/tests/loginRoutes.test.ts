@@ -59,8 +59,9 @@ describe('POST /api/login/dev-skip', () => {
       });
 
       expect(response.status).toBe(200);
-      const payload = (await response.json()) as { username?: string };
+      const payload = (await response.json()) as { username?: string; intent?: 'login' | 'signup' };
       expect(payload.username).toBe('new-dev');
+      expect(payload.intent).toBe('signup');
     } finally {
       await server.close();
     }
@@ -80,8 +81,9 @@ describe('POST /api/login/dev-skip', () => {
       });
 
       expect(firstResponse.status).toBe(200);
-      const firstPayload = (await firstResponse.json()) as { username?: string };
+      const firstPayload = (await firstResponse.json()) as { username?: string; intent?: 'login' | 'signup' };
       expect(firstPayload.username).toBe('grace');
+      expect(firstPayload.intent).toBe('login');
 
       const secondResponse = await fetch(`${server.baseUrl}/api/login/dev-skip`, {
         method: 'POST',
@@ -93,8 +95,9 @@ describe('POST /api/login/dev-skip', () => {
       });
 
       expect(secondResponse.status).toBe(200);
-      const secondPayload = (await secondResponse.json()) as { username?: string };
+      const secondPayload = (await secondResponse.json()) as { username?: string; intent?: 'login' | 'signup' };
       expect(secondPayload.username).toBe('grace');
+      expect(secondPayload.intent).toBe('login');
     } finally {
       await server.close();
     }
@@ -136,8 +139,9 @@ describe('POST /api/login/dev-skip', () => {
       });
 
       expect(response.status).toBe(200);
-      const payloadJson = JSON.parse(response.body) as { username?: string };
+      const payloadJson = JSON.parse(response.body) as { username?: string; intent?: 'login' | 'signup' };
       expect(payloadJson.username).toBe('ada');
+      expect(payloadJson.intent).toBe('login');
     } finally {
       await server.close();
     }

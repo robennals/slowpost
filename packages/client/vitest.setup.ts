@@ -9,6 +9,7 @@ type LoginState = {
 } | null;
 
 let loginState: LoginState = null;
+const knownLoginEmails = new Set(['ada@example.com', 'grace@example.com']);
 
 const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
   const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
@@ -35,8 +36,28 @@ const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => 
   if (url.endsWith('/api/login/dev-skip') && method === 'POST') {
     const body = typeof init?.body === 'string' ? JSON.parse(init.body) : {};
     const email: string = body.email ?? 'dev@example.com';
+    const requestedIntent = (body.intent as 'login' | 'signup' | undefined) ?? 'login';
+    const normalizedEmail = email.toLowerCase();
     const username: string = email.split('@')[0] ?? 'dev';
+    const intent: 'login' | 'signup' =
+      requestedIntent === 'signup'
+        ? 'signup'
+        : knownLoginEmails.has(normalizedEmail)
+        ? 'login'
+        : 'signup';
     loginState = { email, username };
+    return new Response(JSON.stringify({ username, intent }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
+  if (url.endsWith('/api/signup/complete') && method === 'POST') {
+    const body = typeof init?.body === 'string' ? JSON.parse(init.body) : {};
+    const email: string = body.email ?? 'user@example.com';
+    const username: string = body.username ?? email.split('@')[0] ?? 'user';
+    loginState = { email, username };
+    knownLoginEmails.add(email.toLowerCase());
     return new Response(JSON.stringify({ username }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }

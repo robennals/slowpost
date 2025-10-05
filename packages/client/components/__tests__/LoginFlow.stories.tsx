@@ -143,7 +143,12 @@ export const SkipPinFromEmailStep: Story = {
 
     const usernameInput = await canvas.findByLabelText(/choose a username/i);
     expect(usernameInput).toHaveValue('local-new');
-    await userEvent.type(usernameInput, '{enter}');
+    const nameInput = await canvas.findByLabelText(/your name/i);
+    await userEvent.clear(nameInput);
+    await userEvent.type(nameInput, 'Local New');
+
+    const createAccountButton = canvas.getByRole('button', { name: /create account/i });
+    await userEvent.click(createAccountButton);
 
     await waitFor(() => expect(onCompleteSpy.calls).toContainEqual(['local-new']));
   }
@@ -156,7 +161,7 @@ export const SkipPinAfterRequestingPin: Story = {
 
     const emailInput = canvas.getByLabelText(/email address/i);
     await userEvent.clear(emailInput);
-    await userEvent.type(emailInput, 'grace@example.com{enter}');
+    await userEvent.type(emailInput, 'new-dev@slowpost.org{enter}');
 
     const enterPinButton = await canvas.findByRole('button', { name: /enter pin/i });
     await userEvent.click(enterPinButton);
@@ -165,9 +170,14 @@ export const SkipPinAfterRequestingPin: Story = {
     await userEvent.click(skipButton);
 
     const usernameInput = await canvas.findByLabelText(/choose a username/i);
-    expect(usernameInput).toHaveValue('grace');
-    await userEvent.type(usernameInput, '{enter}');
+    expect(usernameInput).toHaveValue('new-dev');
+    const nameInput = await canvas.findByLabelText(/your name/i);
+    await userEvent.clear(nameInput);
+    await userEvent.type(nameInput, 'New Dev');
 
-    await waitFor(() => expect(onCompleteSpy.calls).toContainEqual(['grace']));
+    const createAccountButton = canvas.getByRole('button', { name: /create account/i });
+    await userEvent.click(createAccountButton);
+
+    await waitFor(() => expect(onCompleteSpy.calls).toContainEqual(['new-dev']));
   }
 };
