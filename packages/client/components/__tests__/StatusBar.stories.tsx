@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { StatusBar } from './StatusBar';
+import { StatusBar } from '../StatusBar';
 
 const meta: Meta<typeof StatusBar> = {
   title: 'Navigation/StatusBar',

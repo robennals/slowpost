@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { ProfileSummary } from './ProfileSummary';
+import { ProfileSummary } from '../ProfileSummary';
 import { sampleProfile } from '../../lib/data';
 
 const meta: Meta<typeof ProfileSummary> = {
