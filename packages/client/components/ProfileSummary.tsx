@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import styles from './ProfileSummary.module.css';
 import type { Profile } from '../lib/data';
 
@@ -9,7 +10,13 @@ export function ProfileSummary({ profile }: ProfileSummaryProps) {
   return (
     <section className={styles.profile}>
       <div className={styles.header}>
-        <img src={profile.photoUrl} alt={profile.name} className={styles.avatar} />
+        <Image
+          src={profile.photoUrl}
+          alt={profile.name}
+          className={styles.avatar}
+          width={96}
+          height={96}
+        />
         <div>
           <h1>{profile.name}</h1>
           <p className={styles.username}>@{profile.username}</p>

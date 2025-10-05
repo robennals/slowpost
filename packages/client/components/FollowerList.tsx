@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { useState } from 'react';
 import styles from './FollowerList.module.css';
 import type { HomeFollower } from '../lib/data';
@@ -28,7 +29,13 @@ export function FollowerList({ followers }: FollowerListProps) {
       <ul className={styles.list}>
         {visibleFollowers.map((follower) => (
           <li key={follower.username} className={styles.item}>
-            <img src={follower.photoUrl} alt={follower.name} className={styles.avatar} />
+            <Image
+              src={follower.photoUrl}
+              alt={follower.name}
+              className={styles.avatar}
+              width={56}
+              height={56}
+            />
             <div>
               <strong>{follower.name}</strong>
               <p>{follower.blurb}</p>

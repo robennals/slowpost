@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import Link from 'next/link';
 import { FollowerList } from '../components/FollowerList';
 import { sampleHome, sampleProfile } from '../lib/data';
 
@@ -12,11 +13,9 @@ export default function HomePage({ isLoggedIn }: { isLoggedIn: boolean }) {
         <section style={{ textAlign: 'center', marginTop: '4rem' }}>
           <h1>Post once a year. Stay close forever.</h1>
           <p>Slowpost helps you keep in touch without the scroll. Log in to see who is waiting.</p>
-          <a href="/p/login" style={{ display: 'inline-block', marginTop: '1.5rem' }}>
-            <button type="button" style={{ padding: '0.75rem 1.5rem', borderRadius: '999px' }}>
-              Log in
-            </button>
-          </a>
+          <Link href="/p/login" className="buttonLink">
+            Log in
+          </Link>
         </section>
       ) : (
         <>

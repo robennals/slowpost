@@ -38,39 +38,52 @@ export function LoginFlow({ onComplete }: LoginFlowProps) {
     <section className={styles.container}>
       <h1>Log in to Slowpost</h1>
       {step === 'email' && (
-        <form onSubmit={submitEmail}>
-          <label>
+        <form className={styles.form} onSubmit={submitEmail}>
+          <label className={styles.label}>
             Email address
             <input
+              className={styles.input}
               type="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               required
             />
           </label>
-          <button type="submit">Send me a PIN</button>
+          <button type="submit" className={styles.submitButton}>
+            Send me a PIN
+          </button>
         </form>
       )}
       {step === 'pin' && (
-        <form onSubmit={submitPin}>
-          <label>
+        <form className={styles.form} onSubmit={submitPin}>
+          <label className={styles.label}>
             Enter the PIN we emailed you
-            <input value={pin} onChange={(event) => setPin(event.target.value)} required />
+            <input
+              className={styles.input}
+              value={pin}
+              onChange={(event) => setPin(event.target.value)}
+              required
+            />
           </label>
-          <button type="submit">Verify PIN</button>
+          <button type="submit" className={styles.submitButton}>
+            Verify PIN
+          </button>
         </form>
       )}
       {step === 'username' && (
-        <form onSubmit={submitUsername}>
-          <label>
+        <form className={styles.form} onSubmit={submitUsername}>
+          <label className={styles.label}>
             Choose a username
             <input
+              className={styles.input}
               value={username}
               onChange={(event) => setUsername(event.target.value)}
               required
             />
           </label>
-          <button type="submit">Finish</button>
+          <button type="submit" className={styles.submitButton}>
+            Finish
+          </button>
         </form>
       )}
     </section>

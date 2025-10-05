@@ -26,7 +26,7 @@
   gap: 0.5rem;
 }
 
-button {
+.button {
   border: none;
   background-color: #0077cc;
   color: white;
@@ -35,7 +35,17 @@ button {
   cursor: pointer;
 }
 
+.button:hover,
+.button:focus {
+  background-color: #005fa3;
+}
+
 .secondary {
   background-color: #e3f2ff;
   color: #0b1f38;
+}
+
+.secondary:hover,
+.secondary:focus {
+  background-color: #d2e9ff;
 }

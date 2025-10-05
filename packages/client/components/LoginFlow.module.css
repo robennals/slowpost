@@ -7,27 +7,27 @@
   border: 2px solid #0b1f38;
 }
 
-form {
+.form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
   margin-top: 1.5rem;
 }
 
-label {
+.label {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   font-weight: 600;
 }
 
-input {
+.input {
   padding: 0.75rem;
   border-radius: 10px;
   border: 1px solid #0b1f38;
 }
 
-button {
+.submitButton {
   align-self: flex-end;
   background-color: #0b1f38;
   color: white;
@@ -37,7 +37,7 @@ button {
   cursor: pointer;
 }
 
-button:hover,
-button:focus {
+.submitButton:hover,
+.submitButton:focus {
   background-color: #16365f;
 }
