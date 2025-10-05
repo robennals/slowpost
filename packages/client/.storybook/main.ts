@@ -10,10 +10,7 @@ const storiesDir = dirname(fileURLToPath(import.meta.url));
 
 const config: StorybookConfig = {
   stories: ['../components/**/*.stories.@(ts|tsx)'],
-  addons: [
-    getAbsolutePath("@storybook/addon-links"),
-    getAbsolutePath("@storybook/addon-vitest")
-  ],
+  addons: [getAbsolutePath("@storybook/addon-links")],
 
   framework: {
     name: getAbsolutePath("@storybook/react-vite"),

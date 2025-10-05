@@ -9,7 +9,8 @@
     "lint": "next lint",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test": "vitest run --config vitest.config.ts"
+    "test": "node ../scripts/generate-story-tests.mjs && vitest run --config vitest.config.ts",
+    "test:watch": "node ../scripts/generate-story-tests.mjs && vitest watch --config vitest.config.ts"
   },
   "dependencies": {
     "next": "^14.2.3",
@@ -18,7 +19,6 @@
   },
   "devDependencies": {
     "@storybook/addon-links": "^9.1.10",
-    "@storybook/addon-vitest": "^9.1.10",
     "@storybook/react": "^9.1.10",
     "@storybook/react-vite": "^9.1.10",
     "@testing-library/dom": "^9.3.4",
@@ -28,13 +28,10 @@
     "@types/react": "^18.2.46",
     "@types/react-dom": "^18.2.18",
     "@vitejs/plugin-react": "^5.0.4",
-    "@vitest/browser": "^3.2.4",
-    "@vitest/runner": "^3.2.4",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.3",
     "eslint-plugin-storybook": "^9.1.10",
     "jsdom": "^24.0.0",
-    "playwright": "^1.55.1",
     "storybook": "^9.1.10",
     "typescript": "^5.3.3",
     "vite": "^5.4.10",
