@@ -11,8 +11,8 @@ export interface Profile {
   name: string;
   blurb: string;
   photoUrl: string;
-  publicGroups: string[];
-  sharedPrivateGroups: string[];
+  publicGroups: Array<{ key: string; name: string }>;
+  sharedPrivateGroups: Array<{ key: string; name: string }>;
   isSelf: boolean;
   isFollowing: boolean;
 }
@@ -21,7 +21,7 @@ export interface Group {
   key: string;
   name: string;
   description: string;
-  members: string[];
+  members: Array<{ username: string; name: string }>;
   isPrivate: boolean;
 }
 
@@ -57,8 +57,12 @@ export const sampleProfile: Profile = {
   name: 'Ada Lovelace',
   blurb: 'Visionary of analytical engines and slow thoughtful posts.',
   photoUrl: 'https://example.com/ada.jpg',
-  publicGroups: ['Fibonacci Fans'],
-  sharedPrivateGroups: ['Future Society'],
+  publicGroups: [
+    { key: 'fibonacci-fans', name: 'Fibonacci Fans' }
+  ],
+  sharedPrivateGroups: [
+    { key: 'future-society', name: 'Future Society' }
+  ],
   isSelf: true,
   isFollowing: false
 };
@@ -67,7 +71,10 @@ export const sampleGroup: Group = {
   key: 'future-society',
   name: 'Future Society',
   description: 'Private think tank for the future of mail.',
-  members: ['Ada Lovelace', 'Grace Hopper'],
+  members: [
+    { username: 'ada', name: 'Ada Lovelace' },
+    { username: 'grace', name: 'Grace Hopper' }
+  ],
   isPrivate: true
 };
 

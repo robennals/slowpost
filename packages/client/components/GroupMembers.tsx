@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { Group } from '../lib/data';
 import { Button, Card, HorizBox, PadBox, Text, VertBox } from '../style';
 
@@ -11,7 +12,9 @@ export function GroupMembers({ group }: GroupMembersProps) {
       <PadBox vert="xl" horiz="xl">
         <VertBox gap="lg">
           <VertBox gap="sm">
-            <h1>{group.name}</h1>
+            <h1>
+              <Link href={`/g/${group.key}`}>{group.name}</Link>
+            </h1>
             <Text as="p" tone="copper" weight="semibold" size="sm">
               {group.isPrivate ? 'Private group • invitation only' : 'Public group'}
             </Text>
@@ -19,8 +22,8 @@ export function GroupMembers({ group }: GroupMembersProps) {
           </VertBox>
           <VertBox as="ul" gap="sm" list>
             {group.members.map((member) => (
-              <Text as="li" size="sm" key={member}>
-                {member}
+              <Text as="li" size="sm" key={member.username}>
+                <Link href={`/${member.username}`}>{member.name}</Link>
               </Text>
             ))}
           </VertBox>
