@@ -150,7 +150,7 @@ app.post('/api/login/request', async (req, res) => {
   try {
     const schema = z.object({ email: z.string().email() });
     const { email } = schema.parse(req.body);
-    const session = store.createLoginSession(email);
+    const session = store.createLoginSession(email, 'login');
     await deliverLoginPin(session);
     const message = isDev
       ? 'PIN generated. Check the server logs for the code.'
@@ -161,8 +161,36 @@ app.post('/api/login/request', async (req, res) => {
       res.status(400).json({ message: error.issues[0]?.message ?? 'Invalid email address.' });
       return;
     }
+    if (error instanceof Error && error.message === 'Account not found') {
+      res.status(404).json({ message: 'No account found for that email. Try signing up instead.' });
+      return;
+    }
     console.error('Failed to deliver login PIN', error);
     res.status(500).json({ message: 'Unable to send login PIN. Please try again.' });
+  }
+});
+
+app.post('/api/signup/request', async (req, res) => {
+  try {
+    const schema = z.object({ email: z.string().email() });
+    const { email } = schema.parse(req.body);
+    const session = store.createLoginSession(email, 'signup');
+    await deliverLoginPin(session);
+    const message = isDev
+      ? 'PIN generated. Check the server logs for the code.'
+      : 'PIN sent. Please check your email to continue signing up.';
+    res.json({ ok: true, message });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      res.status(400).json({ message: error.issues[0]?.message ?? 'Invalid email address.' });
+      return;
+    }
+    if (error instanceof Error && error.message === 'Account already exists') {
+      res.status(409).json({ message: 'An account with that email already exists. Try logging in instead.' });
+      return;
+    }
+    console.error('Failed to deliver signup PIN', error);
+    res.status(500).json({ message: 'Unable to send signup PIN. Please try again.' });
   }
 });
 
@@ -171,8 +199,25 @@ app.post('/api/login/verify', (req, res) => {
     const schema = z.object({ email: z.string().email(), pin: z.string() });
     const { email, pin } = schema.parse(req.body);
     const session = store.verifyLogin(email, pin);
+    if (session.intent !== 'login') {
+      throw new Error('This email is not linked to an existing account. Please sign up.');
+    }
     const token = store.issueLoginToken(session);
     setLoginCookie(res, token);
+    res.json({ username: session.username });
+  } catch (error) {
+    res.status(400).json({ message: (error as Error).message });
+  }
+});
+
+app.post('/api/signup/verify', (req, res) => {
+  try {
+    const schema = z.object({ email: z.string().email(), pin: z.string() });
+    const { email, pin } = schema.parse(req.body);
+    const session = store.verifyLogin(email, pin);
+    if (session.intent !== 'signup') {
+      throw new Error('This email is already linked to an account.');
+    }
     res.json({ username: session.username });
   } catch (error) {
     res.status(400).json({ message: (error as Error).message });
@@ -186,15 +231,35 @@ app.post('/api/login/dev-skip', (req, res) => {
   }
 
   try {
-    const schema = z.object({ email: z.string().email() });
-    const { email } = schema.parse(req.body);
-    console.log(`[dev] Skipping PIN verification for ${email}`);
-    const session = store.forceVerifyLogin(email);
+    const schema = z.object({ email: z.string().email(), intent: z.enum(['login', 'signup']).optional() });
+    const { email, intent = 'login' } = schema.parse(req.body);
+    console.log(`[dev] Skipping PIN verification for ${email} (${intent})`);
+    const session = store.forceVerifyLogin(email, intent);
+    if (intent === 'login') {
+      const token = store.issueLoginToken(session);
+      setLoginCookie(res, token);
+    }
+    res.json({ username: session.username });
+  } catch (error) {
+    res.status(400).json({ message: (error as Error).message });
+  }
+});
+
+app.post('/api/signup/complete', (req, res) => {
+  try {
+    const schema = z.object({
+      email: z.string().email(),
+      username: z.string().min(1),
+      name: z.string().min(1)
+    });
+    const { email, username, name } = schema.parse(req.body);
+    const session = store.completeSignup(email, username, name);
     const token = store.issueLoginToken(session);
     setLoginCookie(res, token);
     res.json({ username: session.username });
   } catch (error) {
-    res.status(400).json({ message: (error as Error).message });
+    const message = error instanceof Error ? error.message : 'Unable to create account.';
+    res.status(400).json({ message });
   }
 });
 

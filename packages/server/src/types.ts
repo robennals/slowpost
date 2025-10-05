@@ -33,6 +33,7 @@ export interface LoginSession {
   pin: string;
   verified: boolean;
   loginToken?: string;
+  intent: 'login' | 'signup';
 }
 
 export interface HomeFollower {

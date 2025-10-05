@@ -41,17 +41,28 @@ describe('InMemoryStore', () => {
     expect(followers.pendingFollowers[0].username).toBe('ada');
   });
 
-  it('creates and verifies login sessions', () => {
-    const session = store.createLoginSession('test@example.com');
+  it('creates and completes signup sessions', () => {
+    const signupStore = new InMemoryStore();
+    const session = signupStore.createLoginSession('new@example.com', 'signup');
     expect(session.pin).toHaveLength(6);
-    const verified = store.verifyLogin('test@example.com', session.pin);
+    const verified = signupStore.verifyLogin('new@example.com', session.pin);
     expect(verified.verified).toBe(true);
+    const completed = signupStore.completeSignup('new@example.com', 'newuser', 'New User');
+    expect(completed.username).toBe('newuser');
+    expect(signupStore.getProfile('newuser')).toBeDefined();
+  });
+
+  it('creates login sessions for existing accounts', () => {
+    const loginSession = store.createLoginSession('ada@example.com', 'login');
+    expect(loginSession.username).toBe('ada');
+    const verifiedLogin = store.verifyLogin('ada@example.com', loginSession.pin);
+    expect(verifiedLogin.intent).toBe('login');
   });
 
   it('force verifies login sessions for development', () => {
     const email = 'devskip@example.com';
-    store.createLoginSession(email);
-    const forced = store.forceVerifyLogin(email);
+    store.createLoginSession(email, 'signup');
+    const forced = store.forceVerifyLogin(email, 'signup');
     expect(forced.verified).toBe(true);
   });
 });
