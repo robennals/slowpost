@@ -1,0 +1,12 @@
+node_modules
+.git
+.next
+packages/client/.next
+packages/client/out
+packages/server/dist
+dist
+coverage
+*.log
+tmp
+.turbo
+.DS_Store
