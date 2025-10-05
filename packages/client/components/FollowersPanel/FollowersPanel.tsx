@@ -1,5 +1,5 @@
 import styles from './FollowersPanel.module.css';
-import type { FollowersView } from '../lib/data';
+import type { FollowersView } from '../../lib/data';
 
 type FollowersPanelProps = {
   followers: FollowersView;

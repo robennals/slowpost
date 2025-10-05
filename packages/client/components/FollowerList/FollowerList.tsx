@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import styles from './FollowerList.module.css';
-import type { HomeFollower } from '../lib/data';
+import type { HomeFollower } from '../../lib/data';
 
 type FollowerListProps = {
   followers: HomeFollower[];
