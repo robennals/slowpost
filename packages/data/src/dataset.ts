@@ -77,8 +77,8 @@ export function getStandardDataset(): StandardDataset {
   ];
 
   const loginSessions: LoginSession[] = [
-    { email: 'ada@example.com', username: 'ada', pin: '123456', verified: true },
-    { email: 'grace@example.com', username: 'grace', pin: '654321', verified: true }
+    { email: 'ada@example.com', username: 'ada', pin: '123456', verified: true, intent: 'login' },
+    { email: 'grace@example.com', username: 'grace', pin: '654321', verified: true, intent: 'login' }
   ];
 
   const notifications: Notification[] = [];

@@ -30,6 +30,7 @@ export interface LoginSession {
   username: string;
   pin: string;
   verified: boolean;
+  intent: 'login' | 'signup';
 }
 
 export interface Notification {
@@ -96,6 +97,9 @@ export interface SlowpostStore {
   requestGroupJoin(username: string, groupKey: string): Promise<{ requestId: string }>;
   requestFollow(follower: string, following: string): Promise<Follow>;
   getFollowersView(username: string): Promise<FollowersView>;
-  createLoginSession(email: string): Promise<LoginSession>;
+  createLoginSession(email: string, intent: 'login' | 'signup'): Promise<LoginSession>;
   verifyLogin(email: string, pin: string): Promise<LoginSession>;
+  forceVerifyLogin(email: string, intent?: 'login' | 'signup'): Promise<LoginSession>;
+  completeSignup(email: string, username: string, name: string): Promise<LoginSession>;
+  isUsernameAvailable(username: string): Promise<boolean>;
 }
