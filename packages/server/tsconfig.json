@@ -7,6 +7,10 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@slowpost/data": ["../data/src/index.ts"]
+    },
     "outDir": "dist",
     "declaration": true,
     "declarationMap": true
