@@ -7,6 +7,8 @@
     "packages/*"
   ],
   "scripts": {
+    "build": "yarn workspaces foreach --all --topological-dev run build",
+    "typecheck": "yarn workspaces foreach --all --topological-dev run typecheck",
     "test": "yarn workspace @slowpost/server test && yarn workspace @slowpost/client test",
     "dev": "mprocs",
     "deploy": "node scripts/deploy-aws.js"
