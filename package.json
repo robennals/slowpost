@@ -1,0 +1,13 @@
+{
+  "name": "slowpost",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Slowpost monorepo with server and client packages",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "yarn workspace @slowpost/server test && yarn workspace @slowpost/client test"
+  },
+  "license": "MIT"
+}
