@@ -9,6 +9,7 @@
   display: block;
   margin: var(--card-margin) auto;
   max-width: var(--card-max-width);
+  overflow: hidden;
   width: 100%;
 }
 
