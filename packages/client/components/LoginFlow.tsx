@@ -149,7 +149,11 @@ export function LoginFlow({ onComplete }: LoginFlowProps) {
       setStatusMessage('PIN skipped for development. Choose a username to finish signing in.');
       setStep('username');
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Unable to skip the PIN in development mode.');
+      if (error instanceof Error && /not found/i.test(error.message)) {
+        setErrorMessage('Skipping the PIN is only available when Slowpost is running locally.');
+      } else {
+        setErrorMessage(error instanceof Error ? error.message : 'Unable to skip the PIN in development mode.');
+      }
     } finally {
       setSkippingPin(false);
     }
