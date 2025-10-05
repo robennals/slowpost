@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import styles from './FollowersPanel.module.css';
 import type { FollowersView } from '../lib/data';
 
@@ -14,13 +13,7 @@ export function FollowersPanel({ followers }: FollowersPanelProps) {
         {followers.pendingFollowers.map((follower) => (
           <li key={follower.username}>
             <div className={styles.row}>
-              <Image
-                src={follower.photoUrl}
-                alt={follower.name}
-                className={styles.avatar}
-                width={52}
-                height={52}
-              />
+              <img src={follower.photoUrl} alt={follower.name} className={styles.avatar} />
               <div>
                 <strong>{follower.name}</strong>
                 <p>{follower.blurb}</p>
