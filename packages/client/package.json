@@ -9,7 +9,7 @@
     "lint": "next lint",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test": "vitest run"
+    "test": "vitest run --config vitest.config.ts"
   },
   "dependencies": {
     "next": "^14.2.3",
@@ -17,24 +17,27 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@storybook/addon-essentials": "^8.0.7",
-    "@storybook/addon-links": "^8.0.7",
-    "@storybook/blocks": "^8.0.7",
-    "@storybook/react": "^8.0.7",
-    "@storybook/react-vite": "^8.0.7",
-    "@storybook/test": "^8.0.7",
+    "@storybook/addon-links": "^9.1.10",
+    "@storybook/addon-vitest": "^9.1.10",
+    "@storybook/react": "^9.1.10",
+    "@storybook/react-vite": "^9.1.10",
+    "@testing-library/dom": "^9.3.4",
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^14.2.1",
     "@types/node": "^20.11.19",
     "@types/react": "^18.2.46",
     "@types/react-dom": "^18.2.18",
     "@vitejs/plugin-react": "^5.0.4",
+    "@vitest/browser": "^3.2.4",
+    "@vitest/runner": "^3.2.4",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.3",
+    "eslint-plugin-storybook": "^9.1.10",
     "jsdom": "^24.0.0",
-    "storybook": "^8.0.7",
+    "playwright": "^1.55.1",
+    "storybook": "^9.1.10",
     "typescript": "^5.3.3",
     "vite": "^5.4.10",
-    "vitest": "^1.6.1"
+    "vitest": "^3.2.4"
   }
 }

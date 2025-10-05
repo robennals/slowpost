@@ -1,4 +1,4 @@
-import type { Preview } from '@storybook/react';
+import type { Preview } from '@storybook/react-vite';
 import '../styles/globals.css';
 
 const preview: Preview = {
@@ -9,7 +9,8 @@ const preview: Preview = {
         date: /Date$/i
       }
     }
-  }
+  },
+  tags: ['test']
 };
 
 export default preview;

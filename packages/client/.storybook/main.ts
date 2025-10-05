@@ -1,20 +1,25 @@
+import { createRequire } from "node:module";
 import type { StorybookConfig } from '@storybook/react-vite';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { mergeConfig } from 'vite';
 
+const require = createRequire(import.meta.url);
+
 const storiesDir = dirname(fileURLToPath(import.meta.url));
 
 const config: StorybookConfig = {
   stories: ['../components/**/*.stories.@(ts|tsx)'],
-  addons: ['@storybook/addon-links', '@storybook/addon-essentials'],
+  addons: [
+    getAbsolutePath("@storybook/addon-links"),
+    getAbsolutePath("@storybook/addon-vitest")
+  ],
+
   framework: {
-    name: '@storybook/react-vite',
+    name: getAbsolutePath("@storybook/react-vite"),
     options: {}
   },
-  docs: {
-    autodocs: 'tag'
-  },
+
   async viteFinal(config) {
     return mergeConfig(config, {
       esbuild: {
@@ -30,3 +35,7 @@ const config: StorybookConfig = {
 };
 
 export default config;
+
+function getAbsolutePath(value: string): any {
+  return dirname(require.resolve(join(value, "package.json")));
+}

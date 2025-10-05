@@ -7,10 +7,10 @@
 - Tooling sits at the repo root (`package.json`, `mprocs.yaml`, `yarn.lock`). Use Yarn workspaces; run shared commands from the root unless noted.
 
 ## Build, Test, and Development Commands
-- `yarn install`: Restore workspace dependencies.
+- `yarn install`: Restore workspace dependencies; afterwards run `npx playwright install chromium` once to download the browser runtime Storybook tests rely on.
 - `yarn dev`: Launches `mprocs` (Next dev server, `tsc --watch`, API watcher). If a port is busy, pass `env PORT=40xx` when starting or stop the conflicting process.
 - `yarn workspace @slowpost/client build`: Production build; fails on lint or type errors—run before pushing.
-- `yarn workspace @slowpost/client test`: Runs client Vitest suites (re-uses Storybook stories).
+- `yarn workspace @slowpost/client test`: Executes Storybook’s Vitest addon in Playwright/Chromium, rendering every story and failing on UI regressions.
 - `yarn workspace @slowpost/server test`: Tests the Express API datastore logic.
 - `yarn workspace @slowpost/client storybook`: Start Storybook (port auto-increments). Verify key stories render after UI changes.
 
@@ -22,8 +22,9 @@
 
 ## Testing Guidelines
 - Run **all** of the following before submitting: `yarn workspace @slowpost/client test`, `yarn workspace @slowpost/client build`, `yarn workspace @slowpost/client storybook` (ensure the UI loads), and `yarn workspace @slowpost/server test` for API changes.
-- Test files live under `__tests__/` (client) and `tests/` (server). Name them `*.test.ts(x)`.
-- Add or update tests alongside new features; prefer scenario-driven tests that mirror Storybook stories.
+- Storybook stories are the source of truth for client tests; keep them deterministic, tagged for testing (global preview applies `['test']`), and update them alongside component changes.
+- Server Vitest files stay in `packages/server/tests/`; name new files `*.test.ts`.
+- When a new dependency renders Markdown/MDX (e.g., docs content) add it to Vite’s `optimizeDeps.include` if tests start re-optimizing mid-run.
 
 ## Commit & Pull Request Guidelines
 - Commit messages follow short imperative summaries (e.g., `Allow img usage in lint config`).
