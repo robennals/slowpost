@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { LoginFlow } from './LoginFlow';
+import { LoginFlow } from '../LoginFlow';
 
 const meta: Meta<typeof LoginFlow> = {
   title: 'Auth/LoginFlow',

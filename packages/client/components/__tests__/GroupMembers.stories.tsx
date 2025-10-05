@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { GroupMembers } from './GroupMembers';
+import { GroupMembers } from '../GroupMembers';
 import { sampleGroup } from '../../lib/data';
 
 const meta: Meta<typeof GroupMembers> = {
