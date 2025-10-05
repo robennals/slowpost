@@ -9,5 +9,8 @@
   "scripts": {
     "test": "yarn workspace @slowpost/server test && yarn workspace @slowpost/client test"
   },
+  "devDependencies": {
+    "vitest": "^1.6.1"
+  },
   "license": "MIT"
 }
