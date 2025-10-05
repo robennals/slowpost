@@ -1,9 +1,11 @@
 import Head from 'next/head';
 import Link from 'next/link';
 import { FollowerList } from '../components/FollowerList';
-import { sampleHome, sampleProfile } from '../lib/data';
+import { useAuth } from '../lib/auth';
+import { sampleHome } from '../lib/data';
 
-export default function HomePage({ isLoggedIn }: { isLoggedIn: boolean }) {
+export default function HomePage() {
+  const { isLoggedIn } = useAuth();
   return (
     <>
       <Head>
@@ -29,13 +31,4 @@ export default function HomePage({ isLoggedIn }: { isLoggedIn: boolean }) {
       )}
     </>
   );
-}
-
-export function getStaticProps() {
-  return {
-    props: {
-      isLoggedIn: true,
-      viewer: { username: sampleProfile.username }
-    }
-  };
 }

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { Profile } from '../lib/data';
 import { Avatar, Button, Card, HorizBox, Pad, PadBox, Text, TileGrid, VertBox } from '../style';
 
@@ -13,7 +14,9 @@ export function ProfileSummary({ profile }: ProfileSummaryProps) {
           <HorizBox gap="lg" align="center">
             <Avatar src={profile.photoUrl} alt={profile.name} size={96} tone="bold" />
             <VertBox gap="sm">
-              <h1>{profile.name}</h1>
+              <h1>
+                <Link href={`/${profile.username}`}>{profile.name}</Link>
+              </h1>
               <Text as="p" tone="muted" size="sm">
                 @{profile.username}
               </Text>
@@ -25,8 +28,8 @@ export function ProfileSummary({ profile }: ProfileSummaryProps) {
               <h2>Public groups</h2>
               <VertBox as="ul" gap="xs" list>
                 {profile.publicGroups.map((group) => (
-                  <Text as="li" size="sm" key={group}>
-                    {group}
+                  <Text as="li" size="sm" key={group.key}>
+                    <Link href={`/g/${group.key}`}>{group.name}</Link>
                   </Text>
                 ))}
               </VertBox>
@@ -36,8 +39,8 @@ export function ProfileSummary({ profile }: ProfileSummaryProps) {
               {profile.sharedPrivateGroups.length > 0 ? (
                 <VertBox as="ul" gap="xs" list>
                   {profile.sharedPrivateGroups.map((group) => (
-                    <Text as="li" size="sm" key={group}>
-                      {group}
+                    <Text as="li" size="sm" key={group.key}>
+                      <Link href={`/g/${group.key}`}>{group.name}</Link>
                     </Text>
                   ))}
                 </VertBox>

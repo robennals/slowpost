@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { FollowersView } from '../lib/data';
 import { Avatar, Button, Card, HorizBox, PadBox, Text, VertBox } from '../style';
 
@@ -17,7 +18,7 @@ export function FollowersPanel({ followers }: FollowersPanelProps) {
                 <HorizBox gap="md" align="center">
                   <Avatar src={follower.photoUrl} alt={follower.name} size={52} tone="plain" />
                   <VertBox gap="xs">
-                    <Text as="strong" weight="semibold">
+                    <Text as={Link} href={`/${follower.username}`} weight="semibold">
                       {follower.name}
                     </Text>
                     <Text as="p" size="sm">
@@ -27,7 +28,9 @@ export function FollowersPanel({ followers }: FollowersPanelProps) {
                 </HorizBox>
                 <HorizBox gap="sm">
                   <Button tone="accent">Approve</Button>
-                  <Button tone="muted">View profile</Button>
+                  <Button as={Link} tone="muted" href={`/${follower.username}`}>
+                    View profile
+                  </Button>
                 </HorizBox>
               </VertBox>
             ))}
