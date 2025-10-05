@@ -1,0 +1,15 @@
+procs:
+  client:
+    cwd: packages/client
+    cmd: ["yarn", "dev"]
+  server-types:
+    cwd: packages/server
+    cmd: ["yarn", "tsc", "--watch", "--preserveWatchOutput"]
+  server-run:
+    cwd: packages/server
+    cmd:
+      [
+        "bash",
+        "-lc",
+        "while [ ! -f dist/src/devServer.js ]; do sleep 0.2; done; node --watch dist/src/devServer.js"
+      ]

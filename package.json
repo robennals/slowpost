@@ -7,7 +7,8 @@
     "packages/*"
   ],
   "scripts": {
-    "test": "yarn workspace @slowpost/server test && yarn workspace @slowpost/client test"
+    "test": "yarn workspace @slowpost/server test && yarn workspace @slowpost/client test",
+    "dev": "mprocs"
   },
   "devDependencies": {
     "vitest": "^1.6.1"
