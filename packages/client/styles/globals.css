@@ -1,0 +1,18 @@
+:root {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  background-color: #eef3fb;
+  color: #0b1f38;
+}
+
+a {
+  color: inherit;
+}
+
+main {
+  padding: 0 1rem 3rem;
+}

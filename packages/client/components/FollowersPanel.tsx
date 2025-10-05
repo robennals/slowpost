@@ -1,0 +1,35 @@
+import styles from './FollowersPanel.module.css';
+import type { FollowersView } from '../lib/data';
+
+type FollowersPanelProps = {
+  followers: FollowersView;
+};
+
+export function FollowersPanel({ followers }: FollowersPanelProps) {
+  return (
+    <section className={styles.panel}>
+      <h1>Follower requests</h1>
+      <ul>
+        {followers.pendingFollowers.map((follower) => (
+          <li key={follower.username}>
+            <div className={styles.row}>
+              <img src={follower.photoUrl} alt={follower.name} className={styles.avatar} />
+              <div>
+                <strong>{follower.name}</strong>
+                <p>{follower.blurb}</p>
+              </div>
+            </div>
+            <div className={styles.actions}>
+              <button type="button">Approve</button>
+              <button type="button" className={styles.secondary}>
+                View profile
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+export default FollowersPanel;
