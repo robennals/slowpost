@@ -373,7 +373,7 @@ export function createServer(dataStore: SlowpostStore = store) {
         const token = issueLoginToken({ username: session.username, email: session.email });
         setLoginCookie(res, token);
       }
-      res.json({ username: session.username });
+      res.json({ username: session.username, intent: session.intent });
     } catch (error) {
       res.status(400).json({ message: (error as Error).message });
     }
