@@ -5,5 +5,13 @@
   ],
   "rules": {
     "@next/next/no-img-element": "off"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["**/*.stories.@(ts|tsx)"],
+      "rules": {
+        "storybook/no-renderer-packages": "off"
+      }
+    }
+  ]
 }

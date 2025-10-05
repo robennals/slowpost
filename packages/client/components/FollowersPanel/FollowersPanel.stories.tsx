@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import FollowersPanel from './FollowersPanel';
-import { sampleFollowers } from '../lib/data';
+import { sampleFollowers } from '../../lib/data';
 
 const meta: Meta<typeof FollowersPanel> = {
   title: 'Followers/FollowersPanel',
