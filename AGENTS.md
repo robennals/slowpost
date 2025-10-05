@@ -4,7 +4,7 @@
 - `packages/client/`: Next.js app with React components, Storybook stories, and Vitest suites.
 - `packages/server/`: Express API in TypeScript; compiled output lives in `packages/server/dist/`.
 - `docs/`: Product overview and UX reference; sync UI or API changes with these notes.
-- Tooling sits at the repo root (`package.json`, `mprocs.yaml`, `yarn.lock`). Use Yarn workspaces; run shared commands from the root unless noted.
+- Tooling sits at the repo root (`package.json`, `mprocs.yaml`, `yarn.lock`). Use Yarn workspaces; run shared commands from the root unless noted. Yarn is pinned to **1.22.22** via the `packageManager` field; run commands with `corepack yarn ...` or a local Yarn Classic install so the expected release is used.
 
 ## Build, Test, and Development Commands
 - `yarn install`: Restore workspace dependencies.

@@ -3,8 +3,101 @@ import { afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import React from 'react';
 
+type LoginState = {
+  username: string;
+  email: string;
+} | null;
+
+let loginState: LoginState = null;
+const knownLoginEmails = new Set(['ada@example.com', 'grace@example.com']);
+
+const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+  const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+  const method = init?.method?.toUpperCase() ?? 'GET';
+
+  if (url.endsWith('/api/login/request') && method === 'POST') {
+    return new Response(JSON.stringify({ ok: true, message: 'PIN generated for testing.' }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
+  if (url.endsWith('/api/login/verify') && method === 'POST') {
+    const body = typeof init?.body === 'string' ? JSON.parse(init.body) : {};
+    const email: string = body.email ?? 'user@example.com';
+    const username: string = body.username ?? email.split('@')[0] ?? 'user';
+    loginState = { email, username };
+    return new Response(JSON.stringify({ username }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
+  if (url.endsWith('/api/login/dev-skip') && method === 'POST') {
+    const body = typeof init?.body === 'string' ? JSON.parse(init.body) : {};
+    const email: string = body.email ?? 'dev@example.com';
+    const requestedIntent = (body.intent as 'login' | 'signup' | undefined) ?? 'login';
+    const normalizedEmail = email.toLowerCase();
+    const username: string = email.split('@')[0] ?? 'dev';
+    const intent: 'login' | 'signup' =
+      requestedIntent === 'signup'
+        ? 'signup'
+        : knownLoginEmails.has(normalizedEmail)
+        ? 'login'
+        : 'signup';
+    loginState = { email, username };
+    return new Response(JSON.stringify({ username, intent }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
+  if (url.endsWith('/api/signup/complete') && method === 'POST') {
+    const body = typeof init?.body === 'string' ? JSON.parse(init.body) : {};
+    const email: string = body.email ?? 'user@example.com';
+    const username: string = body.username ?? email.split('@')[0] ?? 'user';
+    loginState = { email, username };
+    knownLoginEmails.add(email.toLowerCase());
+    return new Response(JSON.stringify({ username }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
+  if (url.endsWith('/api/login/session')) {
+    return new Response(
+      JSON.stringify(
+        loginState
+          ? { isLoggedIn: true, username: loginState.username }
+          : { isLoggedIn: false }
+      ),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+  }
+
+  if (url.includes('/api/profile/') && url.endsWith('/photo') && method === 'POST') {
+    const body = typeof init?.body === 'string' ? JSON.parse(init.body) : {};
+    return new Response(
+      JSON.stringify({ photoUrl: typeof body?.photoData === 'string' ? body.photoData : '' }),
+      {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+  }
+
+  return new Response('Not Found', { status: 404 });
+});
+
+vi.stubGlobal('fetch', fetchMock);
+
 afterEach(() => {
   cleanup();
+  fetchMock.mockClear();
+  loginState = null;
 });
 
 vi.mock('next/link', () => {
@@ -16,35 +109,3 @@ vi.mock('next/link', () => {
     )
   };
 });
-
-const jsonResponse = (body: unknown, init?: ResponseInit) =>
-  new Response(JSON.stringify(body), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-    ...init
-  });
-
-vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-  const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
-
-  if (url.includes('/api/login/request')) {
-    return jsonResponse({ message: 'PIN generated. Check the API server logs for the code.' });
-  }
-
-  if (url.includes('/api/login/verify')) {
-    const body = init?.body ? JSON.parse(String(init.body)) : {};
-    return jsonResponse({ username: body?.email ? body.email.split('@')[0] ?? 'user' : 'user' });
-  }
-
-  if (url.includes('/api/login/dev-skip')) {
-    const body = init?.body ? JSON.parse(String(init.body)) : {};
-    return jsonResponse({ username: body?.email ? body.email.split('@')[0] ?? 'user' : 'user' });
-  }
-
-  if (url.includes('/api/profile/') && url.endsWith('/photo')) {
-    const body = init?.body ? JSON.parse(String(init.body)) : {};
-    return jsonResponse({ photoUrl: body?.photoData ?? '' });
-  }
-
-  return jsonResponse({}, { status: 404 });
-}));

@@ -1,7 +1,9 @@
 import { FormEvent, useState } from 'react';
 import { Button, Card, HorizBox, PadBox, Text, TextInput, VertBox } from '../style';
 
-type Step = 'email' | 'pin' | 'username';
+type Step = 'email' | 'status' | 'pin' | 'signupDetails';
+type StatusKind = 'success' | 'error' | null;
+type Mode = 'login' | 'signup';
 
 type LoginFlowProps = {
   onComplete?: (username: string) => void;
@@ -11,14 +13,20 @@ const isDevEnvironment = process.env.NODE_ENV !== 'production';
 
 export function LoginFlow({ onComplete }: LoginFlowProps) {
   const [step, setStep] = useState<Step>('email');
+  const [mode, setMode] = useState<Mode>('login');
+  const [intent, setIntent] = useState<Mode | null>(null);
   const [email, setEmail] = useState('');
   const [pin, setPin] = useState('');
   const [username, setUsername] = useState('');
+  const [name, setName] = useState('');
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [requestingPin, setRequestingPin] = useState(false);
   const [verifyingPin, setVerifyingPin] = useState(false);
   const [skippingPin, setSkippingPin] = useState(false);
+  const [creatingAccount, setCreatingAccount] = useState(false);
+  const [statusKind, setStatusKind] = useState<StatusKind>(null);
+  const [showSignupHint, setShowSignupHint] = useState(false);
 
   const readError = async (response: Response): Promise<never> => {
     try {
@@ -32,6 +40,26 @@ export function LoginFlow({ onComplete }: LoginFlowProps) {
     throw new Error(response.statusText || 'Request failed');
   };
 
+  const resetStatus = () => {
+    setStatusKind(null);
+    setStatusMessage(null);
+    setErrorMessage(null);
+    setShowSignupHint(false);
+  };
+
+  const switchMode = (nextMode: Mode) => {
+    if (mode === nextMode) {
+      return;
+    }
+    setMode(nextMode);
+    setStep('email');
+    setIntent(null);
+    setPin('');
+    setUsername('');
+    setName('');
+    resetStatus();
+  };
+
   const submitEmail = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!email) {
@@ -39,14 +67,22 @@ export function LoginFlow({ onComplete }: LoginFlowProps) {
     }
     setErrorMessage(null);
     setStatusMessage(null);
+    setStatusKind(null);
+    setShowSignupHint(false);
+    setIntent(null);
     setRequestingPin(true);
     try {
-      const response = await fetch('/api/login/request', {
+      const endpoint = mode === 'login' ? '/api/login/request' : '/api/signup/request';
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ email })
       });
       if (!response.ok) {
+        if (mode === 'login' && response.status === 404) {
+          setShowSignupHint(true);
+        }
         await readError(response);
       }
       let message: string | undefined;
@@ -58,13 +94,24 @@ export function LoginFlow({ onComplete }: LoginFlowProps) {
       }
       setStatusMessage(
         message ??
-          (isDevEnvironment
+          (mode === 'login'
+            ? isDevEnvironment
+              ? 'PIN generated. Check the API server logs for the code.'
+              : 'PIN sent. Please check your email.'
+            : isDevEnvironment
             ? 'PIN generated. Check the API server logs for the code.'
-            : 'PIN sent. Please check your email.')
+            : 'PIN sent. Check your email to continue signing up.')
       );
-      setStep('pin');
+      setStatusKind('success');
+      setStep('status');
+      setIntent(mode);
+      setUsername('');
+      setName('');
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Unable to request a login PIN.');
+      setErrorMessage(error instanceof Error ? error.message : 'Unable to send a PIN.');
+      setStatusMessage(null);
+      setStatusKind('error');
+      setStep('status');
     } finally {
       setRequestingPin(false);
     }
@@ -72,16 +119,19 @@ export function LoginFlow({ onComplete }: LoginFlowProps) {
 
   const submitPin = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!pin) {
+    if (!pin || !intent) {
       return;
     }
     setErrorMessage(null);
     setStatusMessage(null);
+    setStatusKind(null);
     setVerifyingPin(true);
     try {
-      const response = await fetch('/api/login/verify', {
+      const endpoint = intent === 'login' ? '/api/login/verify' : '/api/signup/verify';
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ email, pin })
       });
       if (!response.ok) {
@@ -96,10 +146,15 @@ export function LoginFlow({ onComplete }: LoginFlowProps) {
       } catch {
         // ignore parsing errors and fall back to the email prefix
       }
-      setUsername(suggestedUsername);
       setPin('');
-      setStatusMessage('PIN verified! Choose a username to finish signing in.');
-      setStep('username');
+      if (intent === 'login') {
+        onComplete?.(suggestedUsername);
+        return;
+      }
+      setUsername(suggestedUsername);
+      setStatusMessage('PIN verified! Choose a username and add your name to finish creating your account.');
+      setStatusKind('success');
+      setStep('signupDetails');
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : 'Unable to verify the PIN.');
     } finally {
@@ -107,55 +162,113 @@ export function LoginFlow({ onComplete }: LoginFlowProps) {
     }
   };
 
-  const skipPin = async () => {
-    if (!isDevEnvironment || !email) {
+  const skipPin = async (overrideIntent?: Mode) => {
+    const activeIntent = overrideIntent ?? intent;
+    if (!isDevEnvironment || !email || !activeIntent) {
       return;
     }
     setErrorMessage(null);
     setStatusMessage(null);
+    setStatusKind(null);
     setSkippingPin(true);
     try {
       const response = await fetch('/api/login/dev-skip', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
+        credentials: 'include',
+        body: JSON.stringify({ email, intent: activeIntent })
       });
       if (!response.ok) {
         await readError(response);
       }
       let suggestedUsername = email.split('@')[0] ?? '';
+      let sessionIntent: Mode = activeIntent;
       try {
-        const payload = (await response.json()) as { username?: string };
+        const payload = (await response.json()) as { username?: string; intent?: Mode };
         if (payload?.username) {
           suggestedUsername = payload.username;
+        }
+        if (payload?.intent === 'login' || payload?.intent === 'signup') {
+          sessionIntent = payload.intent;
         }
       } catch {
         // ignore parsing errors and fall back to the email prefix
       }
-      setUsername(suggestedUsername);
       setPin('');
-      setStatusMessage('PIN skipped for development. Choose a username to finish signing in.');
-      setStep('username');
+      setIntent(sessionIntent);
+      if (sessionIntent === 'login') {
+        onComplete?.(suggestedUsername);
+        return;
+      }
+      setUsername(suggestedUsername);
+      setStatusMessage('PIN skipped for development. Choose a username and add your name to finish creating your account.');
+      setStatusKind('success');
+      setStep('signupDetails');
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Unable to skip the PIN in development mode.');
+      if (error instanceof Error && /not found/i.test(error.message)) {
+        setErrorMessage('Skipping the PIN is only available when Slowpost is running locally.');
+      } else {
+        setErrorMessage(error instanceof Error ? error.message : 'Unable to skip the PIN in development mode.');
+      }
     } finally {
       setSkippingPin(false);
     }
   };
 
-  const submitUsername = (event: FormEvent<HTMLFormElement>) => {
+  const submitSignupDetails = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (username) {
-      onComplete?.(username);
+    if (!username || !name || !email) {
+      return;
+    }
+    setErrorMessage(null);
+    setStatusMessage(null);
+    setStatusKind(null);
+    setCreatingAccount(true);
+    try {
+      const response = await fetch('/api/signup/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, username, name })
+      });
+      if (!response.ok) {
+        await readError(response);
+      }
+      let finalUsername = username;
+      try {
+        const payload = (await response.json()) as { username?: string };
+        if (payload?.username) {
+          finalUsername = payload.username;
+        }
+      } catch {
+        finalUsername = username;
+      }
+      onComplete?.(finalUsername);
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Unable to create your account.');
+    } finally {
+      setCreatingAccount(false);
     }
   };
+
+  const profileUrlPreview = username ? `slowpost.org/${username}` : 'slowpost.org/your-name';
 
   return (
     <Card tone="outline" maxWidth={420} margin="xl">
       <PadBox vert="xl" horiz="xl">
         <VertBox gap="lg">
-          <h1>Log in to Slowpost</h1>
-          {(errorMessage || statusMessage) && (
+          <HorizBox spread align="center">
+            <h1>{mode === 'login' ? 'Log in to Slowpost' : 'Sign up for Slowpost'}</h1>
+            <Button
+              shape="pill"
+              tone="muted"
+              type="button"
+              onClick={() => switchMode(mode === 'login' ? 'signup' : 'login')}
+            >
+              {mode === 'login' ? 'Sign up' : 'Log in'}
+            </Button>
+          </HorizBox>
+          {step !== 'status' && (errorMessage || statusMessage) && (
             <VertBox gap="xs">
               {errorMessage && (
                 <Text size="sm" tone="copper">
@@ -182,9 +295,69 @@ export function LoginFlow({ onComplete }: LoginFlowProps) {
                   required
                 />
               </VertBox>
-              <HorizBox justify="end">
+              <HorizBox justify="end" gap="sm">
+                {isDevEnvironment && (
+                  <Button
+                    tone="muted"
+                    shape="pill"
+                    type="button"
+                    onClick={() => {
+                      if (!email || requestingPin) {
+                        return;
+                      }
+                      skipPin(mode);
+                    }}
+                    disabled={!email || skippingPin || requestingPin}
+                  >
+                    {skippingPin ? 'Skipping…' : 'Skip PIN'}
+                  </Button>
+                )}
                 <Button shape="pill" type="submit" disabled={requestingPin}>
-                  {requestingPin ? 'Sending…' : 'Send me a PIN'}
+                  {requestingPin ? 'Sending…' : mode === 'login' ? 'Send me a PIN' : 'Send signup PIN'}
+                </Button>
+              </HorizBox>
+            </VertBox>
+          )}
+          {step === 'status' && (
+            <VertBox gap="md">
+              {statusKind === 'success' ? (
+                <Text size="sm" tone="muted">
+                  {statusMessage ??
+                    (intent === 'signup'
+                      ? isDevEnvironment
+                        ? 'PIN generated. Check the API server logs for the code.'
+                        : 'PIN sent. Check your email to continue signing up.'
+                      : isDevEnvironment
+                      ? 'PIN generated. Check the API server logs for the code.'
+                      : 'PIN sent. Please check your email.')}
+                </Text>
+              ) : (
+                <VertBox gap="sm">
+                  <Text size="sm" tone="copper">
+                    {errorMessage ?? 'Unable to request a PIN. Please try again.'}
+                  </Text>
+                  {showSignupHint && (
+                    <Button shape="pill" type="button" onClick={() => switchMode('signup')}>
+                      Sign up instead
+                    </Button>
+                  )}
+                </VertBox>
+              )}
+              <HorizBox justify="end">
+                <Button
+                  shape="pill"
+                  type="button"
+                  onClick={() => {
+                    if (statusKind === 'success') {
+                      resetStatus();
+                      setStep('pin');
+                    } else {
+                      resetStatus();
+                      setStep('email');
+                    }
+                  }}
+                >
+                  {statusKind === 'success' ? 'Enter PIN' : 'Try again'}
                 </Button>
               </HorizBox>
             </VertBox>
@@ -207,7 +380,7 @@ export function LoginFlow({ onComplete }: LoginFlowProps) {
                     tone="muted"
                     shape="pill"
                     type="button"
-                    onClick={skipPin}
+                    onClick={() => skipPin()}
                     disabled={skippingPin || verifyingPin}
                   >
                     {skippingPin ? 'Skipping…' : 'Skip PIN'}
@@ -219,21 +392,34 @@ export function LoginFlow({ onComplete }: LoginFlowProps) {
               </HorizBox>
             </VertBox>
           )}
-          {step === 'username' && (
-            <VertBox as="form" gap="md" onSubmit={submitUsername}>
+          {step === 'signupDetails' && (
+            <VertBox as="form" gap="md" onSubmit={submitSignupDetails}>
+              <VertBox gap="sm">
+                <VertBox as="label" gap="sm">
+                  <Text as="span" weight="semibold" size="sm">
+                    Choose a username
+                  </Text>
+                  <TextInput
+                    value={username}
+                    onChange={(event) =>
+                      setUsername(event.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))
+                    }
+                    required
+                  />
+                </VertBox>
+                <Text size="sm" tone="muted">
+                  Your profile URL will be {profileUrlPreview}
+                </Text>
+              </VertBox>
               <VertBox as="label" gap="sm">
                 <Text as="span" weight="semibold" size="sm">
-                  Choose a username
+                  Your name
                 </Text>
-                <TextInput
-                  value={username}
-                  onChange={(event) => setUsername(event.target.value)}
-                  required
-                />
+                <TextInput value={name} onChange={(event) => setName(event.target.value)} required />
               </VertBox>
               <HorizBox justify="end">
-                <Button shape="pill" type="submit">
-                  Finish
+                <Button shape="pill" type="submit" disabled={creatingAccount}>
+                  {creatingAccount ? 'Creating…' : 'Create account'}
                 </Button>
               </HorizBox>
             </VertBox>

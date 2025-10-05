@@ -7,11 +7,16 @@
     "packages/*"
   ],
   "scripts": {
+    "build": "yarn workspaces foreach --all --topological-dev run build",
+    "typecheck": "yarn workspaces foreach --all --topological-dev run typecheck",
     "test": "yarn workspace @slowpost/server test && yarn workspace @slowpost/client test",
-    "dev": "mprocs"
+    "lint": "yarn workspace @slowpost/server lint && yarn workspace @slowpost/client lint",
+    "dev": "mprocs",
+    "deploy": "node scripts/deploy-aws.js"
   },
   "devDependencies": {
     "vitest": "^1.6.1"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "packageManager": "yarn@1.22.22"
 }

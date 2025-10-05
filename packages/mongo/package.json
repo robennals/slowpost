@@ -1,0 +1,24 @@
+{
+  "name": "@slowpost/mongo",
+  "version": "0.1.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "prebuild": "yarn workspace @slowpost/server build",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "dev:mongo": "node dist/src/devMemory.js",
+    "dev:server": "node dist/src/runServer.js"
+  },
+  "dependencies": {
+    "@slowpost/data": "^0.1.0",
+    "@slowpost/server": "^0.1.0",
+    "mongodb": "^6.5.0",
+    "mongodb-memory-server": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "typescript": "^5.3.3"
+  }
+}

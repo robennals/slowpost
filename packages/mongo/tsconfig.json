@@ -1,19 +1,20 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "target": "ES2020",
+    "module": "ES2020",
+    "moduleResolution": "Node",
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@slowpost/data": ["../data/src/index.ts"]
+      "@slowpost/data": ["../data/src/index.ts"],
+      "@slowpost/server": ["../server/src/index.ts"]
     },
     "outDir": "dist",
     "declaration": true,
     "declarationMap": true
   },
-  "include": ["src/**/*", "tests/**/*"]
+  "include": ["src/**/*"]
 }
