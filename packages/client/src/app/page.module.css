@@ -1,0 +1,128 @@
+.container {
+  min-height: calc(100vh - 70px);
+  background: #f7fafc;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  font-size: 1.125rem;
+  color: #718096;
+}
+
+/* Logged out hero section */
+.hero {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem;
+  text-align: center;
+}
+
+.logoLarge {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #667eea;
+  margin-bottom: 1rem;
+}
+
+.tagline {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 1rem;
+}
+
+.description {
+  font-size: 1.125rem;
+  color: #4a5568;
+  line-height: 1.7;
+  margin-bottom: 2rem;
+}
+
+.ctaButton {
+  display: inline-block;
+  padding: 0.875rem 2rem;
+  background: #667eea;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1.125rem;
+  transition: all 0.2s;
+}
+
+.ctaButton:hover {
+  background: #5568d3;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+}
+
+/* Logged in content */
+.content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.welcome {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 2rem;
+}
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.section {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.sectionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0 0 1rem 0;
+}
+
+.viewAll {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: color 0.2s;
+}
+
+.viewAll:hover {
+  color: #5568d3;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #718096;
+}
+
+.emptyState p {
+  margin: 0.5rem 0;
+}
+
+.emptyHint {
+  font-size: 0.875rem;
+  color: #a0aec0;
+}

@@ -1,0 +1,75 @@
+.header {
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #667eea;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.logo:hover {
+  color: #5568d3;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.profileLink {
+  color: #4a5568;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.profileLink:hover {
+  color: #667eea;
+}
+
+.loginButton {
+  padding: 0.5rem 1rem;
+  background: #667eea;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.loginButton:hover {
+  background: #5568d3;
+  transform: translateY(-1px);
+}
+
+.logoutButton {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: #718096;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.logoutButton:hover {
+  background: #f7fafc;
+  border-color: #cbd5e0;
+  color: #4a5568;
+}

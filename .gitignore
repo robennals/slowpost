@@ -140,3 +140,10 @@ vite.config.ts.timestamp-*
 
 storybook-static
 packages/client/__generated_tests__/
+
+.claude
+
+# Database files
+data/
+*.db
+*.db-journal
