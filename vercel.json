@@ -1,7 +1,8 @@
 {
   "version": 2,
+  "buildCommand": "yarn workspace @slowpost/client build && mkdir -p dist && cp -R packages/client/.next dist/.next",
+  "outputDirectory": "dist",
   "builds": [
-    { "src": "packages/client/package.json", "use": "@vercel/next" },
     { "src": "api/**/*.ts", "use": "@vercel/node" }
   ],
   "routes": [
