@@ -31,11 +31,89 @@
   margin-bottom: 2rem;
 }
 
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
 .sectionTitle {
   font-size: 1.25rem;
   font-weight: 600;
   color: #2d3748;
-  margin: 0 0 1rem 0;
+  margin: 0;
+}
+
+.controls {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.select {
+  padding: 0.5rem 1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.emailListSection {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f7fafc;
+  border-radius: 8px;
+}
+
+.emailListTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0 0 0.75rem 0;
+}
+
+.emailListTextarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 0.875rem;
+  background: white;
+  resize: vertical;
+  margin-bottom: 0.75rem;
+}
+
+.emailListTextarea:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.copyButton {
+  padding: 0.5rem 1rem;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+}
+
+.copyButton:hover {
+  background: #5568d3;
+  transform: translateY(-1px);
 }
 
 .addForm {
@@ -127,6 +205,20 @@
 .subscriberSource {
   font-size: 0.75rem;
   color: #a0aec0;
+  font-style: italic;
+  margin-top: 0.25rem;
+}
+
+.subscriberLink {
+  text-decoration: none;
+  color: inherit;
+  flex: 1;
+  display: block;
+}
+
+.noAccountNotice {
+  font-size: 0.75rem;
+  color: #e53e3e;
   font-style: italic;
   margin-top: 0.25rem;
 }

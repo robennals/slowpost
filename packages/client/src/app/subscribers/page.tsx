@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getSubscribers, updateSubscriber, getProfile, addSubscriberByEmail } from '@/lib/api';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import styles from './subscribers.module.css';
 
 interface Subscriber {
@@ -12,10 +13,13 @@ interface Subscriber {
   isClose: boolean;
   addedBy?: string;
   confirmed?: boolean;
+  timestamp?: string;
 }
 
 interface SubscriberWithProfile extends Subscriber {
   fullName?: string;
+  email?: string;
+  hasAccount?: boolean; // Whether they have created a full account
 }
 
 export default function SubscribersPage() {
@@ -26,6 +30,8 @@ export default function SubscribersPage() {
   const [addingEmail, setAddingEmail] = useState('');
   const [addingName, setAddingName] = useState('');
   const [adding, setAdding] = useState(false);
+  const [sortBy, setSortBy] = useState<'recent' | 'alphabetical'>('recent');
+  const [emailFilter, setEmailFilter] = useState<'all' | 'close' | 'non-close'>('all');
 
   useEffect(() => {
     if (!user) {
@@ -48,6 +54,7 @@ export default function SubscribersPage() {
         return {
           ...subscriber,
           fullName: profile?.fullName || subscriber.subscriberUsername,
+          hasAccount: profile?.hasAccount !== false, // Use the hasAccount field from profile
         };
       })
     );
@@ -91,6 +98,42 @@ export default function SubscribersPage() {
     }
   };
 
+  // Sort and filter subscribers
+  const sortedAndFilteredSubscribers = subscribers
+    .filter(sub => {
+      if (emailFilter === 'close') return sub.isClose;
+      if (emailFilter === 'non-close') return !sub.isClose;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'alphabetical') {
+        return (a.fullName || a.subscriberUsername).localeCompare(b.fullName || b.subscriberUsername);
+      } else {
+        // Sort by timestamp (recent first)
+        const aTime = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+        const bTime = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+        return bTime - aTime;
+      }
+    });
+
+  // Generate email list text
+  const emailListText = sortedAndFilteredSubscribers
+    .map(sub => {
+      const name = sub.fullName || sub.subscriberUsername;
+      const email = sub.email || `${sub.subscriberUsername}@slowpost.local`;
+      return `${name} <${email}>`;
+    })
+    .join('\n');
+
+  const handleCopyEmailList = async () => {
+    try {
+      await navigator.clipboard.writeText(emailListText);
+      alert('Email list copied to clipboard!');
+    } catch (error) {
+      alert('Failed to copy to clipboard');
+    }
+  };
+
   if (!user) return null;
 
   if (loading) {
@@ -131,9 +174,30 @@ export default function SubscribersPage() {
         </div>
 
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>
-            {subscribers.length} {subscribers.length === 1 ? 'Subscriber' : 'Subscribers'}
-          </h2>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>
+              {subscribers.length} {subscribers.length === 1 ? 'Subscriber' : 'Subscribers'}
+            </h2>
+            <div className={styles.controls}>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as 'recent' | 'alphabetical')}
+                className={styles.select}
+              >
+                <option value="recent">Recently Joined</option>
+                <option value="alphabetical">Alphabetical</option>
+              </select>
+              <select
+                value={emailFilter}
+                onChange={(e) => setEmailFilter(e.target.value as 'all' | 'close' | 'non-close')}
+                className={styles.select}
+              >
+                <option value="all">All Subscribers</option>
+                <option value="close">Close Friends</option>
+                <option value="non-close">Non-Close Friends</option>
+              </select>
+            </div>
+          </div>
 
           {subscribers.length === 0 ? (
             <div className={styles.emptyState}>
@@ -143,23 +207,52 @@ export default function SubscribersPage() {
               </p>
             </div>
           ) : (
-            <div className={styles.subscriberList}>
-              {subscribers.map((subscriber) => (
+            <>
+              <div className={styles.emailListSection}>
+                <h3 className={styles.emailListTitle}>Email List</h3>
+                <textarea
+                  className={styles.emailListTextarea}
+                  value={emailListText}
+                  readOnly
+                  rows={Math.min(sortedAndFilteredSubscribers.length + 1, 10)}
+                />
+                <button onClick={handleCopyEmailList} className={styles.copyButton}>
+                  Copy to Clipboard
+                </button>
+              </div>
+
+              <div className={styles.subscriberList}>
+                {sortedAndFilteredSubscribers.map((subscriber) => (
                 <div key={subscriber.subscriberUsername} className={styles.subscriberCard}>
-                  <div className={styles.subscriberInfo}>
-                    <div className={styles.subscriberName}>{subscriber.fullName}</div>
-                    <div className={styles.subscriberUsername}>@{subscriber.subscriberUsername}</div>
-                    {subscriber.addedBy === user?.username && (
-                      <div className={styles.subscriberSource}>
-                        {subscriber.confirmed === false ? 'Added by you (not confirmed)' : 'Added by you'}
+                  {subscriber.hasAccount ? (
+                    <Link href={`/${subscriber.subscriberUsername}`} className={styles.subscriberLink}>
+                      <div className={styles.subscriberInfo}>
+                        <div className={styles.subscriberName}>{subscriber.fullName}</div>
+                        <div className={styles.subscriberUsername}>@{subscriber.subscriberUsername}</div>
+                        {subscriber.addedBy === user?.username && (
+                          <div className={styles.subscriberSource}>
+                            {subscriber.confirmed === false ? 'Added by you (not confirmed)' : 'Added by you'}
+                          </div>
+                        )}
+                        {subscriber.addedBy === subscriber.subscriberUsername && (
+                          <div className={styles.subscriberSource}>
+                            They subscribed themselves
+                          </div>
+                        )}
                       </div>
-                    )}
-                    {subscriber.addedBy === subscriber.subscriberUsername && (
-                      <div className={styles.subscriberSource}>
-                        They subscribed themselves
-                      </div>
-                    )}
-                  </div>
+                    </Link>
+                  ) : (
+                    <div className={styles.subscriberInfo}>
+                      <div className={styles.subscriberName}>{subscriber.fullName}</div>
+                      <div className={styles.subscriberUsername}>@{subscriber.subscriberUsername}</div>
+                      <div className={styles.noAccountNotice}>No account created yet</div>
+                      {subscriber.addedBy === user?.username && (
+                        <div className={styles.subscriberSource}>
+                          {subscriber.confirmed === false ? 'Added by you (not confirmed)' : 'Added by you'}
+                        </div>
+                      )}
+                    </div>
+                  )}
                   <div className={styles.subscriberActions}>
                     <label className={styles.toggleLabel}>
                       <input
@@ -174,6 +267,7 @@ export default function SubscribersPage() {
                 </div>
               ))}
             </div>
+            </>
           )}
         </div>
       </div>

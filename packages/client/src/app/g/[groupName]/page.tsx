@@ -38,13 +38,25 @@ export default function GroupPage() {
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
   const [groupBio, setGroupBio] = useState('');
+  const [sortBy, setSortBy] = useState<'recent' | 'alphabetical'>('recent');
 
   const userMembership = members.find(m => m.username === user?.username);
   const isMember = !!userMembership && (userMembership.status === 'approved' || !userMembership.status); // Treat members without status as approved
   const isPending = !!userMembership && userMembership.status === 'pending';
   const isAdmin = userMembership?.isAdmin && (userMembership.status === 'approved' || !userMembership.status);
 
-  const approvedMembers = members.filter(m => m.status === 'approved' || !m.status); // Treat members without status as approved for backward compatibility
+  const approvedMembers = members
+    .filter(m => m.status === 'approved' || !m.status) // Treat members without status as approved for backward compatibility
+    .sort((a, b) => {
+      if (sortBy === 'alphabetical') {
+        return (a.fullName || a.username).localeCompare(b.fullName || b.username);
+      } else {
+        // Sort by timestamp (recent first)
+        const aTime = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+        const bTime = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+        return bTime - aTime;
+      }
+    });
   const pendingMembers = members.filter(m => m.status === 'pending');
 
   useEffect(() => {
@@ -205,9 +217,19 @@ export default function GroupPage() {
         )}
 
         <div className={styles.membersSection}>
-          <h2 className={styles.sectionTitle}>
-            Members ({approvedMembers.length})
-          </h2>
+          <div className={styles.sectionHeader}>
+            <h2 className={styles.sectionTitle}>
+              Members ({approvedMembers.length})
+            </h2>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as 'recent' | 'alphabetical')}
+              className={styles.select}
+            >
+              <option value="recent">Recently Joined</option>
+              <option value="alphabetical">Alphabetical</option>
+            </select>
+          </div>
 
           <div className={styles.memberList}>
             {approvedMembers.map((member) => (

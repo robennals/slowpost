@@ -12,6 +12,7 @@ interface Profile {
   fullName: string;
   bio: string;
   photoUrl?: string;
+  hasAccount?: boolean;
 }
 
 export default function ProfilePage() {
@@ -251,6 +252,10 @@ export default function ProfilePage() {
                   Cancel
                 </button>
               </div>
+            </div>
+          ) : profile?.hasAccount === false ? (
+            <div className={styles.noAccountMessage}>
+              {profile.fullName} has not created an account yet
             </div>
           ) : (
             <button

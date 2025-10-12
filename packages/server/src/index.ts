@@ -89,6 +89,12 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid or expired PIN' });
     }
 
+    // Mark that the user has logged in (has an account)
+    const authData = db.getDocument('auth', email);
+    if (authData && !authData.hasAccount) {
+      db.updateDocument('auth', email, { hasAccount: true });
+    }
+
     const session = await authService.createSession(email);
 
     res.cookie('auth_token', session.token, {
@@ -173,7 +179,12 @@ app.get('/api/profiles/:username', async (req, res) => {
       return res.status(404).json({ error: 'Profile not found' });
     }
 
-    res.json(profile);
+    // Check if user has logged in (hasAccount flag in auth data)
+    // Find the auth record by scanning for this username
+    const allAuth = db.getAllDocuments<any>('auth');
+    const authRecord = allAuth.find((auth: any) => auth.data.username === username);
+
+    res.json({ ...profile, hasAccount: authRecord?.data.hasAccount !== false });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -270,6 +281,7 @@ app.post('/api/subscribers/:username', requireAuth, async (req, res) => {
       isClose: false,
       addedBy: subscriberUsername, // Subscriber initiated this
       confirmed: true, // Self-subscriptions are auto-confirmed
+      timestamp: new Date().toISOString(),
     };
 
     db.addLink('subscriptions', username, subscriberUsername, subscription);
@@ -349,6 +361,7 @@ app.post('/api/subscribers/:username/add-by-email', requireAuth, async (req, res
       db.addDocument('auth', email, {
         email,
         username: subscriberUsername,
+        hasAccount: false, // They haven't logged in yet
       });
 
       // Create profile
@@ -366,6 +379,7 @@ app.post('/api/subscribers/:username/add-by-email', requireAuth, async (req, res
       isClose: false,
       addedBy: username, // The subscribedTo user added this person
       confirmed: false, // Not yet confirmed by subscriber
+      timestamp: new Date().toISOString(),
     };
 
     db.addLink('subscriptions', username, subscriberUsername, subscription);
@@ -542,6 +556,7 @@ app.post('/api/groups', requireAuth, async (req, res) => {
       groupBio: 'Creator',
       status: 'approved',
       isAdmin: true,
+      timestamp: new Date().toISOString(),
     };
 
     db.addLink('members', groupName, req.user.username, member);
@@ -576,6 +591,7 @@ app.post('/api/groups/:groupName/join', requireAuth, async (req, res) => {
       groupBio: groupBio || '',
       status: 'pending',
       isAdmin: false,
+      timestamp: new Date().toISOString(),
     };
 
     db.addLink('members', groupName, req.user.username, member);

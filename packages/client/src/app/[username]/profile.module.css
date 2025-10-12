@@ -259,6 +259,17 @@
   cursor: not-allowed;
 }
 
+.noAccountMessage {
+  width: 100%;
+  padding: 1rem;
+  background: #fef3c7;
+  border: 2px solid #f59e0b;
+  border-radius: 8px;
+  text-align: center;
+  color: #92400e;
+  font-weight: 600;
+}
+
 .sections {
   display: flex;
   flex-direction: column;

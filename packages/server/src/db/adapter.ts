@@ -10,6 +10,7 @@ export interface DbAdapter {
   addLink<T>(collection: string, parentKey: string, childKey: string, data: T): void;
   deleteLink(collection: string, parentKey: string, childKey: string): void;
   updateLink<T>(collection: string, parentKey: string, childKey: string, update: Partial<T>): void;
+  getAllDocuments<T>(collection: string): Array<{key: string, data: T}>;
 }
 
 export class SQLiteAdapter implements DbAdapter {
@@ -103,6 +104,12 @@ export class SQLiteAdapter implements DbAdapter {
     const updated = { ...existing, ...update };
     const updateStmt = this.db.prepare('UPDATE links SET data = ? WHERE collection = ? AND parent_key = ? AND child_key = ?');
     updateStmt.run(JSON.stringify(updated), collection, parentKey, childKey);
+  }
+
+  getAllDocuments<T>(collection: string): Array<{key: string, data: T}> {
+    const stmt = this.db.prepare('SELECT key, data FROM documents WHERE collection = ?');
+    const results = stmt.all(collection) as { key: string, data: string }[];
+    return results.map(r => ({ key: r.key, data: JSON.parse(r.data) }));
   }
 
   close() {
