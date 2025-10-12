@@ -43,19 +43,19 @@ export class AuthService {
     const pinExpiresAt = new Date(Date.now() + PIN_EXPIRY_MS).toISOString();
 
     // Check if user exists
-    const user = this.db.getDocument<UserProfile>('users', email);
+    const user = await this.db.getDocument<UserProfile>('users', email);
     const requiresSignup = !user;
 
     // Store or update auth data
-    const existingAuth = this.db.getDocument<AuthData>('auth', email);
+    const existingAuth = await this.db.getDocument<AuthData>('auth', email);
 
     if (existingAuth) {
-      this.db.updateDocument<AuthData>('auth', email, {
+      await this.db.updateDocument<AuthData>('auth', email, {
         pin,
         pinExpiresAt,
       });
     } else {
-      this.db.addDocument<AuthData>('auth', email, {
+      await this.db.addDocument<AuthData>('auth', email, {
         email,
         pin,
         pinExpiresAt,
@@ -71,7 +71,7 @@ export class AuthService {
       return true;
     }
 
-    const authData = this.db.getDocument<AuthData>('auth', email);
+    const authData = await this.db.getDocument<AuthData>('auth', email);
     if (!authData) return false;
 
     const now = new Date();
@@ -81,7 +81,7 @@ export class AuthService {
   }
 
   async createSession(email: string): Promise<AuthSession> {
-    const user = this.db.getDocument<UserProfile>('users', email);
+    const user = await this.db.getDocument<UserProfile>('users', email);
     if (!user) {
       throw new Error('User not found');
     }
@@ -97,12 +97,12 @@ export class AuthService {
     };
 
     // Store session in a separate collection for easy lookup
-    this.db.addDocument('sessions', token, session);
+    await this.db.addDocument('sessions', token, session);
 
     // Also add to auth data for reference
-    const authData = this.db.getDocument<AuthData>('auth', email);
+    const authData = await this.db.getDocument<AuthData>('auth', email);
     if (authData) {
-      this.db.updateDocument<AuthData>('auth', email, {
+      await this.db.updateDocument<AuthData>('auth', email, {
         sessions: [...authData.sessions, session],
       });
     }
@@ -111,7 +111,7 @@ export class AuthService {
   }
 
   async verifySession(token: string): Promise<AuthSession | null> {
-    const session = this.db.getDocument<AuthSession>('sessions', token);
+    const session = await this.db.getDocument<AuthSession>('sessions', token);
     if (!session) return null;
 
     const now = new Date();
@@ -124,7 +124,7 @@ export class AuthService {
 
   async createUser(email: string, username: string, fullName: string): Promise<UserProfile> {
     // Check if username is already taken
-    const existingUser = this.db.getDocument<UserProfile>('users', email);
+    const existingUser = await this.db.getDocument<UserProfile>('users', email);
     if (existingUser) {
       throw new Error('User already exists');
     }
@@ -135,10 +135,10 @@ export class AuthService {
       fullName,
     };
 
-    this.db.addDocument<UserProfile>('users', email, user);
+    await this.db.addDocument<UserProfile>('users', email, user);
 
     // Also create the profile
-    this.db.addDocument('profiles', username, {
+    await this.db.addDocument('profiles', username, {
       username,
       fullName,
       bio: '',
