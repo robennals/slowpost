@@ -2,8 +2,8 @@ import type { DbAdapter } from './types.js';
 
 interface LibsqlClient {
   execute(statement: { sql: string; args?: any[] }): Promise<{ rows: Array<Record<string, unknown>> }>;
-  batch(statements: Array<{ sql: string; args?: any[] }>): Promise<void>;
-  close(): Promise<void>;
+  batch(statements: Array<{ sql: string; args?: any[] }>): Promise<unknown>;
+  close(): Promise<void> | void;
 }
 
 interface LibsqlModule {

@@ -8,8 +8,9 @@ export interface ExpressHandlerOptions {
 
 export function createExpressHandler<
   TBody = any,
-  TParams extends Record<string, string> = Record<string, string>
->(handler: Handler<TBody, TParams>, options: ExpressHandlerOptions = {}) {
+  TParams extends Record<string, string> = Record<string, string>,
+  TQuery extends Record<string, unknown> = Record<string, string | string[] | undefined>
+>(handler: Handler<TBody, TParams, TQuery>, options: ExpressHandlerOptions = {}) {
   return async (req: Request, res: Response) => {
     try {
       const { authService } = getHandlerDeps();
@@ -23,7 +24,7 @@ export function createExpressHandler<
       const result = await handler(req, {
         body: req.body,
         params: req.params as TParams,
-        query: req.query,
+        query: req.query as TQuery,
         cookies: req.cookies ?? {},
         user,
       });

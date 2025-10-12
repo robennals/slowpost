@@ -8,10 +8,9 @@ export interface Mailer {
 export interface RequestLike {
   method?: string;
   url?: string;
-  headers?: Record<string, string | string[]>;
+  headers?: Record<string, string | string[] | undefined>;
   body?: unknown;
   cookies?: Record<string, string>;
-  [key: string]: unknown;
 }
 
 export interface CookieOptions {
@@ -42,7 +41,7 @@ export interface HandlerDeps {
 export interface HandlerContext<
   TBody = unknown,
   TParams extends Record<string, string> = Record<string, string>,
-  TQuery extends Record<string, string | string[]> = Record<string, string | string[]>
+  TQuery extends Record<string, unknown> = Record<string, string | string[] | undefined>
 > {
   body: TBody;
   params: TParams;
@@ -51,9 +50,13 @@ export interface HandlerContext<
   user?: AuthSession | null;
 }
 
-export type Handler<TBody = any, TParams extends Record<string, string> = Record<string, string>> = (
+export type Handler<
+  TBody = any,
+  TParams extends Record<string, string> = Record<string, string>,
+  TQuery extends Record<string, unknown> = Record<string, string | string[] | undefined>
+> = (
   req: RequestLike,
-  ctx: HandlerContext<TBody, TParams>
+  ctx: HandlerContext<TBody, TParams, TQuery>
 ) => Promise<HandlerResult>;
 
 export class ApiError extends Error {

@@ -16,6 +16,7 @@ export interface AdapterFactoryEnv {
   TURSO_URL?: string;
   TURSO_AUTH_TOKEN?: string;
   TURSO_SYNC_INTERVAL_MS?: string;
+  [key: string]: string | undefined;
 }
 
 export async function createDbAdapter(env: AdapterFactoryEnv = process.env): Promise<DbAdapter> {

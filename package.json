@@ -9,9 +9,10 @@
     "dev:client": "yarn workspace @slowpost/client dev",
     "dev:server": "yarn workspace @slowpost/server dev",
     "dev": "concurrently \"yarn dev:server\" \"yarn dev:client\"",
-    "build": "yarn workspaces foreach -A run build",
-    "test": "yarn workspaces foreach -A run test",
-    "lint": "yarn workspaces foreach -A run lint",
+    "build": "yarn workspaces run build",
+    "test": "yarn workspaces run test",
+    "lint": "yarn workspaces run lint",
+    "typecheck": "yarn workspaces run typecheck",
     "deploy": "node scripts/deploy-to-vercel.js"
   },
   "devDependencies": {
