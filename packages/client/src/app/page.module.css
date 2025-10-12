@@ -126,3 +126,24 @@
   font-size: 0.875rem;
   color: #a0aec0;
 }
+
+.profilePreview {
+  padding: 1rem 0;
+}
+
+.profileInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.profileName {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.profileUsername {
+  font-size: 0.875rem;
+  color: #718096;
+}

@@ -43,6 +43,21 @@ export default function HomePage() {
 
         <div className={styles.sections}>
           <section className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>Your Profile</h2>
+              <Link href={`/${user.username}`} className={styles.viewAll}>
+                View profile
+              </Link>
+            </div>
+            <div className={styles.profilePreview}>
+              <div className={styles.profileInfo}>
+                <div className={styles.profileName}>{user.fullName}</div>
+                <div className={styles.profileUsername}>@{user.username}</div>
+              </div>
+            </div>
+          </section>
+
+          <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Updates</h2>
             <div className={styles.emptyState}>
               <p>No updates yet</p>
