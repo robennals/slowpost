@@ -11,7 +11,8 @@
     "dev": "concurrently \"yarn dev:server\" \"yarn dev:client\"",
     "build": "yarn workspaces foreach -A run build",
     "test": "yarn workspaces foreach -A run test",
-    "lint": "yarn workspaces foreach -A run lint"
+    "lint": "yarn workspaces foreach -A run lint",
+    "deploy": "node scripts/deploy-to-vercel.js"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

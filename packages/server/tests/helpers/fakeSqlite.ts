@@ -1,10 +1,4 @@
-import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
-import { vi } from 'vitest';
-import { mkdtempSync, rmSync } from 'fs';
-import { tmpdir } from 'os';
-import { join } from 'path';
-
-type StatementType =
+export type StatementType =
   | 'selectDocument'
   | 'insertDocument'
   | 'updateDocument'
@@ -72,12 +66,12 @@ class FakeStatement implements Statement {
   }
 }
 
-class FakeDatabase {
+export class FakeDatabase {
   private documents = new Map<string, Map<string, string>>();
   private links = new Map<string, Map<string, Map<string, string>>>();
 
   exec(): void {
-    // no-op for schema setup
+    // Schema setup is a no-op for the in-memory adapter
   }
 
   prepare(sql: string): Statement {
@@ -86,7 +80,12 @@ class FakeDatabase {
   }
 
   close(): void {
-    // no-op
+    // Nothing to clean up for the in-memory adapter
+  }
+
+  reset(): void {
+    this.documents.clear();
+    this.links.clear();
   }
 
   private ensureDocumentCollection(collection: string): Map<string, string> {
@@ -151,7 +150,7 @@ class FakeDatabase {
     this.ensureDocumentCollection(collection).set(key, data);
   }
 
-  updateDocument(data: string, collection: string, key: string) {
+  updateDocument(collection: string, key: string, data: string) {
     const col = this.ensureDocumentCollection(collection);
     if (!col.has(key)) {
       throw new Error(`Document not found: ${collection}/${key}`);
@@ -191,7 +190,7 @@ class FakeDatabase {
     return data ? { data } : undefined;
   }
 
-  updateLink(data: string, collection: string, parent: string, child: string) {
+  updateLink(collection: string, parent: string, child: string, data: string) {
     const parentMap = this.links.get(collection)?.get(parent);
     if (!parentMap || !parentMap.has(child)) {
       throw new Error(`Link not found: ${collection}/${parent}/${child}`);
@@ -206,66 +205,18 @@ class FakeDatabase {
   }
 }
 
-vi.mock('better-sqlite3', () => ({
-  default: FakeDatabase,
-}));
+export function createBetterSqliteMock() {
+  const state: { instance: FakeDatabase | null } = { instance: null };
 
-let SQLiteAdapter: typeof import('../../src/db/sqliteAdapter.js').SQLiteAdapter;
+  class MockedDatabase extends FakeDatabase {
+    constructor(...args: any[]) {
+      super(...args);
+      state.instance = this;
+    }
+  }
 
-beforeAll(async () => {
-  ({ SQLiteAdapter } = await import('../../src/db/sqliteAdapter.js'));
-});
-
-let dbDir: string;
-let dbPath: string;
-let adapter: InstanceType<typeof SQLiteAdapter>;
-
-beforeEach(() => {
-  dbDir = mkdtempSync(join(tmpdir(), 'slowpost-sqlite-'));
-  dbPath = join(dbDir, 'test.db');
-  adapter = new SQLiteAdapter(dbPath);
-});
-
-afterEach(() => {
-  adapter.close();
-  rmSync(dbDir, { recursive: true, force: true });
-});
-
-describe('SQLiteAdapter', () => {
-  it('stores, retrieves, and updates documents', async () => {
-    await adapter.addDocument('profiles', 'alice', { username: 'alice', fullName: 'Alice Example' });
-
-    const profile = await adapter.getDocument<any>('profiles', 'alice');
-    expect(profile).toMatchObject({ username: 'alice', fullName: 'Alice Example' });
-
-    await adapter.updateDocument('profiles', 'alice', { fullName: 'Alice Updated' });
-
-    const updated = await adapter.getDocument<any>('profiles', 'alice');
-    expect(updated).toMatchObject({ username: 'alice', fullName: 'Alice Updated' });
-
-    const allProfiles = await adapter.getAllDocuments<any>('profiles');
-    expect(allProfiles).toHaveLength(1);
-
-    await expect(adapter.updateDocument('profiles', 'missing', { fullName: 'Nope' })).rejects.toThrow('Document not found');
-  });
-
-  it('manages links between parent and child records', async () => {
-    await adapter.addLink('members', 'group-1', 'alice', { username: 'alice', status: 'pending' });
-    await adapter.addLink('members', 'group-1', 'bob', { username: 'bob', status: 'approved' });
-    await adapter.addLink('members', 'group-2', 'alice', { username: 'alice', status: 'pending' });
-
-    const groupOneMembers = await adapter.getChildLinks<any>('members', 'group-1');
-    expect(groupOneMembers.map((member) => member.username)).toEqual(['alice', 'bob']);
-
-    const aliceMemberships = await adapter.getParentLinks<any>('members', 'alice');
-    expect(aliceMemberships).toHaveLength(2);
-
-    await adapter.updateLink('members', 'group-1', 'alice', { status: 'approved' });
-    const updated = (await adapter.getChildLinks<any>('members', 'group-1')).find((member) => member.username === 'alice');
-    expect(updated?.status).toBe('approved');
-
-    await adapter.deleteLink('members', 'group-1', 'bob');
-    const remaining = await adapter.getChildLinks<any>('members', 'group-1');
-    expect(remaining.map((member) => member.username)).toEqual(['alice']);
-  });
-});
+  return {
+    default: MockedDatabase,
+    __getInstance: () => state.instance,
+  };
+}
