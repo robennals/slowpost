@@ -22,6 +22,7 @@ interface Member {
   groupBio: string;
   status: 'pending' | 'approved';
   isAdmin: boolean;
+  timestamp?: string;
 }
 
 interface MemberWithProfile extends Member {

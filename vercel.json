@@ -1,7 +1,7 @@
 {
   "version": 2,
   "buildCommand": "yarn build",
-  "outputDirectory": "packages/client/vercelSucks",
+  "outputDirectory": "packages/client/.next",
   "builds": [
     { "src": "api/**/*.ts", "use": "@vercel/node" }
   ],
