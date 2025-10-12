@@ -42,8 +42,6 @@ export async function createDbAdapter(env: AdapterFactoryEnv = process.env): Pro
 
   const { TursoAdapter } = await import('./tursoAdapter');
   const adapter = new TursoAdapter(options);
-  adapter.ensureSchema?.().catch((error) => {
-    console.error('Failed to ensure Turso schema', error);
-  });
+  await adapter.ensureSchema();
   return adapter;
 }
