@@ -15,9 +15,9 @@ export interface Group {
   isPublic: boolean;
 }
 
-export interface Follow {
-  followerUsername: string;
-  followedUsername: string;
+export interface Subscription {
+  subscriberUsername: string;
+  subscribedToUsername: string;
   isClose: boolean;
 }
 

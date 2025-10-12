@@ -87,13 +87,13 @@
   margin-top: 0.5rem;
 }
 
-.followerList {
+.subscriberList {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.followerCard {
+.subscriberCard {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -103,28 +103,28 @@
   transition: all 0.2s;
 }
 
-.followerCard:hover {
+.subscriberCard:hover {
   border-color: #cbd5e0;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
-.followerInfo {
+.subscriberInfo {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
 }
 
-.followerName {
+.subscriberName {
   font-weight: 600;
   color: #2d3748;
 }
 
-.followerUsername {
+.subscriberUsername {
   font-size: 0.875rem;
   color: #718096;
 }
 
-.followerActions {
+.subscriberActions {
   display: flex;
   gap: 1rem;
 }

@@ -1,11 +1,46 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { getUserGroups, getSubscriptions, getProfile } from '@/lib/api';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import styles from './page.module.css';
 
 export default function HomePage() {
   const { user, loading } = useAuth();
+  const [groups, setGroups] = useState<any[]>([]);
+  const [subscriptions, setSubscriptions] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (user) {
+      loadGroups();
+      loadSubscriptions();
+    }
+  }, [user]);
+
+  const loadGroups = async () => {
+    if (!user) return;
+    const data = await getUserGroups(user.username);
+    setGroups(data || []);
+  };
+
+  const loadSubscriptions = async () => {
+    if (!user) return;
+    const data = await getSubscriptions(user.username);
+
+    // Enrich subscriptions with profile data
+    const enriched = await Promise.all(
+      data.map(async (sub: any) => {
+        const profile = await getProfile(sub.subscribedToUsername);
+        return {
+          ...sub,
+          fullName: profile?.fullName || sub.subscribedToUsername,
+        };
+      })
+    );
+
+    setSubscriptions(enriched);
+  };
 
   if (loading) {
     return (
@@ -69,17 +104,42 @@ export default function HomePage() {
 
           <section className={styles.section}>
             <div className={styles.sectionHeader}>
-              <h2 className={styles.sectionTitle}>Followers</h2>
-              <Link href="/followers" className={styles.viewAll}>
+              <h2 className={styles.sectionTitle}>Subscribers</h2>
+              <Link href="/subscribers" className={styles.viewAll}>
                 View all
               </Link>
             </div>
             <div className={styles.emptyState}>
-              <p>No followers yet</p>
+              <p>No subscribers yet</p>
               <p className={styles.emptyHint}>
-                When people follow you, they'll appear here
+                When people subscribe to you, they'll appear here
               </p>
             </div>
+          </section>
+
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>Subscriptions</h2>
+            {subscriptions.length > 0 ? (
+              <div className={styles.subscriptionList}>
+                {subscriptions.map((sub) => (
+                  <Link
+                    key={sub.subscribedToUsername}
+                    href={`/${sub.subscribedToUsername}`}
+                    className={styles.subscriptionCard}
+                  >
+                    <div className={styles.subscriptionName}>{sub.fullName}</div>
+                    <div className={styles.subscriptionUsername}>@{sub.subscribedToUsername}</div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className={styles.emptyState}>
+                <p>No subscriptions yet</p>
+                <p className={styles.emptyHint}>
+                  Subscribe to people to see their annual posts
+                </p>
+              </div>
+            )}
           </section>
 
           <section className={styles.section}>
@@ -89,12 +149,31 @@ export default function HomePage() {
                 View all
               </Link>
             </div>
-            <div className={styles.emptyState}>
-              <p>No groups yet</p>
-              <p className={styles.emptyHint}>
-                Join or create a group to get started
-              </p>
-            </div>
+            {groups.length > 0 ? (
+              <div className={styles.groupList}>
+                {groups.slice(0, 5).map((group) => (
+                  <Link
+                    key={group.groupName}
+                    href={`/g/${group.groupName}`}
+                    className={styles.groupCard}
+                  >
+                    <div className={styles.groupHeader}>
+                      <div className={styles.groupName}>{group.displayName}</div>
+                      <span className={styles.groupBadge}>
+                        {group.isPublic ? 'Public' : 'Private'}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className={styles.emptyState}>
+                <p>No groups yet</p>
+                <p className={styles.emptyHint}>
+                  Join or create a group to get started
+                </p>
+              </div>
+            )}
           </section>
         </div>
       </div>

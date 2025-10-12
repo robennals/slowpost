@@ -64,24 +64,32 @@ export async function updateProfile(username: string, updates: { fullName?: stri
   return res.json();
 }
 
-export async function getFollowers(username: string) {
-  const res = await fetch(`${API_BASE}/followers/${username}`, {
+export async function getSubscribers(username: string) {
+  const res = await fetch(`${API_BASE}/subscribers/${username}`, {
     credentials: 'include',
   });
   if (!res.ok) return [];
   return res.json();
 }
 
-export async function followUser(username: string) {
-  const res = await fetch(`${API_BASE}/followers/${username}`, {
+export async function getSubscriptions(username: string) {
+  const res = await fetch(`${API_BASE}/subscriptions/${username}`, {
+    credentials: 'include',
+  });
+  if (!res.ok) return [];
+  return res.json();
+}
+
+export async function subscribeToUser(username: string) {
+  const res = await fetch(`${API_BASE}/subscribers/${username}`, {
     method: 'POST',
     credentials: 'include',
   });
   return res.json();
 }
 
-export async function updateFollower(username: string, followerUsername: string, isClose: boolean) {
-  const res = await fetch(`${API_BASE}/followers/${username}/${followerUsername}`, {
+export async function updateSubscriber(username: string, subscriberUsername: string, isClose: boolean) {
+  const res = await fetch(`${API_BASE}/subscribers/${username}/${subscriberUsername}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ isClose }),
@@ -90,8 +98,8 @@ export async function updateFollower(username: string, followerUsername: string,
   return res.json();
 }
 
-export async function unfollowUser(username: string, followerUsername: string) {
-  const res = await fetch(`${API_BASE}/followers/${username}/${followerUsername}`, {
+export async function unsubscribeFromUser(username: string, subscriberUsername: string) {
+  const res = await fetch(`${API_BASE}/subscribers/${username}/${subscriberUsername}`, {
     method: 'DELETE',
     credentials: 'include',
   });

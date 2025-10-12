@@ -205,60 +205,71 @@ app.put('/api/profiles/:username', requireAuth, async (req, res) => {
   }
 });
 
-// Follower Routes
+// Subscriber Routes
 
-// Get followers of a user
-app.get('/api/followers/:username', async (req, res) => {
+// Get subscribers of a user (people who subscribe to this user)
+app.get('/api/subscribers/:username', async (req, res) => {
   try {
     const { username } = req.params;
-    const followers = db.getChildLinks('follows', username);
-    res.json(followers);
+    const subscribers = db.getChildLinks('subscriptions', username);
+    res.json(subscribers);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Follow a user
-app.post('/api/followers/:username', requireAuth, async (req, res) => {
+// Get subscriptions of a user (people this user subscribes to)
+app.get('/api/subscriptions/:username', async (req, res) => {
   try {
     const { username } = req.params;
-    const followerUsername = req.user.username;
+    const subscriptions = db.getParentLinks('subscriptions', username);
+    res.json(subscriptions);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
-    if (username === followerUsername) {
-      return res.status(400).json({ error: 'You cannot follow yourself' });
+// Subscribe to a user
+app.post('/api/subscribers/:username', requireAuth, async (req, res) => {
+  try {
+    const { username } = req.params;
+    const subscriberUsername = req.user.username;
+
+    if (username === subscriberUsername) {
+      return res.status(400).json({ error: 'You cannot subscribe to yourself' });
     }
 
-    // Check if already following
-    const existing = db.getChildLinks('follows', username);
-    if (existing.some((f: any) => f.followerUsername === followerUsername)) {
-      return res.status(400).json({ error: 'Already following this user' });
+    // Check if already subscribed
+    const existing = db.getChildLinks('subscriptions', username);
+    if (existing.some((s: any) => s.subscriberUsername === subscriberUsername)) {
+      return res.status(400).json({ error: 'Already subscribed to this user' });
     }
 
-    const follow = {
-      followerUsername,
-      followedUsername: username,
+    const subscription = {
+      subscriberUsername,
+      subscribedToUsername: username,
       isClose: false,
     };
 
-    db.addLink('follows', username, followerUsername, follow);
-    res.json({ success: true, follow });
+    db.addLink('subscriptions', username, subscriberUsername, subscription);
+    res.json({ success: true, subscription });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// Update follow relationship (toggle close friend)
-app.put('/api/followers/:username/:followerUsername', requireAuth, async (req, res) => {
+// Update subscription relationship (toggle close friend)
+app.put('/api/subscribers/:username/:subscriberUsername', requireAuth, async (req, res) => {
   try {
-    const { username, followerUsername } = req.params;
+    const { username, subscriberUsername } = req.params;
 
-    // Only allow users to update their own follower settings
+    // Only allow users to update their own subscriber settings
     if (req.user.username !== username) {
-      return res.status(403).json({ error: 'You can only update your own followers' });
+      return res.status(403).json({ error: 'You can only update your own subscribers' });
     }
 
     const { isClose } = req.body;
-    db.updateLink('follows', username, followerUsername, { isClose });
+    db.updateLink('subscriptions', username, subscriberUsername, { isClose });
 
     res.json({ success: true });
   } catch (error: any) {
@@ -266,17 +277,17 @@ app.put('/api/followers/:username/:followerUsername', requireAuth, async (req, r
   }
 });
 
-// Unfollow a user
-app.delete('/api/followers/:username/:followerUsername', requireAuth, async (req, res) => {
+// Unsubscribe from a user
+app.delete('/api/subscribers/:username/:subscriberUsername', requireAuth, async (req, res) => {
   try {
-    const { username, followerUsername } = req.params;
+    const { username, subscriberUsername } = req.params;
 
-    // Only the follower can unfollow
-    if (req.user.username !== followerUsername) {
-      return res.status(403).json({ error: 'You can only unfollow yourself' });
+    // Only the subscriber can unsubscribe
+    if (req.user.username !== subscriberUsername) {
+      return res.status(403).json({ error: 'You can only unsubscribe yourself' });
     }
 
-    db.deleteLink('follows', username, followerUsername);
+    db.deleteLink('subscriptions', username, subscriberUsername);
     res.json({ success: true });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
@@ -286,16 +297,36 @@ app.delete('/api/followers/:username/:followerUsername', requireAuth, async (req
 // Group Routes
 
 // Get all groups for a user
-app.get('/api/groups/user/:username', async (req, res) => {
+app.get('/api/groups/user/:username', async (req: any, res) => {
   try {
     const { username } = req.params;
     const memberships = db.getParentLinks('members', username);
 
-    // Enrich with group data
-    const groups = memberships.map((m: any) => {
-      const group = db.getDocument('groups', m.groupName);
-      return { ...group, memberBio: m.groupBio };
-    });
+    // Get the viewer's username from the session if logged in
+    let viewerUsername: string | null = null;
+    const token = req.cookies.auth_token;
+    if (token) {
+      const session = await authService.verifySession(token);
+      if (session) {
+        viewerUsername = session.username;
+      }
+    }
+
+    // Enrich with group data and filter based on visibility
+    const groups = memberships
+      .map((m: any) => {
+        const group = db.getDocument('groups', m.groupName);
+        return { ...group, memberBio: m.groupBio };
+      })
+      .filter((group: any) => {
+        // Show public groups to everyone
+        if (group.isPublic) return true;
+
+        // For private groups, only show if viewer is also a member
+        if (!viewerUsername) return false;
+        const members = db.getChildLinks('members', group.groupName);
+        return members.some((m: any) => m.username === viewerUsername);
+      });
 
     res.json(groups);
   } catch (error: any) {

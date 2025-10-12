@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { getProfile, updateProfile } from '@/lib/api';
+import { getProfile, updateProfile, subscribeToUser, getSubscribers, getUserGroups } from '@/lib/api';
 import styles from './profile.module.css';
 
 interface Profile {
@@ -16,19 +17,35 @@ interface Profile {
 export default function ProfilePage() {
   const params = useParams();
   const username = params.username as string;
-  const { user } = useAuth();
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [editedBio, setEditedBio] = useState('');
   const [editedFullName, setEditedFullName] = useState('');
   const [saving, setSaving] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [subscribing, setSubscribing] = useState(false);
+  const [groups, setGroups] = useState<any[]>([]);
 
   const isOwnProfile = user?.username === username;
 
   useEffect(() => {
     loadProfile();
+    loadGroups();
   }, [username]);
+
+  useEffect(() => {
+    if (user && !isOwnProfile) {
+      checkSubscription();
+    }
+  }, [user, username]);
+
+  const loadGroups = async () => {
+    const data = await getUserGroups(username);
+    setGroups(data || []);
+  };
 
   const loadProfile = async () => {
     setLoading(true);
@@ -39,6 +56,35 @@ export default function ProfilePage() {
       setEditedFullName(data.fullName);
     }
     setLoading(false);
+  };
+
+  const checkSubscription = async () => {
+    if (!user) return;
+    const subscribers = await getSubscribers(username);
+    setIsSubscribed(subscribers.some((s: any) => s.subscriberUsername === user.username));
+  };
+
+  const handleSubscribe = async () => {
+    if (!user) {
+      // Save redirect URL and send to login
+      localStorage.setItem('redirectAfterLogin', `/subscribe/${username}`);
+      router.push('/login');
+      return;
+    }
+
+    setSubscribing(true);
+    try {
+      const result = await subscribeToUser(username);
+      if (result.error) {
+        alert(result.error);
+      } else {
+        setIsSubscribed(true);
+      }
+    } catch (error: any) {
+      alert(error.message || 'Failed to subscribe');
+    } finally {
+      setSubscribing(false);
+    }
   };
 
   const handleEdit = () => {
@@ -130,9 +176,9 @@ export default function ProfilePage() {
           )}
         </div>
 
-        {isOwnProfile && (
-          <div className={styles.actions}>
-            {!editing ? (
+        <div className={styles.actions}>
+          {isOwnProfile ? (
+            !editing ? (
               <button onClick={handleEdit} className={styles.editButton}>
                 Edit Profile
               </button>
@@ -153,20 +199,46 @@ export default function ProfilePage() {
                   Cancel
                 </button>
               </>
-            )}
-          </div>
-        )}
+            )
+          ) : (
+            <button
+              onClick={handleSubscribe}
+              className={isSubscribed ? styles.subscribedButton : styles.subscribeButton}
+              disabled={subscribing || isSubscribed}
+            >
+              {subscribing ? 'Subscribing...' : isSubscribed ? 'Subscribed' : 'Subscribe to Annual Post'}
+            </button>
+          )}
+        </div>
 
         <div className={styles.sections}>
-          <div className={styles.section}>
-            <h2 className={styles.sectionTitle}>Public Groups</h2>
-            <div className={styles.emptyState}>No public groups yet</div>
-          </div>
-
-          {isOwnProfile && (
+          {groups.length > 0 ? (
             <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>Private Groups</h2>
-              <div className={styles.emptyState}>No private groups yet</div>
+              <h2 className={styles.sectionTitle}>Groups</h2>
+              <div className={styles.groupList}>
+                {groups.map((group) => (
+                  <Link
+                    key={group.groupName}
+                    href={`/g/${group.groupName}`}
+                    className={styles.groupCard}
+                  >
+                    <div className={styles.groupHeader}>
+                      <div className={styles.groupName}>{group.displayName}</div>
+                      <span className={styles.groupBadge}>
+                        {group.isPublic ? 'Public' : 'Private'}
+                      </span>
+                    </div>
+                    {group.memberBio && (
+                      <div className={styles.groupMemberBio}>{group.memberBio}</div>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className={styles.section}>
+              <h2 className={styles.sectionTitle}>Groups</h2>
+              <div className={styles.emptyState}>No groups yet</div>
             </div>
           )}
         </div>

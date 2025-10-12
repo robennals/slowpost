@@ -147,3 +147,83 @@
   font-size: 0.875rem;
   color: #718096;
 }
+
+.groupList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.groupCard {
+  display: block;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  transition: all 0.2s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.groupCard:hover {
+  border-color: #667eea;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+.groupHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.groupName {
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 1rem;
+}
+
+.groupBadge {
+  padding: 0.25rem 0.75rem;
+  background: #edf2f7;
+  color: #4a5568;
+  border-radius: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.subscriptionList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.subscriptionCard {
+  display: block;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  transition: all 0.2s;
+  text-decoration: none;
+  color: inherit;
+}
+
+.subscriptionCard:hover {
+  border-color: #667eea;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+.subscriptionName {
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.subscriptionUsername {
+  font-size: 0.875rem;
+  color: #718096;
+}

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { requestPin, login, signup } from '@/lib/api';
+import { requestPin, login, signup, subscribeToUser } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import styles from './login.module.css';
 
@@ -20,6 +20,24 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [requiresSignup, setRequiresSignup] = useState(false);
   const [devPin, setDevPin] = useState('');
+
+  const handleRedirectAfterLogin = async () => {
+    const redirectUrl = localStorage.getItem('redirectAfterLogin');
+    if (redirectUrl) {
+      localStorage.removeItem('redirectAfterLogin');
+      if (redirectUrl.startsWith('/subscribe/')) {
+        const username = redirectUrl.replace('/subscribe/', '');
+        try {
+          await subscribeToUser(username);
+          router.push(`/${username}`);
+          return true;
+        } catch (error) {
+          console.error('Failed to auto-subscribe:', error);
+        }
+      }
+    }
+    return false;
+  };
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,7 +84,10 @@ export default function LoginPage() {
 
       if (result.success) {
         await refreshUser();
-        router.push('/');
+        const didRedirect = await handleRedirectAfterLogin();
+        if (!didRedirect) {
+          router.push('/');
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Failed to log in');
@@ -89,7 +110,10 @@ export default function LoginPage() {
 
       if (result.success) {
         await refreshUser();
-        router.push('/');
+        const didRedirect = await handleRedirectAfterLogin();
+        if (!didRedirect) {
+          router.push('/');
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Failed to log in');
@@ -112,7 +136,10 @@ export default function LoginPage() {
 
       if (result.success) {
         await refreshUser();
-        router.push('/');
+        const didRedirect = await handleRedirectAfterLogin();
+        if (!didRedirect) {
+          router.push('/');
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Failed to sign up');
@@ -134,7 +161,10 @@ export default function LoginPage() {
 
       if (result.success) {
         await refreshUser();
-        router.push('/');
+        const didRedirect = await handleRedirectAfterLogin();
+        if (!didRedirect) {
+          router.push('/');
+        }
       }
     } catch (err: any) {
       setError(err.message || 'Failed to sign up');
