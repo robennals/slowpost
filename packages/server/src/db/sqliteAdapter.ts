@@ -1,5 +1,6 @@
 import Database from 'better-sqlite3';
-import { join } from 'path';
+import { dirname, join } from 'path';
+import { mkdirSync } from 'fs';
 import type { DbAdapter } from './types.js';
 
 export class SQLiteAdapter implements DbAdapter {
@@ -7,6 +8,7 @@ export class SQLiteAdapter implements DbAdapter {
 
   constructor(dbPath?: string) {
     const path = dbPath || join(process.cwd(), 'data', 'slowpost.db');
+    mkdirSync(dirname(path), { recursive: true });
     this.db = new Database(path);
     this.initializeTables();
   }
@@ -61,13 +63,13 @@ export class SQLiteAdapter implements DbAdapter {
   async getChildLinks<T>(collection: string, parentKey: string): Promise<T[]> {
     const stmt = this.db.prepare('SELECT data FROM links WHERE collection = ? AND parent_key = ?');
     const results = stmt.all(collection, parentKey) as { data: string }[];
-    return results.map((r) => JSON.parse(r.data));
+    return results.map((record) => JSON.parse(record.data));
   }
 
   async getParentLinks<T>(collection: string, childKey: string): Promise<T[]> {
     const stmt = this.db.prepare('SELECT data FROM links WHERE collection = ? AND child_key = ?');
     const results = stmt.all(collection, childKey) as { data: string }[];
-    return results.map((r) => JSON.parse(r.data));
+    return results.map((record) => JSON.parse(record.data));
   }
 
   async addLink<T>(collection: string, parentKey: string, childKey: string, data: T): Promise<void> {
@@ -88,17 +90,19 @@ export class SQLiteAdapter implements DbAdapter {
     }
     const existing = JSON.parse(result.data);
     const updated = { ...existing, ...update };
-    const updateStmt = this.db.prepare('UPDATE links SET data = ? WHERE collection = ? AND parent_key = ? AND child_key = ?');
+    const updateStmt = this.db.prepare(
+      'UPDATE links SET data = ? WHERE collection = ? AND parent_key = ? AND child_key = ?'
+    );
     updateStmt.run(JSON.stringify(updated), collection, parentKey, childKey);
   }
 
   async getAllDocuments<T>(collection: string): Promise<Array<{ key: string; data: T }>> {
     const stmt = this.db.prepare('SELECT key, data FROM documents WHERE collection = ?');
     const results = stmt.all(collection) as { key: string; data: string }[];
-    return results.map((r) => ({ key: r.key, data: JSON.parse(r.data) }));
+    return results.map((record) => ({ key: record.key, data: JSON.parse(record.data) }));
   }
 
-  close() {
+  async close(): Promise<void> {
     this.db.close();
   }
 }
