@@ -62,7 +62,7 @@ I have the domain with cloudflare
 * Storybook tests for every client component
 * A "yarn test" command allows the storybook tests to be run as tests, confirming all pass
 * Vitest tests for every server component
-* Yarn workspaces monorepo, with client and server packages
+* Single Next.js package with integrated API routes
 
 
 ## Database Model

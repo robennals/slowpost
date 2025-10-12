@@ -139,7 +139,7 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 storybook-static
-packages/client/__generated_tests__/
+src/__generated_tests__/
 
 .claude
 

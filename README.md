@@ -14,21 +14,24 @@ A social networking app for connecting meaningfully with close friends and commu
 ## Tech Stack
 
 - **Frontend**: Next.js 14 with React, TypeScript, and CSS Modules
-- **Backend**: Express.js with TypeScript
+- **Backend**: Next.js API routes on the Node.js runtime
 - **Database**: SQLite with a custom adapter layer
-- **Monorepo**: Yarn workspaces
 - **Dev Tools**: Storybook for component development, Vitest for testing
 
 ## Project Structure
 
 ```
 slowpost/
-├── packages/
-│   ├── client/          # Next.js frontend
-│   ├── server/          # Express backend
-│   └── shared/          # Shared TypeScript types
-├── docs/                # Documentation
-└── data/                # SQLite database (created on first run)
+├── src/
+│   ├── app/          # Next.js application routes
+│   ├── components/   # Shared React components
+│   ├── contexts/     # React context providers
+│   ├── lib/          # Frontend utilities and API client
+│   ├── server/       # Server logic reused by API routes
+│   └── shared/       # Shared TypeScript types
+├── tests/server/     # Vitest suites covering server logic
+├── docs/             # Documentation
+└── scripts/          # Tooling helpers (e.g. deploy to Vercel)
 ```
 
 ## Getting Started
@@ -45,26 +48,14 @@ slowpost/
 yarn install
 ```
 
-2. Start the development servers:
-
-**Option 1: Run both client and server together:**
+2. Start the development server:
 ```bash
 yarn dev
 ```
 
-**Option 2: Run separately in different terminals:**
-```bash
-# Terminal 1 - Server
-yarn dev:server
-
-# Terminal 2 - Client
-yarn dev:client
-```
-
 ### Access the App
 
-- **Client**: http://localhost:3000
-- **Server API**: http://localhost:3001
+- **Client & API**: http://localhost:3000 (API mounted at `/api`)
 
 ### Development Mode
 
@@ -117,22 +108,24 @@ This abstraction makes it easy to swap out the database implementation later if 
 
 ## Scripts
 
-- `yarn dev` - Start both client and server
-- `yarn dev:client` - Start only the client
-- `yarn dev:server` - Start only the server
-- `yarn build` - Build all packages
-- `yarn test` - Run all tests
-- `yarn lint` - Lint all packages
+- `yarn dev` - Start the Next.js dev server (client + API)
+- `yarn build` - Create a production build
+- `yarn start` - Run the production server
+- `yarn test` - Execute Vitest suites
+- `yarn lint` - Run ESLint
+- `yarn typecheck` - Run TypeScript in no-emit mode
+- `yarn storybook` - Launch Storybook
+- `yarn build-storybook` - Build Storybook static assets
 
 ## Environment Variables
 
-### Server (`packages/server/.env`)
+Create a `.env.local` file in the project root to configure server behaviour. Useful keys include:
 
 ```
-PORT=3001
 SKIP_PIN=true
-NODE_ENV=development
 POSTMARK_API_KEY=your_key_here  # For production email sending
+TURSO_URL=...
+TURSO_AUTH_TOKEN=...
 ```
 
 ## Next Steps
