@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "buildCommand": "yarn build",
+  "outputDirectory": "packages/client/vercelSucks",
+  "builds": [
+    { "src": "api/**/*.ts", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/index.ts" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "packages/client/$1" }
+  ]
+}
