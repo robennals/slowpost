@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "yarn build && rm -rf .next && cp -R packages/client/.next .next",
+  "buildCommand": "yarn build",
   "outputDirectory": ".next",
   "builds": [
     { "src": "packages/client/package.json", "use": "@vercel/next" },
