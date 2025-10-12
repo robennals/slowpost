@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { getGroup, joinGroup, getProfile } from '@/lib/api';
+import { getGroup, joinGroup, getProfile, updateMemberStatus, toggleMemberAdmin } from '@/lib/api';
 import Link from 'next/link';
 import styles from './group.module.css';
 
@@ -20,6 +20,8 @@ interface Member {
   groupName: string;
   username: string;
   groupBio: string;
+  status: 'pending' | 'approved';
+  isAdmin: boolean;
 }
 
 interface MemberWithProfile extends Member {
@@ -37,8 +39,13 @@ export default function GroupPage() {
   const [joining, setJoining] = useState(false);
   const [groupBio, setGroupBio] = useState('');
 
-  const isMember = members.some(m => m.username === user?.username);
-  const isAdmin = group?.adminUsername === user?.username;
+  const userMembership = members.find(m => m.username === user?.username);
+  const isMember = !!userMembership && (userMembership.status === 'approved' || !userMembership.status); // Treat members without status as approved
+  const isPending = !!userMembership && userMembership.status === 'pending';
+  const isAdmin = userMembership?.isAdmin && (userMembership.status === 'approved' || !userMembership.status);
+
+  const approvedMembers = members.filter(m => m.status === 'approved' || !m.status); // Treat members without status as approved for backward compatibility
+  const pendingMembers = members.filter(m => m.status === 'pending');
 
   useEffect(() => {
     loadGroup();
@@ -89,6 +96,24 @@ export default function GroupPage() {
     }
   };
 
+  const handleApproveMember = async (username: string) => {
+    try {
+      await updateMemberStatus(groupName, username, 'approved');
+      await loadGroup();
+    } catch (error: any) {
+      alert(error.message || 'Failed to approve member');
+    }
+  };
+
+  const handleToggleAdmin = async (username: string, currentIsAdmin: boolean) => {
+    try {
+      await toggleMemberAdmin(groupName, username, !currentIsAdmin);
+      await loadGroup();
+    } catch (error: any) {
+      alert(error.message || 'Failed to toggle admin status');
+    }
+  };
+
   if (loading) {
     return (
       <div className={styles.container}>
@@ -126,7 +151,7 @@ export default function GroupPage() {
           <div className={styles.description}>{group.description}</div>
         )}
 
-        {!isMember && (
+        {!isMember && !isPending && (
           <div className={styles.joinSection}>
             <h2 className={styles.sectionTitle}>Join this Group</h2>
             <form onSubmit={handleJoin} className={styles.joinForm}>
@@ -138,32 +163,76 @@ export default function GroupPage() {
                 className={styles.input}
               />
               <button type="submit" className={styles.joinButton} disabled={joining}>
-                {joining ? 'Joining...' : 'Join Group'}
+                {joining ? 'Requesting...' : 'Request to Join'}
               </button>
             </form>
           </div>
         )}
 
+        {isPending && (
+          <div className={styles.pendingNotice}>
+            Your request to join this group is pending approval from an admin.
+          </div>
+        )}
+
+        {isAdmin && pendingMembers.length > 0 && (
+          <div className={styles.pendingSection}>
+            <h2 className={styles.sectionTitle}>
+              Pending Members ({pendingMembers.length})
+            </h2>
+            <div className={styles.memberList}>
+              {pendingMembers.map((member) => (
+                <div key={member.username} className={styles.pendingMemberCard}>
+                  <div className={styles.memberInfo}>
+                    <Link href={`/${member.username}`} className={styles.memberLink}>
+                      <div className={styles.memberName}>{member.fullName}</div>
+                      <div className={styles.memberUsername}>@{member.username}</div>
+                    </Link>
+                    {member.groupBio && (
+                      <div className={styles.memberBio}>{member.groupBio}</div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => handleApproveMember(member.username)}
+                    className={styles.approveButton}
+                  >
+                    Approve
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className={styles.membersSection}>
           <h2 className={styles.sectionTitle}>
-            Members ({members.length})
+            Members ({approvedMembers.length})
           </h2>
 
           <div className={styles.memberList}>
-            {members.map((member) => (
-              <Link
-                key={member.username}
-                href={`/${member.username}`}
-                className={styles.memberCard}
-              >
-                <div className={styles.memberInfo}>
-                  <div className={styles.memberName}>{member.fullName}</div>
-                  <div className={styles.memberUsername}>@{member.username}</div>
-                </div>
-                {member.groupBio && (
-                  <div className={styles.memberBio}>{member.groupBio}</div>
+            {approvedMembers.map((member) => (
+              <div key={member.username} className={styles.memberCard}>
+                <Link href={`/${member.username}`} className={styles.memberLink}>
+                  <div className={styles.memberInfo}>
+                    <div className={styles.memberName}>
+                      {member.fullName}
+                      {member.isAdmin && <span className={styles.adminBadge}>Admin</span>}
+                    </div>
+                    <div className={styles.memberUsername}>@{member.username}</div>
+                  </div>
+                  {member.groupBio && (
+                    <div className={styles.memberBio}>{member.groupBio}</div>
+                  )}
+                </Link>
+                {isAdmin && member.username !== user?.username && (
+                  <button
+                    onClick={() => handleToggleAdmin(member.username, member.isAdmin)}
+                    className={styles.adminToggle}
+                  >
+                    {member.isAdmin ? 'Remove Admin' : 'Make Admin'}
+                  </button>
                 )}
-              </Link>
+              </div>
             ))}
           </div>
         </div>

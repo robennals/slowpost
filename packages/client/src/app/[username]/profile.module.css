@@ -195,6 +195,70 @@
   width: 100%;
 }
 
+.subscriptionConfirm {
+  width: 100%;
+  padding: 1.5rem;
+  background: #fef3c7;
+  border: 2px solid #f59e0b;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.confirmMessage {
+  margin: 0 0 1rem 0;
+  font-size: 1.125rem;
+  color: #92400e;
+  font-weight: 600;
+}
+
+.confirmActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.confirmButton {
+  padding: 0.75rem 1.5rem;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.confirmButton:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.confirmButton:disabled {
+  background: #cbd5e0;
+  cursor: not-allowed;
+}
+
+.cancelSubscriptionButton {
+  padding: 0.75rem 1.5rem;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancelSubscriptionButton:hover:not(:disabled) {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+.cancelSubscriptionButton:disabled {
+  background: #cbd5e0;
+  cursor: not-allowed;
+}
+
 .sections {
   display: flex;
   flex-direction: column;

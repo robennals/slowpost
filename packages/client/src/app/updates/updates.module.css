@@ -1,0 +1,106 @@
+.container {
+  min-height: calc(100vh - 70px);
+  background: #f7fafc;
+  padding: 2rem 1.5rem;
+}
+
+.loading,
+.error {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.125rem;
+  color: #718096;
+}
+
+.error {
+  color: #e53e3e;
+}
+
+.content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a202c;
+  margin: 0 0 2rem 0;
+}
+
+.updateList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.updateCardLink {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.updateCard {
+  background: white;
+  padding: 1.25rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.updateCardLink:hover .updateCard {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+  border: 1px solid #667eea;
+}
+
+.updateLink {
+  display: block;
+  text-decoration: none;
+  color: #2d3748;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.updateLink:hover {
+  color: #667eea;
+}
+
+.updateText {
+  color: #2d3748;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.inlineLink {
+  text-decoration: none;
+  color: #667eea;
+}
+
+.inlineLink:hover {
+  text-decoration: underline;
+}
+
+.updateTime {
+  font-size: 0.875rem;
+  color: #a0aec0;
+}
+
+.emptyState {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.emptyState p {
+  margin: 0.5rem 0;
+  color: #718096;
+}
+
+.emptyHint {
+  font-size: 0.875rem;
+  color: #a0aec0;
+}

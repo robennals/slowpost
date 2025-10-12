@@ -88,11 +88,29 @@ export async function subscribeToUser(username: string) {
   return res.json();
 }
 
+export async function addSubscriberByEmail(username: string, email: string, fullName?: string) {
+  const res = await fetch(`${API_BASE}/subscribers/${username}/add-by-email`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, fullName }),
+    credentials: 'include',
+  });
+  return res.json();
+}
+
 export async function updateSubscriber(username: string, subscriberUsername: string, isClose: boolean) {
   const res = await fetch(`${API_BASE}/subscribers/${username}/${subscriberUsername}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ isClose }),
+    credentials: 'include',
+  });
+  return res.json();
+}
+
+export async function confirmSubscription(username: string, subscriberUsername: string) {
+  const res = await fetch(`${API_BASE}/subscribers/${username}/${subscriberUsername}/confirm`, {
+    method: 'POST',
     credentials: 'include',
   });
   return res.json();
@@ -152,10 +170,38 @@ export async function updateGroupBio(groupName: string, username: string, groupB
   return res.json();
 }
 
+export async function updateMemberStatus(groupName: string, username: string, status: 'pending' | 'approved') {
+  const res = await fetch(`${API_BASE}/groups/${groupName}/members/${username}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+    credentials: 'include',
+  });
+  return res.json();
+}
+
+export async function toggleMemberAdmin(groupName: string, username: string, isAdmin: boolean) {
+  const res = await fetch(`${API_BASE}/groups/${groupName}/members/${username}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ isAdmin }),
+    credentials: 'include',
+  });
+  return res.json();
+}
+
 export async function leaveGroup(groupName: string, username: string) {
   const res = await fetch(`${API_BASE}/groups/${groupName}/members/${username}`, {
     method: 'DELETE',
     credentials: 'include',
   });
+  return res.json();
+}
+
+export async function getUpdates(username: string) {
+  const res = await fetch(`${API_BASE}/updates/${username}`, {
+    credentials: 'include',
+  });
+  if (!res.ok) return [];
   return res.json();
 }

@@ -181,3 +181,91 @@
   color: #667eea;
   font-style: italic;
 }
+
+.pendingNotice {
+  background: #fef3c7;
+  border: 2px solid #f59e0b;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 2rem;
+  color: #92400e;
+  text-align: center;
+  font-weight: 500;
+}
+
+.pendingSection {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  border: 2px solid #fbbf24;
+}
+
+.pendingMemberCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.pendingMemberCard:hover {
+  border-color: #fbbf24;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.memberLink {
+  flex: 1;
+  text-decoration: none;
+  color: inherit;
+}
+
+.approveButton {
+  padding: 0.5rem 1rem;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+}
+
+.approveButton:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.adminBadge {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.125rem 0.5rem;
+  background: #667eea;
+  color: white;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.adminToggle {
+  padding: 0.5rem 1rem;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+.adminToggle:hover {
+  background: #5568d3;
+  transform: translateY(-1px);
+}

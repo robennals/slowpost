@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { getProfile, updateProfile, subscribeToUser, getSubscribers, getUserGroups } from '@/lib/api';
+import { getProfile, updateProfile, subscribeToUser, getSubscribers, getUserGroups, confirmSubscription, unsubscribeFromUser } from '@/lib/api';
 import styles from './profile.module.css';
 
 interface Profile {
@@ -28,6 +28,7 @@ export default function ProfilePage() {
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
   const [groups, setGroups] = useState<any[]>([]);
+  const [subscriptionInfo, setSubscriptionInfo] = useState<any>(null);
 
   const isOwnProfile = user?.username === username;
 
@@ -61,7 +62,9 @@ export default function ProfilePage() {
   const checkSubscription = async () => {
     if (!user) return;
     const subscribers = await getSubscribers(username);
-    setIsSubscribed(subscribers.some((s: any) => s.subscriberUsername === user.username));
+    const subscription = subscribers.find((s: any) => s.subscriberUsername === user.username);
+    setIsSubscribed(!!subscription);
+    setSubscriptionInfo(subscription || null);
   };
 
   const handleSubscribe = async () => {
@@ -117,6 +120,33 @@ export default function ProfilePage() {
       alert(error.message || 'Failed to update profile');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleConfirmSubscription = async () => {
+    if (!user) return;
+    setSubscribing(true);
+    try {
+      await confirmSubscription(username, user.username);
+      await checkSubscription();
+    } catch (error: any) {
+      alert(error.message || 'Failed to confirm subscription');
+    } finally {
+      setSubscribing(false);
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    if (!user) return;
+    setSubscribing(true);
+    try {
+      await unsubscribeFromUser(username, user.username);
+      setIsSubscribed(false);
+      setSubscriptionInfo(null);
+    } catch (error: any) {
+      alert(error.message || 'Failed to cancel subscription');
+    } finally {
+      setSubscribing(false);
     }
   };
 
@@ -200,6 +230,28 @@ export default function ProfilePage() {
                 </button>
               </>
             )
+          ) : subscriptionInfo && subscriptionInfo.addedBy === username && !subscriptionInfo.confirmed ? (
+            <div className={styles.subscriptionConfirm}>
+              <p className={styles.confirmMessage}>
+                {profile?.fullName} added you as a subscriber
+              </p>
+              <div className={styles.confirmActions}>
+                <button
+                  onClick={handleConfirmSubscription}
+                  className={styles.confirmButton}
+                  disabled={subscribing}
+                >
+                  {subscribing ? 'Confirming...' : 'Confirm Subscription'}
+                </button>
+                <button
+                  onClick={handleCancelSubscription}
+                  className={styles.cancelSubscriptionButton}
+                  disabled={subscribing}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
           ) : (
             <button
               onClick={handleSubscribe}
@@ -225,7 +277,7 @@ export default function ProfilePage() {
                     <div className={styles.groupHeader}>
                       <div className={styles.groupName}>{group.displayName}</div>
                       <span className={styles.groupBadge}>
-                        {group.isPublic ? 'Public' : 'Private'}
+                        {group.memberStatus === 'pending' ? 'Pending' : group.isPublic ? 'Public' : 'Private'}
                       </span>
                     </div>
                     {group.memberBio && (

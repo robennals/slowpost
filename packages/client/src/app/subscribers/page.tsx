@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getSubscribers, updateSubscriber, getProfile } from '@/lib/api';
+import { getSubscribers, updateSubscriber, getProfile, addSubscriberByEmail } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import styles from './subscribers.module.css';
 
@@ -10,6 +10,8 @@ interface Subscriber {
   subscriberUsername: string;
   subscribedToUsername: string;
   isClose: boolean;
+  addedBy?: string;
+  confirmed?: boolean;
 }
 
 interface SubscriberWithProfile extends Subscriber {
@@ -22,6 +24,8 @@ export default function SubscribersPage() {
   const [subscribers, setSubscribers] = useState<SubscriberWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [addingEmail, setAddingEmail] = useState('');
+  const [addingName, setAddingName] = useState('');
+  const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -67,8 +71,24 @@ export default function SubscribersPage() {
 
   const handleAddSubscriber = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Subscriber invitation feature coming soon!');
-    setAddingEmail('');
+    if (!user || !addingEmail) return;
+
+    setAdding(true);
+    try {
+      const result = await addSubscriberByEmail(user.username, addingEmail, addingName || undefined);
+      if (result.error) {
+        alert(result.error);
+      } else {
+        // Reload subscribers list
+        await loadSubscribers();
+        setAddingEmail('');
+        setAddingName('');
+      }
+    } catch (error: any) {
+      alert(error.message || 'Failed to add subscriber');
+    } finally {
+      setAdding(false);
+    }
   };
 
   if (!user) return null;
@@ -95,9 +115,17 @@ export default function SubscribersPage() {
               onChange={(e) => setAddingEmail(e.target.value)}
               placeholder="email@example.com"
               className={styles.input}
+              required
             />
-            <button type="submit" className={styles.addButton}>
-              Add Subscriber
+            <input
+              type="text"
+              value={addingName}
+              onChange={(e) => setAddingName(e.target.value)}
+              placeholder="Full name (optional)"
+              className={styles.input}
+            />
+            <button type="submit" className={styles.addButton} disabled={adding}>
+              {adding ? 'Adding...' : 'Add Subscriber'}
             </button>
           </form>
         </div>
@@ -121,6 +149,16 @@ export default function SubscribersPage() {
                   <div className={styles.subscriberInfo}>
                     <div className={styles.subscriberName}>{subscriber.fullName}</div>
                     <div className={styles.subscriberUsername}>@{subscriber.subscriberUsername}</div>
+                    {subscriber.addedBy === user?.username && (
+                      <div className={styles.subscriberSource}>
+                        {subscriber.confirmed === false ? 'Added by you (not confirmed)' : 'Added by you'}
+                      </div>
+                    )}
+                    {subscriber.addedBy === subscriber.subscriberUsername && (
+                      <div className={styles.subscriberSource}>
+                        They subscribed themselves
+                      </div>
+                    )}
                   </div>
                   <div className={styles.subscriberActions}>
                     <label className={styles.toggleLabel}>

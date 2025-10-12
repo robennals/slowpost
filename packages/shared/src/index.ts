@@ -19,12 +19,16 @@ export interface Subscription {
   subscriberUsername: string;
   subscribedToUsername: string;
   isClose: boolean;
+  addedBy?: string; // Who initiated the subscription (subscriberUsername or subscribedToUsername)
+  confirmed?: boolean; // Whether subscriber confirmed (for email-added subscriptions)
 }
 
 export interface Member {
   groupName: string;
   username: string;
   groupBio: string;
+  status: 'pending' | 'approved';
+  isAdmin: boolean;
 }
 
 export interface Notification {

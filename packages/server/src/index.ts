@@ -205,6 +205,25 @@ app.put('/api/profiles/:username', requireAuth, async (req, res) => {
   }
 });
 
+// Updates/Events Routes
+
+// Get updates for a user
+app.get('/api/updates/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+    const updates = db.getChildLinks('updates', username);
+
+    // Sort by timestamp descending (newest first)
+    const sorted = updates.sort((a: any, b: any) =>
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+
+    res.json(sorted);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Subscriber Routes
 
 // Get subscribers of a user (people who subscribe to this user)
@@ -249,10 +268,109 @@ app.post('/api/subscribers/:username', requireAuth, async (req, res) => {
       subscriberUsername,
       subscribedToUsername: username,
       isClose: false,
+      addedBy: subscriberUsername, // Subscriber initiated this
+      confirmed: true, // Self-subscriptions are auto-confirmed
     };
 
     db.addLink('subscriptions', username, subscriberUsername, subscription);
+
+    // Create an update for the subscribed-to user
+    const updateId = `${Date.now()}-${subscriberUsername}-subscribed`;
+    const update = {
+      id: updateId,
+      type: 'new_subscriber',
+      username: subscriberUsername,
+      timestamp: new Date().toISOString(),
+    };
+    db.addLink('updates', username, updateId, update);
+
     res.json({ success: true, subscription });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Add subscriber by email
+app.post('/api/subscribers/:username/add-by-email', requireAuth, async (req, res) => {
+  try {
+    const { username } = req.params;
+
+    // Only allow users to add subscribers to themselves
+    if (req.user.username !== username) {
+      return res.status(403).json({ error: 'You can only add subscribers to yourself' });
+    }
+
+    const { email, fullName } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // Find existing user by email
+    const authData = db.getDocument('auth', email);
+    let subscriberUsername: string;
+
+    if (authData && authData.username) {
+      // User already exists
+      subscriberUsername = authData.username;
+
+      // Check if already subscribed
+      const existing = db.getChildLinks('subscriptions', username);
+      if (existing.some((s: any) => s.subscriberUsername === subscriberUsername)) {
+        return res.status(400).json({ error: 'This person is already a subscriber' });
+      }
+
+      // Optionally update their name if provided and they don't have one
+      if (fullName) {
+        const profile = db.getDocument('profiles', subscriberUsername);
+        if (profile && !profile.fullName) {
+          db.updateDocument('profiles', subscriberUsername, { fullName });
+        }
+      }
+    } else {
+      // Create new user account
+      if (!fullName) {
+        return res.status(400).json({ error: 'Full name is required for new users' });
+      }
+
+      // Generate a username from email (before @)
+      const baseUsername = email.split('@')[0].replace(/[^a-z0-9]/gi, '').toLowerCase();
+      let newUsername = baseUsername;
+      let counter = 1;
+
+      // Ensure username is unique
+      while (db.getDocument('profiles', newUsername)) {
+        newUsername = `${baseUsername}${counter}`;
+        counter++;
+      }
+
+      subscriberUsername = newUsername;
+
+      // Create auth record
+      db.addDocument('auth', email, {
+        email,
+        username: subscriberUsername,
+      });
+
+      // Create profile
+      db.addDocument('profiles', subscriberUsername, {
+        username: subscriberUsername,
+        fullName,
+        bio: '',
+      });
+    }
+
+    // Create the subscription
+    const subscription = {
+      subscriberUsername,
+      subscribedToUsername: username,
+      isClose: false,
+      addedBy: username, // The subscribedTo user added this person
+      confirmed: false, // Not yet confirmed by subscriber
+    };
+
+    db.addLink('subscriptions', username, subscriberUsername, subscription);
+
+    res.json({ success: true, subscriberUsername });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
@@ -294,6 +412,25 @@ app.delete('/api/subscribers/:username/:subscriberUsername', requireAuth, async 
   }
 });
 
+// Confirm subscription (for email-added subscriptions)
+app.post('/api/subscribers/:username/:subscriberUsername/confirm', requireAuth, async (req, res) => {
+  try {
+    const { username, subscriberUsername } = req.params;
+
+    // Only the subscriber can confirm
+    if (req.user.username !== subscriberUsername) {
+      return res.status(403).json({ error: 'You can only confirm your own subscription' });
+    }
+
+    // Update the subscription to be confirmed
+    db.updateLink('subscriptions', username, subscriberUsername, { confirmed: true });
+
+    res.json({ success: true });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Group Routes
 
 // Get all groups for a user
@@ -312,20 +449,40 @@ app.get('/api/groups/user/:username', async (req: any, res) => {
       }
     }
 
-    // Enrich with group data and filter based on visibility
+    // Enrich with group data and filter based on visibility and membership status
     const groups = memberships
       .map((m: any) => {
         const group = db.getDocument('groups', m.groupName);
-        return { ...group, memberBio: m.groupBio };
+        return { ...group, memberBio: m.groupBio, memberStatus: m.status };
       })
       .filter((group: any) => {
+        // Filter out pending memberships unless viewer is the profile owner or an admin
+        if (group.memberStatus === 'pending') {
+          if (viewerUsername === username) {
+            // Show own pending memberships
+            return true;
+          }
+          // Check if viewer is an admin of this group
+          if (viewerUsername) {
+            const members = db.getChildLinks('members', group.groupName);
+            const viewerMembership = members.find((m: any) => m.username === viewerUsername);
+            if (viewerMembership?.isAdmin && viewerMembership?.status === 'approved') {
+              return true;
+            }
+          }
+          // Don't show pending memberships to others
+          return false;
+        }
+
+        // For approved memberships, apply visibility rules
         // Show public groups to everyone
         if (group.isPublic) return true;
 
-        // For private groups, only show if viewer is also a member
+        // For private groups, only show if viewer is also a member (approved or pending)
         if (!viewerUsername) return false;
         const members = db.getChildLinks('members', group.groupName);
-        return members.some((m: any) => m.username === viewerUsername);
+        const viewerMembership = members.find((m: any) => m.username === viewerUsername);
+        return viewerMembership && viewerMembership.status === 'approved';
       });
 
     res.json(groups);
@@ -378,11 +535,13 @@ app.post('/api/groups', requireAuth, async (req, res) => {
 
     db.addDocument('groups', groupName, group);
 
-    // Add creator as first member
+    // Add creator as first member (approved and admin)
     const member = {
       groupName,
       username: req.user.username,
       groupBio: 'Creator',
+      status: 'approved',
+      isAdmin: true,
     };
 
     db.addLink('members', groupName, req.user.username, member);
@@ -410,14 +569,34 @@ app.post('/api/groups/:groupName/join', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Already a member of this group' });
     }
 
-    // For now, auto-approve joins (in a real app, this would create a join request)
+    // Create pending membership (requires admin approval)
     const member = {
       groupName,
       username: req.user.username,
       groupBio: groupBio || '',
+      status: 'pending',
+      isAdmin: false,
     };
 
     db.addLink('members', groupName, req.user.username, member);
+
+    // Create an update for all group admins
+    const updateId = `${Date.now()}-${req.user.username}-request-${groupName}`;
+    const update = {
+      id: updateId,
+      type: 'group_join_request',
+      username: req.user.username,
+      groupName,
+      timestamp: new Date().toISOString(),
+    };
+
+    // Get all admin members and create updates for each
+    const allMembers = db.getChildLinks('members', groupName);
+    const admins = allMembers.filter((m: any) => m.isAdmin && m.status === 'approved');
+
+    admins.forEach((admin: any) => {
+      db.addLink('updates', admin.username, `${updateId}-${admin.username}`, update);
+    });
 
     res.json({ success: true });
   } catch (error: any) {
@@ -425,18 +604,47 @@ app.post('/api/groups/:groupName/join', requireAuth, async (req, res) => {
   }
 });
 
-// Update member's group bio
+// Update member's group bio or status (admins can approve/reject, users can update their own bio)
 app.put('/api/groups/:groupName/members/:username', requireAuth, async (req, res) => {
   try {
     const { groupName, username } = req.params;
+    const { groupBio, status, isAdmin } = req.body;
 
-    // Only allow users to update their own bio
-    if (req.user.username !== username) {
+    // Get the group and check if requester is an admin
+    const members = db.getChildLinks('members', groupName);
+    const requesterMembership = members.find((m: any) => m.username === req.user.username);
+
+    const isRequesterAdmin = requesterMembership?.isAdmin && requesterMembership?.status === 'approved';
+
+    // Check permissions
+    if (groupBio !== undefined && req.user.username !== username && !isRequesterAdmin) {
       return res.status(403).json({ error: 'You can only update your own bio' });
     }
 
-    const { groupBio } = req.body;
-    db.updateLink('members', groupName, username, { groupBio });
+    if ((status !== undefined || isAdmin !== undefined) && !isRequesterAdmin) {
+      return res.status(403).json({ error: 'Only admins can approve members or toggle admin status' });
+    }
+
+    // Build update object
+    const updates: any = {};
+    if (groupBio !== undefined) updates.groupBio = groupBio;
+    if (status !== undefined) updates.status = status;
+    if (isAdmin !== undefined) updates.isAdmin = isAdmin;
+
+    db.updateLink('members', groupName, username, updates);
+
+    // If approving a member, create an update for them
+    if (status === 'approved') {
+      const group = db.getDocument('groups', groupName);
+      const updateId = `${Date.now()}-${username}-approved-${groupName}`;
+      const update = {
+        id: updateId,
+        type: 'group_join_approved',
+        groupName,
+        timestamp: new Date().toISOString(),
+      };
+      db.addLink('updates', username, updateId, update);
+    }
 
     res.json({ success: true });
   } catch (error: any) {
