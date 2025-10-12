@@ -15,7 +15,7 @@ A social networking app for connecting meaningfully with close friends and commu
 
 - **Frontend**: Next.js 14 with React, TypeScript, and CSS Modules
 - **Backend**: Next.js API routes on the Node.js runtime
-- **Database**: SQLite with a custom adapter layer
+- **Database**: Turso (libSQL) with a custom adapter layer
 - **Dev Tools**: Storybook for component development, Vitest for testing
 
 ## Project Structure
@@ -48,7 +48,9 @@ slowpost/
 yarn install
 ```
 
-2. Start the development server:
+2. Configure a development database (see [Development database setup](#development-database-setup)).
+
+3. Start the development server:
 ```bash
 yarn dev
 ```
@@ -63,6 +65,36 @@ By default, the server runs with `SKIP_PIN=true`, which means:
 - You can click "Skip PIN (localhost only)" button to bypass PIN verification
 - PINs are logged to the console for testing
 - This mode is only available in development
+
+The development entrypoint (`yarn dev`) loads `.env.development.local` (falling back to `.env.development`, `.env.local`, or `.env`) before starting Next.js. It exits early if the required Turso variables are missing so you always run against the same database that production code expects.
+
+### Development database setup
+
+1. [Install the Turso CLI](https://docs.turso.tech/reference/turso-cli) and sign in:
+   ```bash
+   turso auth signup   # or: turso auth login
+   ```
+2. Create a development database (feel free to choose a different name):
+   ```bash
+   turso db create slowpost-dev
+   ```
+3. Generate a read/write auth token for that database:
+   ```bash
+   turso db tokens create slowpost-dev --read-write
+   ```
+   Copy the resulting token.
+4. Grab the libsql connection URL:
+   ```bash
+   turso db show slowpost-dev --url
+   ```
+5. Create `.env.development.local` in the project root with the values you collected:
+   ```
+   TURSO_URL=libsql://slowpost-dev-<hash>.turso.io
+   TURSO_AUTH_TOKEN=<the token from step 3>
+   SKIP_PIN=true
+   ```
+   You can also include any other environment variables you need for local testing. The `yarn dev` script automatically loads this file.
+6. Run `yarn dev` and visit [http://localhost:3000](http://localhost:3000).
 
 ## Usage
 
@@ -127,6 +159,8 @@ POSTMARK_API_KEY=your_key_here  # For production email sending
 TURSO_URL=...
 TURSO_AUTH_TOKEN=...
 ```
+
+The `scripts/dev.js` helper loads `.env.development.local` (falling back to the other standard dotenv files) and ensures `TURSO_URL`/`TURSO_AUTH_TOKEN` are defined before invoking Next.js. This guarantees both the API layer and web client talk to Turso in development, mirroring production behaviour.
 
 ## Next Steps
 

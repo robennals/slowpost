@@ -1,5 +1,3 @@
-import { SQLiteAdapter } from './sqliteAdapter';
-
 export interface DbAdapter {
   getDocument<T>(collection: string, key: string): Promise<T | null>;
   addDocument<T>(collection: string, key: string, data: T): Promise<void>;
@@ -23,28 +21,29 @@ export async function createDbAdapter(env: AdapterFactoryEnv = process.env): Pro
   const tursoUrl = env.TURSO_URL;
   const tursoAuthToken = env.TURSO_AUTH_TOKEN;
 
-  if (tursoUrl && tursoAuthToken) {
-    const options: { url: string; authToken: string; syncIntervalMs?: number } = {
-      url: tursoUrl,
-      authToken: tursoAuthToken,
-    };
-
-    if (env.TURSO_SYNC_INTERVAL_MS) {
-      const parsed = Number(env.TURSO_SYNC_INTERVAL_MS);
-      if (!Number.isNaN(parsed)) {
-        options.syncIntervalMs = parsed;
-      }
-    }
-
-    const { TursoAdapter } = await import('./tursoAdapter');
-    const adapter = new TursoAdapter(options);
-    adapter.ensureSchema?.().catch((error) => {
-      console.error('Failed to ensure Turso schema', error);
-    });
-    return adapter;
+  if (!tursoUrl || !tursoAuthToken) {
+    throw new Error(
+      'TURSO_URL and TURSO_AUTH_TOKEN must be set to start the application. ' +
+        'Create a development database and define these variables in your environment.'
+    );
   }
 
-  return new SQLiteAdapter();
-}
+  const options: { url: string; authToken: string; syncIntervalMs?: number } = {
+    url: tursoUrl,
+    authToken: tursoAuthToken,
+  };
 
-export type { SQLiteAdapter };
+  if (env.TURSO_SYNC_INTERVAL_MS) {
+    const parsed = Number(env.TURSO_SYNC_INTERVAL_MS);
+    if (!Number.isNaN(parsed)) {
+      options.syncIntervalMs = parsed;
+    }
+  }
+
+  const { TursoAdapter } = await import('./tursoAdapter');
+  const adapter = new TursoAdapter(options);
+  adapter.ensureSchema?.().catch((error) => {
+    console.error('Failed to ensure Turso schema', error);
+  });
+  return adapter;
+}

@@ -25,7 +25,7 @@ Set these variables in Vercel (Project Settings → Environment Variables) **and
 | `VERCEL_PROJECT_ID` | *(Optional)* Vercel project identifier. |
 | `VERCEL_TOKEN` | *(Optional)* Vercel personal access token for non-interactive deploys. |
 
-The API layer automatically uses Turso whenever `TURSO_URL` and `TURSO_AUTH_TOKEN` are present. Otherwise it falls back to the local SQLite database (useful for local development and tests).
+The API layer always requires Turso credentials. `yarn dev` loads them from `.env.development.local` (falling back to `.env.development`, `.env.local`, or `.env`) so local development matches the production deployment environment. Configure the same variables in Vercel to keep behaviour consistent.
 
 When `POSTMARK_SERVER_TOKEN` and `POSTMARK_FROM_EMAIL` are defined *and* `SKIP_PIN` is **not** set to `true`, login PINs are delivered via Postmark. If either value is missing the server logs a warning and returns the PIN directly (development behaviour).
 

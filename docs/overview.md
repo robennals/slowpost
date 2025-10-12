@@ -55,7 +55,7 @@
 
 I have the domain with cloudflare
 
-* SQLLite as the database.
+* Turso (libSQL) as the database.
 * Server written in NodeJS
 * Client written in React, with NextJS
 * Static files hosted with Vercel (Hobby)
