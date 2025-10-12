@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import type { DbAdapter } from '../db/adapter.js';
+import type { DbAdapter } from '../db/types.js';
 
 export interface AuthData {
   email: string;
