@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserGroups, getSubscriptions, getProfile, getSubscribers, getUpdates, getGroup } from '@/lib/api';
 import { useEffect, useState } from 'react';
