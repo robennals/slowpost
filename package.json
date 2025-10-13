@@ -14,6 +14,8 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "test:storybook": "node scripts/run-storybook-tests.mjs",
+    "test:storybook:browser": "node scripts/run-storybook-tests.mjs --env browser",
+    "test:storybook:jsdom": "node scripts/run-storybook-tests.mjs --env jsdom",
     "deploy": "node scripts/deploy-to-vercel.js"
   },
   "dependencies": {
@@ -37,6 +39,7 @@
     "@types/react-dom": "^18.3.0",
     "eslint": "^8.0.0",
     "eslint-config-next": "^14.2.0",
+    "jsdom": "^27.0.0",
     "storybook": "^8.0.0",
     "typescript": "^5.0.0",
     "vite": "^7.1.9",

@@ -1,6 +1,40 @@
 import { spawn } from 'child_process';
 import http from 'http';
 
+function parseArgs(argv) {
+  const result = {};
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+
+    if (!arg.startsWith('--')) {
+      continue;
+    }
+
+    const withoutPrefix = arg.slice(2);
+    const equalsIndex = withoutPrefix.indexOf('=');
+
+    if (equalsIndex !== -1) {
+      const key = withoutPrefix.slice(0, equalsIndex);
+      const value = withoutPrefix.slice(equalsIndex + 1);
+      result[key] = value;
+      continue;
+    }
+
+    const next = argv[index + 1];
+    if (next && !next.startsWith('--')) {
+      result[withoutPrefix] = next;
+      index += 1;
+    } else {
+      result[withoutPrefix] = true;
+    }
+  }
+
+  return result;
+}
+
+const cliArgs = parseArgs(process.argv.slice(2));
+const mode = cliArgs.env ?? cliArgs.mode ?? process.env.STORYBOOK_TEST_ENV ?? 'browser';
 const port = process.env.STORYBOOK_PORT ? Number(process.env.STORYBOOK_PORT) : 6006;
 const host = '127.0.0.1';
 
@@ -47,7 +81,7 @@ function runCommand(command, args, options = {}) {
   });
 }
 
-async function main() {
+async function runBrowserTests() {
   const storybookBin = resolveBin('storybook');
   const storybookArgs = ['dev', '--port', String(port), '--ci', '--no-open', '--disable-telemetry'];
   const server = spawn(storybookBin, storybookArgs, { stdio: 'inherit' });
@@ -63,6 +97,25 @@ async function main() {
   } finally {
     server.kill('SIGTERM');
   }
+}
+
+async function runJsdomTests() {
+  const vitestBin = resolveBin('vitest');
+  await runCommand(vitestBin, ['run', '--config', 'tests/storybook/vitest.storybook.config.ts']);
+}
+
+async function main() {
+  if (mode === 'browser') {
+    await runBrowserTests();
+    return;
+  }
+
+  if (mode === 'jsdom') {
+    await runJsdomTests();
+    return;
+  }
+
+  throw new Error(`Unknown STORYBOOK_TEST_ENV value: "${mode}"`);
 }
 
 main().catch((error) => {
