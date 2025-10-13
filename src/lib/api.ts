@@ -64,6 +64,16 @@ export async function updateProfile(username: string, updates: { fullName?: stri
   return res.json();
 }
 
+export async function uploadProfilePhoto(image: string) {
+  const res = await fetch(`${API_BASE}/profile-photo`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ image }),
+    credentials: 'include',
+  });
+  return res.json();
+}
+
 export async function getSubscribers(username: string) {
   const res = await fetch(`${API_BASE}/subscribers/${username}`, {
     credentials: 'include',

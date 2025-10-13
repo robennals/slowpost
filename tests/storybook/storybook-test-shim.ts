@@ -4,7 +4,8 @@ export function withPatchedStorybookTest(actual: typeof StorybookTest) {
   const originalWithin = actual.within;
 
   const patchedWithin: typeof originalWithin = ((...args) => {
-    const queries = originalWithin(...args);
+    const originalWithinAny = originalWithin as (...inner: unknown[]) => ReturnType<typeof originalWithin>;
+    const queries = originalWithinAny(...args);
 
     return new Proxy(queries, {
       get(target, prop, receiver) {

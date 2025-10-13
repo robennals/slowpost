@@ -5,7 +5,17 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { getProfile, updateProfile, subscribeToUser, getSubscribers, getUserGroups, confirmSubscription, unsubscribeFromUser } from '@/lib/api';
+import {
+  getProfile,
+  updateProfile,
+  subscribeToUser,
+  getSubscribers,
+  getUserGroups,
+  confirmSubscription,
+  unsubscribeFromUser,
+  uploadProfilePhoto,
+} from '@/lib/api';
+import { ProfilePhotoEditor } from '@/components/ProfilePhotoEditor';
 import styles from './profile.module.css';
 
 interface Profile {
@@ -31,6 +41,10 @@ export default function ProfilePage() {
   const [subscribing, setSubscribing] = useState(false);
   const [groups, setGroups] = useState<any[]>([]);
   const [subscriptionInfo, setSubscriptionInfo] = useState<any>(null);
+  const [photoEditorImage, setPhotoEditorImage] = useState<string | null>(null);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [photoUploadError, setPhotoUploadError] = useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const isOwnProfile = user?.username === username;
 
@@ -101,6 +115,61 @@ export default function ProfilePage() {
     if (profile) {
       setEditedBio(profile.bio || '');
       setEditedFullName(profile.fullName);
+    }
+  };
+
+  const handleSelectPhoto = () => {
+    if (!isOwnProfile || photoUploading) return;
+    setPhotoUploadError(null);
+    fileInputRef.current?.click();
+  };
+
+  const handlePhotoFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setPhotoUploadError('Please choose an image file.');
+      event.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPhotoEditorImage(reader.result as string);
+    };
+    reader.onerror = () => {
+      setPhotoUploadError('Failed to read the selected file.');
+    };
+    reader.readAsDataURL(file);
+    event.target.value = '';
+  };
+
+  const handleCancelPhotoEdit = () => {
+    setPhotoEditorImage(null);
+    setPhotoUploadError(null);
+  };
+
+  const handleSavePhoto = async ({ dataUrl }: { dataUrl: string; mimeType: string }) => {
+    if (!profile) return;
+    setPhotoUploading(true);
+    setPhotoUploadError(null);
+    try {
+      const result = await uploadProfilePhoto(dataUrl);
+      if (result?.error) {
+        throw new Error(result.error);
+      }
+      if (result?.profile) {
+        setProfile(result.profile);
+        setEditedBio(result.profile.bio || '');
+        setEditedFullName(result.profile.fullName);
+      } else if (result?.photoUrl) {
+        setProfile((prev) => (prev ? { ...prev, photoUrl: result.photoUrl } : prev));
+      }
+      setPhotoEditorImage(null);
+    } catch (error: any) {
+      setPhotoUploadError(error.message || 'Failed to upload photo.');
+    } finally {
+      setPhotoUploading(false);
     }
   };
 
@@ -180,6 +249,28 @@ export default function ProfilePage() {
                 {profile.fullName.charAt(0).toUpperCase()}
               </div>
             )}
+            {isOwnProfile ? (
+              <div className={styles.avatarActions}>
+                <button
+                  type="button"
+                  onClick={handleSelectPhoto}
+                  className={styles.changePhotoButton}
+                  disabled={photoUploading}
+                >
+                  {photoUploading ? 'Uploading…' : profile.photoUrl ? 'Change photo' : 'Add photo'}
+                </button>
+                {photoUploadError && !photoEditorImage ? (
+                  <div className={styles.photoError}>{photoUploadError}</div>
+                ) : null}
+              </div>
+            ) : null}
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              onChange={handlePhotoFileChange}
+              className={styles.fileInput}
+            />
           </div>
 
           {!editing ? (
@@ -301,6 +392,15 @@ export default function ProfilePage() {
           )}
         </div>
       </div>
+      {photoEditorImage ? (
+        <ProfilePhotoEditor
+          imageSrc={photoEditorImage}
+          onCancel={handleCancelPhotoEdit}
+          onSave={handleSavePhoto}
+          saving={photoUploading}
+          errorMessage={photoUploadError}
+        />
+      ) : null}
     </div>
   );
 }

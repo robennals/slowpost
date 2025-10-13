@@ -1,6 +1,11 @@
 import { setProjectAnnotations } from '@storybook/react';
 import preview from '../../.storybook/preview';
 
+declare global {
+  // eslint-disable-next-line no-var
+  var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
+}
+
 // Configure Storybook to use the global `act` from React
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 

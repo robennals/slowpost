@@ -33,6 +33,10 @@
 
 .avatar {
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .avatar img,
@@ -51,6 +55,47 @@
   justify-content: center;
   font-size: 3rem;
   font-weight: 700;
+}
+
+.avatarActions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.changePhotoButton {
+  padding: 0.45rem 0.9rem;
+  background: white;
+  border: 2px solid #667eea;
+  color: #4c51bf;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.changePhotoButton:hover:not(:disabled) {
+  background: #667eea;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.changePhotoButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.photoError {
+  color: #c53030;
+  font-size: 0.85rem;
+  text-align: center;
+  max-width: 180px;
+}
+
+.fileInput {
+  display: none;
 }
 
 .info {
