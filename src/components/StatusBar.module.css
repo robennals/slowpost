@@ -1,6 +1,6 @@
 .header {
-  background: white;
-  border-bottom: 1px solid #e2e8f0;
+  background: var(--color-paper);
+  border-bottom: 1px solid var(--color-paper-border);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
@@ -13,16 +13,33 @@
   align-items: center;
 }
 
+.logoSection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
 .logo {
-  font-size: 1.5rem;
+  font-family: var(--font-playfair);
+  font-size: 1.75rem;
   font-weight: 700;
-  color: #667eea;
+  color: var(--color-text-dark);
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .logo:hover {
-  color: #5568d3;
+  color: var(--color-text-medium);
+}
+
+.tagline {
+  font-family: var(--font-crimson);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .nav {
@@ -32,19 +49,19 @@
 }
 
 .profileLink {
-  color: #4a5568;
+  color: var(--color-text-medium);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s;
 }
 
 .profileLink:hover {
-  color: #667eea;
+  color: var(--color-text-dark);
 }
 
 .loginButton {
   padding: 0.5rem 1rem;
-  background: #667eea;
+  background: var(--color-wax-seal);
   color: white;
   text-decoration: none;
   border-radius: 6px;
@@ -53,15 +70,15 @@
 }
 
 .loginButton:hover {
-  background: #5568d3;
+  background: var(--color-wax-seal-hover);
   transform: translateY(-1px);
 }
 
 .logoutButton {
   padding: 0.5rem 1rem;
   background: transparent;
-  color: #718096;
-  border: 1px solid #e2e8f0;
+  color: var(--color-text-medium);
+  border: 1px solid var(--color-paper-border);
   border-radius: 6px;
   font-weight: 500;
   cursor: pointer;
@@ -69,7 +86,7 @@
 }
 
 .logoutButton:hover {
-  background: #f7fafc;
-  border-color: #cbd5e0;
-  color: #4a5568;
+  background: rgba(217, 208, 193, 0.1);
+  border-color: var(--color-text-medium);
+  color: var(--color-text-dark);
 }

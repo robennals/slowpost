@@ -1,10 +1,21 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Playfair_Display, Crimson_Text } from 'next/font/google';
 import { AuthProvider } from '@/contexts/AuthContext';
 import StatusBar from '@/components/StatusBar';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
+const playfair = Playfair_Display({ 
+  subsets: ['latin'],
+  variable: '--font-playfair',
+  display: 'swap'
+});
+const crimson = Crimson_Text({ 
+  weight: ['400', '600', '700'],
+  subsets: ['latin'],
+  variable: '--font-crimson',
+  display: 'swap'
+});
 
 export const metadata: Metadata = {
   title: 'Slowpost',
@@ -18,7 +29,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={`${inter.className} ${playfair.variable} ${crimson.variable}`}>
         <AuthProvider>
           <StatusBar />
           {children}

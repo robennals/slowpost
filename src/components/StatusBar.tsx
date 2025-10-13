@@ -16,9 +16,12 @@ export default function StatusBar() {
   return (
     <header className={styles.header}>
       <div className={styles.container}>
-        <Link href="/" className={styles.logo}>
-          Slowpost
-        </Link>
+        <div className={styles.logoSection}>
+          <Link href="/" className={styles.logo}>
+            slowpost
+          </Link>
+          <span className={styles.tagline}>POST ONCE A YEAR</span>
+        </div>
 
         <div className={styles.nav}>
           {user ? (

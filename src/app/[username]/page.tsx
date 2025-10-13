@@ -242,13 +242,15 @@ export default function ProfilePage() {
       <div className={styles.profileCard}>
         <div className={styles.header}>
           <div className={styles.avatar}>
-            {profile.photoUrl ? (
-              <img src={profile.photoUrl} alt={profile.fullName} />
-            ) : (
-              <div className={styles.avatarPlaceholder}>
-                {profile.fullName.charAt(0).toUpperCase()}
-              </div>
-            )}
+            <div className={styles.avatarContainer}>
+              {profile.photoUrl ? (
+                <img src={profile.photoUrl} alt={profile.fullName} />
+              ) : (
+                <div className={styles.avatarPlaceholder}>
+                  {profile.fullName.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
             {isOwnProfile ? (
               <div className={styles.avatarActions}>
                 <button
@@ -355,9 +357,17 @@ export default function ProfilePage() {
               className={isSubscribed ? styles.subscribedButton : styles.subscribeButton}
               disabled={subscribing || isSubscribed}
             >
-              {subscribing ? 'Subscribing...' : isSubscribed ? 'Subscribed' : 'Subscribe to Annual Post'}
+              {subscribing ? 'Subscribing...' : isSubscribed ? 'Subscribed' : 'SUBSCRIBE'}
             </button>
           )}
+        </div>
+
+        <div className={styles.howItWorks}>
+          <h2 className={styles.howItWorksTitle}>HOW SLOWPOST WORKS</h2>
+          <h3 className={styles.howItWorksSubtitle}>POST ONCE A YEAR, STAY IN TOUCH FOREVER</h3>
+          <p className={styles.howItWorksText}>
+            Receive one update per year. That's it. No endless feeds, no infinite scrolling – just a single post to stay connected with those you care about.
+          </p>
         </div>
 
         <div className={styles.sections}>

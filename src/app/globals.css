@@ -11,8 +11,25 @@ body {
 }
 
 body {
-  color: #1a202c;
-  background: #ffffff;
+  color: #4A3B30;
+  background: #F5F0E6;
+  font-family: var(--font-crimson), serif;
+  line-height: 1.6;
+  background-image: 
+    radial-gradient(circle at 1px 1px, rgba(74, 59, 48, 0.05) 1px, transparent 0);
+  background-size: 20px 20px;
+}
+
+/* Font variables for vintage aesthetic */
+:root {
+  --font-playfair: 'Playfair Display', serif;
+  --font-crimson: 'Crimson Text', serif;
+  --color-paper: #F5F0E6;
+  --color-paper-border: #D9D0C1;
+  --color-text-dark: #4A3B30;
+  --color-text-medium: #6B5B47;
+  --color-wax-seal: #A84437;
+  --color-wax-seal-hover: #8B3A2F;
 }
 
 a {

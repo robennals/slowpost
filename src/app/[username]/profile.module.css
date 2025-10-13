@@ -1,6 +1,6 @@
 .container {
   min-height: calc(100vh - 70px);
-  background: #f7fafc;
+  background: var(--color-paper);
   padding: 2rem 1.5rem;
 }
 
@@ -9,20 +9,24 @@
   text-align: center;
   padding: 3rem;
   font-size: 1.125rem;
-  color: #718096;
+  color: var(--color-text-medium);
 }
 
 .error {
-  color: #e53e3e;
+  color: #A84437;
 }
 
 .profileCard {
   max-width: 800px;
   margin: 0 auto;
-  background: white;
+  background: var(--color-paper);
   border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(74, 59, 48, 0.1);
+  border: 1px solid var(--color-paper-border);
+  background-image: 
+    radial-gradient(circle at 1px 1px, rgba(74, 59, 48, 0.03) 1px, transparent 0);
+  background-size: 20px 20px;
 }
 
 .header {
@@ -43,18 +47,31 @@
 .avatarPlaceholder {
   width: 120px;
   height: 120px;
-  border-radius: 50%;
   object-fit: cover;
+  border-radius: 8px;
+  position: relative;
+}
+
+.avatarContainer {
+  position: relative;
+  display: inline-block;
+  padding: 8px;
+  background: var(--color-paper);
+  border-radius: 8px;
+  box-shadow: 
+    0 2px 8px rgba(74, 59, 48, 0.15),
+    0 0 0 1px var(--color-paper-border);
 }
 
 .avatarPlaceholder {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--color-text-medium) 0%, var(--color-text-dark) 100%);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 3rem;
   font-weight: 700;
+  font-family: var(--font-playfair);
 }
 
 .avatarActions {
@@ -66,18 +83,19 @@
 
 .changePhotoButton {
   padding: 0.45rem 0.9rem;
-  background: white;
-  border: 2px solid #667eea;
-  color: #4c51bf;
+  background: rgba(255, 255, 255, 0.8);
+  border: 2px solid var(--color-paper-border);
+  color: var(--color-text-dark);
   border-radius: 999px;
   font-size: 0.9rem;
   font-weight: 600;
+  font-family: var(--font-crimson);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .changePhotoButton:hover:not(:disabled) {
-  background: #667eea;
+  background: var(--color-text-dark);
   color: white;
   transform: translateY(-1px);
 }
@@ -88,10 +106,11 @@
 }
 
 .photoError {
-  color: #c53030;
+  color: var(--color-wax-seal);
   font-size: 0.85rem;
   text-align: center;
   max-width: 180px;
+  font-family: var(--font-crimson);
 }
 
 .fileInput {
@@ -106,21 +125,24 @@
 }
 
 .name {
-  font-size: 2rem;
+  font-family: var(--font-playfair);
+  font-size: 2.25rem;
   font-weight: 700;
-  color: #1a202c;
+  color: var(--color-text-dark);
   margin: 0;
 }
 
 .username {
   font-size: 1rem;
-  color: #718096;
+  color: var(--color-text-medium);
+  font-style: italic;
 }
 
 .bio {
   margin-top: 0.5rem;
-  color: #4a5568;
+  color: var(--color-text-dark);
   line-height: 1.6;
+  font-size: 1.1rem;
 }
 
 .editForm {
@@ -133,18 +155,21 @@
 .input,
 .textarea {
   padding: 0.75rem 1rem;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--color-paper-border);
   border-radius: 8px;
   font-size: 1rem;
-  font-family: inherit;
+  font-family: var(--font-crimson);
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-dark);
   transition: all 0.2s;
 }
 
 .input:focus,
 .textarea:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--color-text-medium);
+  box-shadow: 0 0 0 3px rgba(107, 91, 71, 0.1);
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .textarea {
@@ -156,47 +181,49 @@
   display: flex;
   gap: 1rem;
   padding-bottom: 2rem;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--color-paper-border);
   margin-bottom: 2rem;
 }
 
 .editButton,
 .saveButton {
   padding: 0.75rem 1.5rem;
-  background: #667eea;
+  background: var(--color-wax-seal);
   color: white;
   border: none;
   border-radius: 8px;
   font-weight: 600;
+  font-family: var(--font-crimson);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .editButton:hover,
 .saveButton:hover:not(:disabled) {
-  background: #5568d3;
+  background: var(--color-wax-seal-hover);
   transform: translateY(-1px);
 }
 
 .saveButton:disabled {
-  background: #cbd5e0;
+  background: var(--color-paper-border);
   cursor: not-allowed;
 }
 
 .cancelButton {
   padding: 0.75rem 1.5rem;
   background: transparent;
-  color: #718096;
-  border: 2px solid #e2e8f0;
+  color: var(--color-text-medium);
+  border: 2px solid var(--color-paper-border);
   border-radius: 8px;
   font-weight: 600;
+  font-family: var(--font-crimson);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .cancelButton:hover:not(:disabled) {
-  background: #f7fafc;
-  border-color: #cbd5e0;
+  background: rgba(217, 208, 193, 0.1);
+  border-color: var(--color-text-medium);
 }
 
 .cancelButton:disabled {
@@ -205,46 +232,74 @@
 }
 
 .subscribeButton {
-  padding: 0.875rem 2rem;
-  background: #667eea;
+  padding: 1rem 2rem;
+  background: var(--color-wax-seal);
   color: white;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   font-size: 1.125rem;
+  font-family: var(--font-crimson);
   cursor: pointer;
   transition: all 0.2s;
   width: 100%;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 
+    0 4px 8px rgba(168, 68, 55, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.subscribeButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.1) 100%);
+  pointer-events: none;
 }
 
 .subscribeButton:hover:not(:disabled) {
-  background: #5568d3;
+  background: var(--color-wax-seal-hover);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+  box-shadow: 
+    0 6px 12px rgba(168, 68, 55, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .subscribeButton:disabled {
-  background: #cbd5e0;
+  background: var(--color-paper-border);
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .subscribedButton {
-  padding: 0.875rem 2rem;
-  background: #48bb78;
+  padding: 1rem 2rem;
+  background: #6B5B47;
   color: white;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   font-size: 1.125rem;
+  font-family: var(--font-crimson);
   cursor: not-allowed;
   width: 100%;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 
+    0 2px 4px rgba(107, 91, 71, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .subscriptionConfirm {
   width: 100%;
   padding: 1.5rem;
-  background: #fef3c7;
-  border: 2px solid #f59e0b;
+  background: rgba(217, 208, 193, 0.3);
+  border: 2px solid var(--color-paper-border);
   border-radius: 12px;
   text-align: center;
 }
@@ -252,8 +307,9 @@
 .confirmMessage {
   margin: 0 0 1rem 0;
   font-size: 1.125rem;
-  color: #92400e;
+  color: var(--color-text-dark);
   font-weight: 600;
+  font-family: var(--font-crimson);
 }
 
 .confirmActions {
@@ -264,55 +320,99 @@
 
 .confirmButton {
   padding: 0.75rem 1.5rem;
-  background: #10b981;
+  background: var(--color-wax-seal);
   color: white;
   border: none;
   border-radius: 8px;
   font-weight: 600;
+  font-family: var(--font-crimson);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .confirmButton:hover:not(:disabled) {
-  background: #059669;
+  background: var(--color-wax-seal-hover);
   transform: translateY(-1px);
 }
 
 .confirmButton:disabled {
-  background: #cbd5e0;
+  background: var(--color-paper-border);
   cursor: not-allowed;
 }
 
 .cancelSubscriptionButton {
   padding: 0.75rem 1.5rem;
-  background: #ef4444;
+  background: var(--color-text-medium);
   color: white;
   border: none;
   border-radius: 8px;
   font-weight: 600;
+  font-family: var(--font-crimson);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .cancelSubscriptionButton:hover:not(:disabled) {
-  background: #dc2626;
+  background: var(--color-text-dark);
   transform: translateY(-1px);
 }
 
 .cancelSubscriptionButton:disabled {
-  background: #cbd5e0;
+  background: var(--color-paper-border);
   cursor: not-allowed;
 }
 
 .noAccountMessage {
   width: 100%;
   padding: 1rem;
-  background: #fef3c7;
-  border: 2px solid #f59e0b;
+  background: rgba(217, 208, 193, 0.3);
+  border: 2px solid var(--color-paper-border);
   border-radius: 8px;
   text-align: center;
-  color: #92400e;
+  color: var(--color-text-dark);
   font-weight: 600;
+  font-family: var(--font-crimson);
+}
+
+.howItWorks {
+  width: 100%;
+  padding: 2rem;
+  background: var(--color-paper);
+  border: 1px solid var(--color-paper-border);
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.howItWorksTitle {
+  font-family: var(--font-playfair);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-dark);
+  margin: 0 0 0.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.howItWorksSubtitle {
+  font-family: var(--font-crimson);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text-dark);
+  margin: 0 0 1rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.howItWorksText {
+  font-family: var(--font-crimson);
+  font-size: 1rem;
+  color: var(--color-text-dark);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .sections {
@@ -326,17 +426,19 @@
 }
 
 .sectionTitle {
-  font-size: 1.25rem;
+  font-family: var(--font-playfair);
+  font-size: 1.5rem;
   font-weight: 600;
-  color: #2d3748;
+  color: var(--color-text-dark);
   margin: 0 0 1rem 0;
 }
 
 .emptyState {
   text-align: center;
   padding: 2rem;
-  color: #a0aec0;
+  color: var(--color-text-medium);
   font-size: 0.875rem;
+  font-style: italic;
 }
 
 .groupList {
@@ -348,16 +450,17 @@
 .groupCard {
   display: block;
   padding: 1rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-paper-border);
   border-radius: 8px;
   transition: all 0.2s;
   text-decoration: none;
   color: inherit;
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .groupCard:hover {
-  border-color: #667eea;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-color: var(--color-text-medium);
+  box-shadow: 0 2px 4px rgba(74, 59, 48, 0.1);
   transform: translateY(-1px);
 }
 
@@ -370,24 +473,26 @@
 
 .groupName {
   font-weight: 600;
-  color: #2d3748;
+  color: var(--color-text-dark);
   font-size: 1rem;
+  font-family: var(--font-crimson);
 }
 
 .groupBadge {
   padding: 0.25rem 0.75rem;
-  background: #edf2f7;
-  color: #4a5568;
+  background: rgba(217, 208, 193, 0.3);
+  color: var(--color-text-dark);
   border-radius: 12px;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.75rem;
   white-space: nowrap;
+  font-family: var(--font-crimson);
 }
 
 .groupMemberBio {
   margin-top: 0.5rem;
   font-size: 0.875rem;
-  color: #667eea;
+  color: var(--color-text-medium);
   font-style: italic;
 }
