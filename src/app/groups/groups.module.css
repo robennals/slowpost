@@ -1,6 +1,9 @@
 .container {
   min-height: calc(100vh - 70px);
-  background: #f7fafc;
+  background: var(--color-paper);
+  background-image: 
+    radial-gradient(circle at 1px 1px, rgba(74, 59, 48, 0.05) 1px, transparent 0);
+  background-size: 20px 20px;
   padding: 2rem 1.5rem;
 }
 
@@ -8,7 +11,8 @@
   text-align: center;
   padding: 3rem;
   font-size: 1.125rem;
-  color: #718096;
+  color: var(--color-text-medium);
+  font-family: var(--font-crimson);
 }
 
 .content {
@@ -24,40 +28,55 @@
 }
 
 .title {
+  font-family: var(--font-playfair);
   font-size: 2rem;
   font-weight: 700;
-  color: #1a202c;
+  color: var(--color-text-dark);
   margin: 0;
 }
 
 .createButton {
   padding: 0.75rem 1.5rem;
-  background: #667eea;
+  background: var(--color-wax-seal);
   color: white;
   border: none;
   border-radius: 8px;
   font-weight: 600;
+  font-family: var(--font-crimson);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   cursor: pointer;
   transition: all 0.2s;
+  box-shadow: 
+    0 4px 8px rgba(168, 68, 55, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .createButton:hover {
-  background: #5568d3;
+  background: var(--color-wax-seal-hover);
   transform: translateY(-1px);
+  box-shadow: 
+    0 6px 12px rgba(168, 68, 55, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .createForm {
-  background: white;
+  background: var(--color-paper);
   border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(74, 59, 48, 0.1);
+  border: 1px solid var(--color-paper-border);
   margin-bottom: 2rem;
+  background-image: 
+    radial-gradient(circle at 1px 1px, rgba(74, 59, 48, 0.03) 1px, transparent 0);
+  background-size: 20px 20px;
 }
 
 .formTitle {
+  font-family: var(--font-playfair);
   font-size: 1.5rem;
   font-weight: 600;
-  color: #2d3748;
+  color: var(--color-text-dark);
   margin: 0 0 1.5rem 0;
 }
 
@@ -68,26 +87,29 @@
 .label {
   display: block;
   font-weight: 600;
-  color: #2d3748;
+  color: var(--color-text-dark);
   margin-bottom: 0.5rem;
+  font-family: var(--font-crimson);
 }
 
 .input,
 .textarea {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--color-paper-border);
   border-radius: 8px;
   font-size: 1rem;
-  font-family: inherit;
+  font-family: var(--font-crimson);
+  color: var(--color-text-dark);
+  background: rgba(255, 255, 255, 0.7);
   transition: all 0.2s;
 }
 
 .input:focus,
 .textarea:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--color-text-medium);
+  box-shadow: 0 0 0 3px rgba(74, 59, 48, 0.1);
 }
 
 .textarea {
@@ -97,8 +119,10 @@
 .hint {
   display: block;
   font-size: 0.875rem;
-  color: #718096;
+  color: var(--color-text-medium);
   margin-top: 0.25rem;
+  font-family: var(--font-crimson);
+  font-style: italic;
 }
 
 .checkboxLabel {
@@ -107,6 +131,8 @@
   gap: 0.5rem;
   cursor: pointer;
   user-select: none;
+  font-family: var(--font-crimson);
+  color: var(--color-text-dark);
 }
 
 .checkbox {
@@ -118,50 +144,67 @@
 .submitButton {
   width: 100%;
   padding: 0.875rem;
-  background: #667eea;
+  background: var(--color-wax-seal);
   color: white;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   font-size: 1rem;
+  font-family: var(--font-crimson);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   cursor: pointer;
   transition: all 0.2s;
+  box-shadow: 
+    0 4px 8px rgba(168, 68, 55, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .submitButton:hover:not(:disabled) {
-  background: #5568d3;
+  background: var(--color-wax-seal-hover);
   transform: translateY(-1px);
+  box-shadow: 
+    0 6px 12px rgba(168, 68, 55, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .submitButton:disabled {
-  background: #cbd5e0;
+  background: rgba(217, 208, 193, 0.5);
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .section {
-  background: white;
+  background: var(--color-paper);
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(74, 59, 48, 0.1);
+  border: 1px solid var(--color-paper-border);
+  background-image: 
+    radial-gradient(circle at 1px 1px, rgba(74, 59, 48, 0.03) 1px, transparent 0);
+  background-size: 20px 20px;
 }
 
 .sectionTitle {
-  font-size: 1.25rem;
+  font-family: var(--font-playfair);
+  font-size: 1.5rem;
   font-weight: 600;
-  color: #2d3748;
+  color: var(--color-text-dark);
   margin: 0 0 1rem 0;
 }
 
 .emptyState {
   text-align: center;
   padding: 2rem;
-  color: #718096;
+  color: var(--color-text-medium);
+  font-family: var(--font-crimson);
 }
 
 .emptyHint {
   font-size: 0.875rem;
-  color: #a0aec0;
+  color: var(--color-text-medium);
   margin-top: 0.5rem;
+  font-style: italic;
 }
 
 .groupList {
@@ -173,16 +216,17 @@
 .groupCard {
   display: block;
   padding: 1.5rem;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--color-paper-border);
   border-radius: 8px;
   transition: all 0.2s;
   text-decoration: none;
   color: inherit;
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .groupCard:hover {
-  border-color: #667eea;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border-color: var(--color-text-medium);
+  box-shadow: 0 4px 6px rgba(74, 59, 48, 0.1);
   transform: translateY(-1px);
 }
 
@@ -194,29 +238,34 @@
 }
 
 .groupName {
+  font-family: var(--font-playfair);
   font-size: 1.25rem;
   font-weight: 600;
-  color: #2d3748;
+  color: var(--color-text-dark);
 }
 
 .groupBadge {
   padding: 0.25rem 0.75rem;
-  background: #edf2f7;
-  color: #4a5568;
+  background: rgba(217, 208, 193, 0.3);
+  color: var(--color-text-dark);
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
+  font-family: var(--font-crimson);
 }
 
 .groupDescription {
-  color: #718096;
+  color: var(--color-text-medium);
   line-height: 1.5;
   margin-bottom: 0.5rem;
+  font-family: var(--font-crimson);
 }
 
 .memberBio {
   font-size: 0.875rem;
-  color: #667eea;
+  color: var(--color-wax-seal);
   font-weight: 500;
+  font-family: var(--font-crimson);
+  font-style: italic;
 }

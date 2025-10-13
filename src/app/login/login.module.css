@@ -3,30 +3,40 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-paper);
+  background-image: 
+    radial-gradient(circle at 1px 1px, rgba(74, 59, 48, 0.05) 1px, transparent 0);
+  background-size: 20px 20px;
   padding: 1rem;
 }
 
 .card {
-  background: white;
+  background: var(--color-paper);
   border-radius: 12px;
   padding: 2.5rem;
   width: 100%;
   max-width: 400px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  box-shadow: 
+    0 10px 40px rgba(74, 59, 48, 0.15),
+    0 0 0 1px var(--color-paper-border);
+  background-image: 
+    radial-gradient(circle at 1px 1px, rgba(74, 59, 48, 0.03) 1px, transparent 0);
+  background-size: 20px 20px;
 }
 
 .title {
+  font-family: var(--font-playfair);
   font-size: 2rem;
   font-weight: 700;
   text-align: center;
-  color: #1a202c;
+  color: var(--color-text-dark);
   margin: 0 0 0.5rem 0;
 }
 
 .description {
+  font-family: var(--font-crimson);
   text-align: center;
-  color: #718096;
+  color: var(--color-text-medium);
   margin: 0 0 1.5rem 0;
 }
 
@@ -38,39 +48,50 @@
 
 .input {
   padding: 0.75rem 1rem;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--color-paper-border);
   border-radius: 8px;
   font-size: 1rem;
+  font-family: var(--font-crimson);
+  color: var(--color-text-dark);
+  background: rgba(255, 255, 255, 0.7);
   transition: all 0.2s;
   outline: none;
 }
 
 .input:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--color-text-medium);
+  box-shadow: 0 0 0 3px rgba(74, 59, 48, 0.1);
 }
 
 .input:disabled {
-  background: #f7fafc;
+  background: rgba(217, 208, 193, 0.3);
   cursor: not-allowed;
 }
 
 .button {
   padding: 0.75rem 1rem;
-  background: #667eea;
+  background: var(--color-wax-seal);
   color: white;
   border: none;
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
+  font-family: var(--font-crimson);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   cursor: pointer;
   transition: all 0.2s;
+  box-shadow: 
+    0 4px 8px rgba(168, 68, 55, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .button:hover:not(:disabled) {
-  background: #5568d3;
+  background: var(--color-wax-seal-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  box-shadow: 
+    0 6px 12px rgba(168, 68, 55, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .button:active:not(:disabled) {
@@ -78,68 +99,76 @@
 }
 
 .button:disabled {
-  background: #cbd5e0;
+  background: rgba(217, 208, 193, 0.5);
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .skipButton {
   padding: 0.75rem 1rem;
   background: transparent;
-  color: #667eea;
-  border: 2px solid #667eea;
+  color: var(--color-wax-seal);
+  border: 2px solid var(--color-wax-seal);
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
+  font-family: var(--font-crimson);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .skipButton:hover:not(:disabled) {
-  background: #667eea;
+  background: var(--color-wax-seal);
   color: white;
   transform: translateY(-1px);
 }
 
 .skipButton:disabled {
-  border-color: #cbd5e0;
-  color: #cbd5e0;
+  border-color: rgba(217, 208, 193, 0.5);
+  color: rgba(217, 208, 193, 0.5);
   cursor: not-allowed;
 }
 
 .backButton {
   padding: 0.5rem 1rem;
   background: transparent;
-  color: #718096;
+  color: var(--color-text-medium);
   border: none;
   font-size: 0.875rem;
+  font-family: var(--font-crimson);
   cursor: pointer;
   transition: color 0.2s;
 }
 
 .backButton:hover:not(:disabled) {
-  color: #4a5568;
+  color: var(--color-text-dark);
 }
 
 .backButton:disabled {
-  color: #cbd5e0;
+  color: rgba(217, 208, 193, 0.5);
   cursor: not-allowed;
 }
 
 .error {
-  background: #fed7d7;
-  color: #c53030;
+  background: rgba(168, 68, 55, 0.1);
+  color: var(--color-wax-seal);
   padding: 0.75rem;
   border-radius: 8px;
   font-size: 0.875rem;
+  font-family: var(--font-crimson);
   text-align: center;
+  border: 1px solid rgba(168, 68, 55, 0.2);
 }
 
 .devInfo {
-  background: #fefcbf;
-  color: #744210;
+  background: rgba(74, 59, 48, 0.1);
+  color: var(--color-text-dark);
   padding: 0.75rem;
   border-radius: 8px;
   font-size: 0.875rem;
+  font-family: var(--font-crimson);
   text-align: center;
-  border: 1px solid #f6e05e;
+  border: 1px solid var(--color-paper-border);
 }

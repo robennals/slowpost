@@ -1,6 +1,9 @@
 .container {
   min-height: calc(100vh - 70px);
-  background: #f7fafc;
+  background: var(--color-paper);
+  background-image: 
+    radial-gradient(circle at 1px 1px, rgba(74, 59, 48, 0.05) 1px, transparent 0);
+  background-size: 20px 20px;
   padding: 2rem 1.5rem;
 }
 
@@ -9,11 +12,12 @@
   text-align: center;
   padding: 3rem;
   font-size: 1.125rem;
-  color: #718096;
+  color: var(--color-text-medium);
+  font-family: var(--font-crimson);
 }
 
 .error {
-  color: #e53e3e;
+  color: var(--color-wax-seal);
 }
 
 .content {
@@ -22,9 +26,10 @@
 }
 
 .title {
+  font-family: var(--font-playfair);
   font-size: 2rem;
   font-weight: 700;
-  color: #1a202c;
+  color: var(--color-text-dark);
   margin: 0 0 2rem 0;
 }
 
@@ -41,41 +46,47 @@
 }
 
 .updateCard {
-  background: white;
+  background: var(--color-paper);
   padding: 1.25rem;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(74, 59, 48, 0.1);
+  border: 1px solid var(--color-paper-border);
   transition: all 0.2s;
   cursor: pointer;
+  background-image: 
+    radial-gradient(circle at 1px 1px, rgba(74, 59, 48, 0.03) 1px, transparent 0);
+  background-size: 20px 20px;
 }
 
 .updateCardLink:hover .updateCard {
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(74, 59, 48, 0.15);
   transform: translateY(-1px);
-  border: 1px solid #667eea;
+  border-color: var(--color-text-medium);
 }
 
 .updateLink {
   display: block;
   text-decoration: none;
-  color: #2d3748;
+  color: var(--color-text-dark);
   font-size: 1rem;
   margin-bottom: 0.5rem;
+  font-family: var(--font-crimson);
 }
 
 .updateLink:hover {
-  color: #667eea;
+  color: var(--color-wax-seal);
 }
 
 .updateText {
-  color: #2d3748;
+  color: var(--color-text-dark);
   font-size: 1rem;
   margin-bottom: 0.5rem;
+  font-family: var(--font-crimson);
 }
 
 .inlineLink {
   text-decoration: none;
-  color: #667eea;
+  color: var(--color-wax-seal);
 }
 
 .inlineLink:hover {
@@ -84,23 +95,32 @@
 
 .updateTime {
   font-size: 0.875rem;
-  color: #a0aec0;
+  color: var(--color-text-medium);
+  font-family: var(--font-crimson);
+  font-style: italic;
 }
 
 .emptyState {
   text-align: center;
   padding: 4rem 2rem;
-  background: white;
+  background: var(--color-paper);
   border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(74, 59, 48, 0.1);
+  border: 1px solid var(--color-paper-border);
+  background-image: 
+    radial-gradient(circle at 1px 1px, rgba(74, 59, 48, 0.03) 1px, transparent 0);
+  background-size: 20px 20px;
 }
 
 .emptyState p {
   margin: 0.5rem 0;
-  color: #718096;
+  color: var(--color-text-medium);
+  font-family: var(--font-crimson);
 }
 
 .emptyHint {
   font-size: 0.875rem;
-  color: #a0aec0;
+  color: var(--color-text-medium);
+  font-family: var(--font-crimson);
+  font-style: italic;
 }

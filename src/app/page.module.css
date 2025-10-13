@@ -1,6 +1,9 @@
 .container {
   min-height: calc(100vh - 70px);
-  background: #f7fafc;
+  background: var(--color-paper);
+  background-image: 
+    radial-gradient(circle at 1px 1px, rgba(74, 59, 48, 0.05) 1px, transparent 0);
+  background-size: 20px 20px;
 }
 
 .loading {
@@ -9,7 +12,8 @@
   justify-content: center;
   min-height: 50vh;
   font-size: 1.125rem;
-  color: #718096;
+  color: var(--color-text-medium);
+  font-family: var(--font-crimson);
 }
 
 /* Logged out hero section */
@@ -21,42 +25,53 @@
 }
 
 .logoLarge {
+  font-family: var(--font-playfair);
   font-size: 3rem;
   font-weight: 700;
-  color: #667eea;
+  color: var(--color-text-dark);
   margin-bottom: 1rem;
 }
 
 .tagline {
+  font-family: var(--font-playfair);
   font-size: 1.5rem;
-  font-weight: 600;
-  color: #2d3748;
+  font-weight: 400;
+  color: var(--color-text-dark);
   margin-bottom: 1rem;
 }
 
 .description {
+  font-family: var(--font-crimson);
   font-size: 1.125rem;
-  color: #4a5568;
+  color: var(--color-text-dark);
   line-height: 1.7;
   margin-bottom: 2rem;
 }
 
 .ctaButton {
   display: inline-block;
-  padding: 0.875rem 2rem;
-  background: #667eea;
+  padding: 1rem 2rem;
+  background: var(--color-wax-seal);
   color: white;
   text-decoration: none;
   border-radius: 8px;
   font-weight: 600;
+  font-family: var(--font-crimson);
   font-size: 1.125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   transition: all 0.2s;
+  box-shadow: 
+    0 4px 8px rgba(168, 68, 55, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .ctaButton:hover {
-  background: #5568d3;
+  background: var(--color-wax-seal-hover);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+  box-shadow: 
+    0 6px 12px rgba(168, 68, 55, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 /* Logged in content */
@@ -67,9 +82,10 @@
 }
 
 .welcome {
+  font-family: var(--font-playfair);
   font-size: 2rem;
   font-weight: 700;
-  color: #1a202c;
+  color: var(--color-text-dark);
   margin-bottom: 2rem;
 }
 
@@ -80,10 +96,14 @@
 }
 
 .section {
-  background: white;
+  background: var(--color-paper);
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(74, 59, 48, 0.1);
+  border: 1px solid var(--color-paper-border);
+  background-image: 
+    radial-gradient(circle at 1px 1px, rgba(74, 59, 48, 0.03) 1px, transparent 0);
+  background-size: 20px 20px;
 }
 
 .sectionHeader {
@@ -94,28 +114,31 @@
 }
 
 .sectionTitle {
-  font-size: 1.25rem;
+  font-family: var(--font-playfair);
+  font-size: 1.5rem;
   font-weight: 600;
-  color: #2d3748;
+  color: var(--color-text-dark);
   margin: 0 0 1rem 0;
 }
 
 .viewAll {
-  color: #667eea;
+  color: var(--color-wax-seal);
   text-decoration: none;
   font-weight: 500;
+  font-family: var(--font-crimson);
   font-size: 0.875rem;
   transition: color 0.2s;
 }
 
 .viewAll:hover {
-  color: #5568d3;
+  color: var(--color-wax-seal-hover);
 }
 
 .emptyState {
   text-align: center;
   padding: 2rem 1rem;
-  color: #718096;
+  color: var(--color-text-medium);
+  font-family: var(--font-crimson);
 }
 
 .emptyState p {
@@ -124,7 +147,8 @@
 
 .emptyHint {
   font-size: 0.875rem;
-  color: #a0aec0;
+  color: var(--color-text-medium);
+  font-style: italic;
 }
 
 .profilePreview {
@@ -138,14 +162,17 @@
 }
 
 .profileName {
+  font-family: var(--font-playfair);
   font-size: 1.125rem;
   font-weight: 600;
-  color: #2d3748;
+  color: var(--color-text-dark);
 }
 
 .profileUsername {
+  font-family: var(--font-crimson);
   font-size: 0.875rem;
-  color: #718096;
+  color: var(--color-text-medium);
+  font-style: italic;
 }
 
 .groupList {
@@ -157,16 +184,17 @@
 .groupCard {
   display: block;
   padding: 1rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-paper-border);
   border-radius: 8px;
   transition: all 0.2s;
   text-decoration: none;
   color: inherit;
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .groupCard:hover {
-  border-color: #667eea;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-color: var(--color-text-medium);
+  box-shadow: 0 2px 4px rgba(74, 59, 48, 0.1);
   transform: translateY(-1px);
 }
 
@@ -178,20 +206,22 @@
 }
 
 .groupName {
+  font-family: var(--font-crimson);
   font-weight: 600;
-  color: #2d3748;
+  color: var(--color-text-dark);
   font-size: 1rem;
 }
 
 .groupBadge {
   padding: 0.25rem 0.75rem;
-  background: #edf2f7;
-  color: #4a5568;
+  background: rgba(217, 208, 193, 0.3);
+  color: var(--color-text-dark);
   border-radius: 12px;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.75rem;
   white-space: nowrap;
+  font-family: var(--font-crimson);
 }
 
 .subscriptionList {
@@ -203,29 +233,33 @@
 .subscriptionCard {
   display: block;
   padding: 1rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-paper-border);
   border-radius: 8px;
   transition: all 0.2s;
   text-decoration: none;
   color: inherit;
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .subscriptionCard:hover {
-  border-color: #667eea;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-color: var(--color-text-medium);
+  box-shadow: 0 2px 4px rgba(74, 59, 48, 0.1);
   transform: translateY(-1px);
 }
 
 .subscriptionName {
+  font-family: var(--font-crimson);
   font-weight: 600;
-  color: #2d3748;
+  color: var(--color-text-dark);
   font-size: 1rem;
   margin-bottom: 0.25rem;
 }
 
 .subscriptionUsername {
+  font-family: var(--font-crimson);
   font-size: 0.875rem;
-  color: #718096;
+  color: var(--color-text-medium);
+  font-style: italic;
 }
 
 .updateList {
@@ -242,39 +276,42 @@
 
 .updateCard {
   padding: 1rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-paper-border);
   border-radius: 8px;
   transition: all 0.2s;
   cursor: pointer;
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .updateCardLink:hover .updateCard {
-  border-color: #667eea;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-color: var(--color-text-medium);
+  box-shadow: 0 2px 4px rgba(74, 59, 48, 0.1);
   transform: translateY(-1px);
 }
 
 .updateLink {
   display: block;
   text-decoration: none;
-  color: #2d3748;
+  color: var(--color-text-dark);
   font-size: 0.875rem;
   margin-bottom: 0.25rem;
+  font-family: var(--font-crimson);
 }
 
 .updateLink:hover {
-  color: #667eea;
+  color: var(--color-wax-seal);
 }
 
 .updateText {
-  color: #2d3748;
+  color: var(--color-text-dark);
   font-size: 0.875rem;
   margin-bottom: 0.25rem;
+  font-family: var(--font-crimson);
 }
 
 .inlineLink {
   text-decoration: none;
-  color: #667eea;
+  color: var(--color-wax-seal);
 }
 
 .inlineLink:hover {
@@ -283,5 +320,7 @@
 
 .updateTime {
   font-size: 0.75rem;
-  color: #a0aec0;
+  color: var(--color-text-medium);
+  font-family: var(--font-crimson);
+  font-style: italic;
 }

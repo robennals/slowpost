@@ -1,6 +1,9 @@
 .container {
   min-height: calc(100vh - 70px);
-  background: #f7fafc;
+  background: var(--color-paper);
+  background-image: 
+    radial-gradient(circle at 1px 1px, rgba(74, 59, 48, 0.05) 1px, transparent 0);
+  background-size: 20px 20px;
   padding: 2rem 1.5rem;
 }
 
@@ -9,11 +12,12 @@
   text-align: center;
   padding: 3rem;
   font-size: 1.125rem;
-  color: #718096;
+  color: var(--color-text-medium);
+  font-family: var(--font-crimson);
 }
 
 .error {
-  color: #e53e3e;
+  color: var(--color-wax-seal);
 }
 
 .content {
@@ -26,9 +30,10 @@
 }
 
 .title {
+  font-family: var(--font-playfair);
   font-size: 2rem;
   font-weight: 700;
-  color: #1a202c;
+  color: var(--color-text-dark);
   margin: 0 0 0.5rem 0;
 }
 
@@ -37,24 +42,27 @@
   align-items: center;
   gap: 1rem;
   font-size: 0.875rem;
+  font-family: var(--font-crimson);
 }
 
 .badge {
   padding: 0.25rem 0.75rem;
-  background: #edf2f7;
-  color: #4a5568;
+  background: rgba(217, 208, 193, 0.3);
+  color: var(--color-text-dark);
   border-radius: 12px;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.75rem;
+  font-family: var(--font-crimson);
 }
 
 .admin {
-  color: #718096;
+  color: var(--color-text-medium);
+  font-family: var(--font-crimson);
 }
 
 .admin a {
-  color: #667eea;
+  color: var(--color-wax-seal);
   text-decoration: none;
   font-weight: 500;
 }
@@ -64,22 +72,30 @@
 }
 
 .description {
-  background: white;
+  background: var(--color-paper);
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(74, 59, 48, 0.1);
+  border: 1px solid var(--color-paper-border);
   margin-bottom: 2rem;
-  color: #4a5568;
+  color: var(--color-text-dark);
   line-height: 1.6;
+  font-family: var(--font-crimson);
+  background-image: 
+    radial-gradient(circle at 1px 1px, rgba(74, 59, 48, 0.03) 1px, transparent 0);
+  background-size: 20px 20px;
 }
 
 .joinSection {
-  background: white;
+  background: var(--color-paper);
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(74, 59, 48, 0.1);
+  border: 2px solid var(--color-wax-seal);
   margin-bottom: 2rem;
-  border: 2px solid #667eea;
+  background-image: 
+    radial-gradient(circle at 1px 1px, rgba(74, 59, 48, 0.03) 1px, transparent 0);
+  background-size: 20px 20px;
 }
 
 .joinForm {
@@ -90,44 +106,61 @@
 
 .input {
   padding: 0.75rem 1rem;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--color-paper-border);
   border-radius: 8px;
   font-size: 1rem;
+  font-family: var(--font-crimson);
+  color: var(--color-text-dark);
+  background: rgba(255, 255, 255, 0.7);
   transition: all 0.2s;
 }
 
 .input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--color-text-medium);
+  box-shadow: 0 0 0 3px rgba(74, 59, 48, 0.1);
 }
 
 .joinButton {
   padding: 0.75rem 1.5rem;
-  background: #667eea;
+  background: var(--color-wax-seal);
   color: white;
   border: none;
   border-radius: 8px;
   font-weight: 600;
+  font-family: var(--font-crimson);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   cursor: pointer;
   transition: all 0.2s;
+  box-shadow: 
+    0 4px 8px rgba(168, 68, 55, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .joinButton:hover:not(:disabled) {
-  background: #5568d3;
+  background: var(--color-wax-seal-hover);
   transform: translateY(-1px);
+  box-shadow: 
+    0 6px 12px rgba(168, 68, 55, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .joinButton:disabled {
-  background: #cbd5e0;
+  background: rgba(217, 208, 193, 0.5);
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .membersSection {
-  background: white;
+  background: var(--color-paper);
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(74, 59, 48, 0.1);
+  border: 1px solid var(--color-paper-border);
+  background-image: 
+    radial-gradient(circle at 1px 1px, rgba(74, 59, 48, 0.03) 1px, transparent 0);
+  background-size: 20px 20px;
 }
 
 .sectionHeader {
@@ -140,26 +173,29 @@
 }
 
 .sectionTitle {
-  font-size: 1.25rem;
+  font-family: var(--font-playfair);
+  font-size: 1.5rem;
   font-weight: 600;
-  color: #2d3748;
+  color: var(--color-text-dark);
   margin: 0;
 }
 
 .select {
   padding: 0.5rem 1rem;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--color-paper-border);
   border-radius: 8px;
   font-size: 0.875rem;
-  background: white;
+  font-family: var(--font-crimson);
+  color: var(--color-text-dark);
+  background: rgba(255, 255, 255, 0.7);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .select:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--color-text-medium);
+  box-shadow: 0 0 0 3px rgba(74, 59, 48, 0.1);
 }
 
 .memberList {
@@ -171,16 +207,17 @@
 .memberCard {
   display: block;
   padding: 1rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-paper-border);
   border-radius: 8px;
+  background: rgba(255, 255, 255, 0.5);
   transition: all 0.2s;
   text-decoration: none;
   color: inherit;
 }
 
 .memberCard:hover {
-  border-color: #667eea;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-color: var(--color-text-medium);
+  box-shadow: 0 2px 4px rgba(74, 59, 48, 0.1);
   transform: translateY(-1px);
 }
 
@@ -192,39 +229,47 @@
 }
 
 .memberName {
+  font-family: var(--font-crimson);
   font-weight: 600;
-  color: #2d3748;
+  color: var(--color-text-dark);
 }
 
 .memberUsername {
+  font-family: var(--font-crimson);
   font-size: 0.875rem;
-  color: #718096;
+  color: var(--color-text-medium);
+  font-style: italic;
 }
 
 .memberBio {
+  font-family: var(--font-crimson);
   font-size: 0.875rem;
-  color: #667eea;
+  color: var(--color-wax-seal);
   font-style: italic;
 }
 
 .pendingNotice {
-  background: #fef3c7;
-  border: 2px solid #f59e0b;
+  background: rgba(74, 59, 48, 0.1);
+  border: 2px solid var(--color-text-medium);
   border-radius: 8px;
   padding: 1rem;
   margin-bottom: 2rem;
-  color: #92400e;
+  color: var(--color-text-dark);
   text-align: center;
   font-weight: 500;
+  font-family: var(--font-crimson);
 }
 
 .pendingSection {
-  background: white;
+  background: var(--color-paper);
   border-radius: 12px;
   padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(74, 59, 48, 0.1);
+  border: 2px solid var(--color-text-medium);
   margin-bottom: 2rem;
-  border: 2px solid #fbbf24;
+  background-image: 
+    radial-gradient(circle at 1px 1px, rgba(74, 59, 48, 0.03) 1px, transparent 0);
+  background-size: 20px 20px;
 }
 
 .pendingMemberCard {
@@ -232,14 +277,15 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-paper-border);
   border-radius: 8px;
+  background: rgba(255, 255, 255, 0.5);
   transition: all 0.2s;
 }
 
 .pendingMemberCard:hover {
-  border-color: #fbbf24;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  border-color: var(--color-text-medium);
+  box-shadow: 0 2px 4px rgba(74, 59, 48, 0.1);
 }
 
 .memberLink {
@@ -250,47 +296,66 @@
 
 .approveButton {
   padding: 0.5rem 1rem;
-  background: #10b981;
+  background: var(--color-wax-seal);
   color: white;
   border: none;
   border-radius: 6px;
   font-weight: 600;
+  font-family: var(--font-crimson);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   cursor: pointer;
   transition: all 0.2s;
   font-size: 0.875rem;
+  box-shadow: 
+    0 2px 4px rgba(168, 68, 55, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .approveButton:hover {
-  background: #059669;
+  background: var(--color-wax-seal-hover);
   transform: translateY(-1px);
+  box-shadow: 
+    0 4px 8px rgba(168, 68, 55, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .adminBadge {
   display: inline-block;
   margin-left: 0.5rem;
   padding: 0.125rem 0.5rem;
-  background: #667eea;
+  background: var(--color-wax-seal);
   color: white;
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
+  font-family: var(--font-crimson);
 }
 
 .adminToggle {
   padding: 0.5rem 1rem;
-  background: #667eea;
+  background: var(--color-wax-seal);
   color: white;
   border: none;
   border-radius: 6px;
   font-weight: 600;
+  font-family: var(--font-crimson);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   cursor: pointer;
   transition: all 0.2s;
   font-size: 0.875rem;
   margin-top: 0.5rem;
+  box-shadow: 
+    0 2px 4px rgba(168, 68, 55, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .adminToggle:hover {
-  background: #5568d3;
+  background: var(--color-wax-seal-hover);
   transform: translateY(-1px);
+  box-shadow: 
+    0 4px 8px rgba(168, 68, 55, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
