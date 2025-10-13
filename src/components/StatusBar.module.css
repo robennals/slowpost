@@ -15,9 +15,9 @@
 
 .logoSection {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.25rem;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.5rem;
 }
 
 .logo {
@@ -34,11 +34,11 @@
 }
 
 .tagline {
-  font-family: var(--font-crimson);
-  font-size: 0.9rem;
+  font-family: var(--font-playfair);
+  font-size: 1.35rem;
   font-weight: 600;
   color: var(--color-text-dark);
-  text-transform: uppercase;
+  font-variant: small-caps;
   letter-spacing: 0.5px;
 }
 

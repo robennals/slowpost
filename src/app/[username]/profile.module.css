@@ -22,8 +22,6 @@
   background: var(--color-paper);
   border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 2px 8px rgba(74, 59, 48, 0.1);
-  border: 1px solid var(--color-paper-border);
   background-image: 
     radial-gradient(circle at 1px 1px, rgba(74, 59, 48, 0.03) 1px, transparent 0);
   background-size: 20px 20px;
@@ -31,12 +29,13 @@
 
 .header {
   display: flex;
-  gap: 2rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
 .avatar {
-  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -45,8 +44,8 @@
 
 .avatar img,
 .avatarPlaceholder {
-  width: 120px;
-  height: 120px;
+  width: 160px;
+  height: 160px;
   object-fit: cover;
   border-radius: 8px;
   position: relative;
@@ -55,7 +54,7 @@
 .avatarContainer {
   position: relative;
   display: inline-block;
-  padding: 8px;
+  padding: 12px;
   background: var(--color-paper);
   border-radius: 8px;
   box-shadow: 
@@ -118,10 +117,11 @@
 }
 
 .info {
-  flex: 1;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 0.5rem;
+  text-align: center;
 }
 
 .name {
@@ -242,7 +242,6 @@
   font-family: var(--font-crimson);
   cursor: pointer;
   transition: all 0.2s;
-  width: 100%;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   box-shadow: 
@@ -250,6 +249,8 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
   position: relative;
   overflow: hidden;
+  display: inline-block;
+  margin: 0 auto;
 }
 
 .subscribeButton::before {
@@ -287,12 +288,12 @@
   font-size: 1.125rem;
   font-family: var(--font-crimson);
   cursor: not-allowed;
-  width: 100%;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   box-shadow: 
     0 2px 4px rgba(107, 91, 71, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  display: inline-block;
 }
 
 .subscriptionConfirm {

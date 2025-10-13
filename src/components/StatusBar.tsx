@@ -18,9 +18,9 @@ export default function StatusBar() {
       <div className={styles.container}>
         <div className={styles.logoSection}>
           <Link href="/" className={styles.logo}>
-            slowpost
+            slowpost:
           </Link>
-          <span className={styles.tagline}>POST ONCE A YEAR</span>
+          <span className={styles.tagline}>post once a year</span>
         </div>
 
         <div className={styles.nav}>
@@ -35,7 +35,7 @@ export default function StatusBar() {
             </>
           ) : (
             <Link href="/login" className={styles.loginButton}>
-              Log In | Sign Up
+              Sign in
             </Link>
           )}
         </div>

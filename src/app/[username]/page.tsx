@@ -357,7 +357,7 @@ export default function ProfilePage() {
               className={isSubscribed ? styles.subscribedButton : styles.subscribeButton}
               disabled={subscribing || isSubscribed}
             >
-              {subscribing ? 'Subscribing...' : isSubscribed ? 'Subscribed' : 'SUBSCRIBE'}
+              {subscribing ? 'Subscribing...' : isSubscribed ? 'Subscribed' : 'Subscribe to Annual Post'}
             </button>
           )}
         </div>
@@ -373,7 +373,7 @@ export default function ProfilePage() {
         <div className={styles.sections}>
           {groups.length > 0 ? (
             <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>Groups</h2>
+              <h2 className={styles.sectionTitle}>{profile.fullName.split(' ')[0]}'s Groups</h2>
               <div className={styles.groupList}>
                 {groups.map((group) => (
                   <Link
@@ -396,7 +396,7 @@ export default function ProfilePage() {
             </div>
           ) : (
             <div className={styles.section}>
-              <h2 className={styles.sectionTitle}>Groups</h2>
+              <h2 className={styles.sectionTitle}>{profile.fullName.split(' ')[0]}'s Groups</h2>
               <div className={styles.emptyState}>No groups yet</div>
             </div>
           )}
