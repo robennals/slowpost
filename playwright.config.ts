@@ -28,6 +28,16 @@ const nodeOptions = [existingNodeOptions.trim(), requireStub]
 
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:3100';
 
+const headedEnv = process.env.PLAYWRIGHT_E2E_SHOW_BROWSER ?? '';
+const showBrowser = ['1', 'true', 'yes'].includes(headedEnv.toLowerCase());
+const slowMoRaw = process.env.PLAYWRIGHT_E2E_SLOWMO;
+const slowMoFromEnv = slowMoRaw !== undefined ? Number(slowMoRaw) : undefined;
+const slowMo = typeof slowMoFromEnv === 'number' && Number.isFinite(slowMoFromEnv) && slowMoFromEnv > 0
+  ? slowMoFromEnv
+  : showBrowser
+    ? 500
+    : undefined;
+
 export default defineConfig({
   testDir: path.resolve(__dirname, 'tests/e2e'),
   fullyParallel: false,
@@ -35,6 +45,12 @@ export default defineConfig({
   use: {
     baseURL,
     trace: 'on-first-retry',
+    headless: !showBrowser,
+    launchOptions: slowMo
+      ? {
+          slowMo,
+        }
+      : undefined,
   },
   projects: [
     {

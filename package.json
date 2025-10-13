@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:e2e": "playwright test --project=chromium",
     "test:e2e:all": "playwright test",
+    "test:e2e:slow": "PLAYWRIGHT_E2E_SHOW_BROWSER=1 PLAYWRIGHT_E2E_SLOWMO=500 playwright test --project=chromium",
     "typecheck": "tsc --noEmit",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",

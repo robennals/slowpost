@@ -35,3 +35,21 @@ This command executes a Vitest suite that imports every story, renders it into a
 ## Default Storybook script
 
 For convenience, `corepack yarn test:storybook` runs the browser workflow by default. You can still opt into other modes by passing `--env` or `--mode` flags when calling the underlying script directly, but the dedicated scripts above should cover day-to-day usage.
+
+## Playwright end-to-end tests
+
+Run the Playwright suite against Chromium with:
+
+```
+corepack yarn test:e2e
+```
+
+This script targets the same headless configuration that runs in CI. Pass additional Playwright flags after `--` to forward them to the runner (for example, `corepack yarn test:e2e -- --project=firefox`).
+
+When you need to inspect scenarios interactively, use the headed debug variant:
+
+```
+corepack yarn test:e2e:slow
+```
+
+The `test:e2e:slow` script makes the browser window visible and applies a 500 ms slow-motion delay to every interaction so that you can watch the flow play out step by step. Use this mode to investigate flakes or verify new flows before tightening assertions.

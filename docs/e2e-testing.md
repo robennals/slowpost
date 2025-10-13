@@ -26,6 +26,12 @@ yarn test:e2e
 
 The command boots the application with `yarn dev` under the hood and tears everything down once the run is complete. Logs and temporary assets (including a stubbed Postmark log) are stored in a per-run directory under your system temp folder.
 
+To watch the flow in a real browser window, run the slow-mode variant. It enables headed Chromium and adds a short delay between actions so you can follow along:
+
+```bash
+yarn test:e2e:slow
+```
+
 ## Running an individual test file
 
 Pass the path to the spec you want to run. Paths can be absolute or relative to the repository root:
