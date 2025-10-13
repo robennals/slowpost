@@ -16,8 +16,14 @@ const NextLinkMock = React.forwardRef<HTMLAnchorElement, Props>(function NextLin
     const pathname = (href as { pathname?: string }).pathname;
     resolvedHref = pathname ?? '#';
   }
+  const handleClick: React.MouseEventHandler<HTMLAnchorElement> = (event) => {
+    event.preventDefault();
+    if (onClick) {
+      onClick(event);
+    }
+  };
   return (
-    <a href={resolvedHref} onClick={onClick} ref={ref} {...rest}>
+    <a href={resolvedHref} onClick={handleClick} ref={ref} {...rest}>
       {children}
     </a>
   );
