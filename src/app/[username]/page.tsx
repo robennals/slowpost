@@ -362,13 +362,15 @@ export default function ProfilePage() {
           )}
         </div>
 
-        <div className={styles.howItWorks}>
-          <h2 className={styles.howItWorksTitle}>HOW SLOWPOST WORKS</h2>
-          <h3 className={styles.howItWorksSubtitle}>POST ONCE A YEAR, STAY IN TOUCH FOREVER</h3>
-          <p className={styles.howItWorksText}>
-            Receive one update per year. That's it. No endless feeds, no infinite scrolling – just a single post to stay connected with those you care about.
-          </p>
-        </div>
+        {!user && (
+          <div className={styles.howItWorks}>
+            <h2 className={styles.howItWorksTitle}>HOW SLOWPOST WORKS</h2>
+            <h3 className={styles.howItWorksSubtitle}>POST ONCE A YEAR, STAY IN TOUCH FOREVER</h3>
+            <p className={styles.howItWorksText}>
+              Receive one update per year. That's it. No endless feeds, no infinite scrolling – just a single post to stay connected with those you care about.
+            </p>
+          </div>
+        )}
 
         <div className={styles.sections}>
           {groups.length > 0 ? (

@@ -81,12 +81,45 @@
   padding: 2rem 1.5rem;
 }
 
+.welcomeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
 .welcome {
   font-family: var(--font-playfair);
   font-size: 2rem;
   font-weight: 700;
   color: var(--color-text-dark);
-  margin-bottom: 2rem;
+  margin: 0;
+}
+
+.profileButton {
+  padding: 0.75rem 1.5rem;
+  background: var(--color-wax-seal);
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-family: var(--font-crimson);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+  box-shadow: 
+    0 4px 8px rgba(168, 68, 55, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.profileButton:hover {
+  background: var(--color-wax-seal-hover);
+  transform: translateY(-1px);
+  box-shadow: 
+    0 6px 12px rgba(168, 68, 55, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .sections {

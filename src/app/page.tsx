@@ -132,23 +132,14 @@ export default function HomePage() {
   return (
     <div className={styles.container}>
       <div className={styles.content}>
-        <h1 className={styles.welcome}>Welcome back, {user.fullName}!</h1>
+        <div className={styles.welcomeHeader}>
+          <h1 className={styles.welcome}>Welcome back, {user.fullName}!</h1>
+          <Link href={`/${user.username}`} className={styles.profileButton}>
+            Your Profile
+          </Link>
+        </div>
 
         <div className={styles.sections}>
-          <section className={styles.section}>
-            <div className={styles.sectionHeader}>
-              <h2 className={styles.sectionTitle}>Your Profile</h2>
-              <Link href={`/${user.username}`} className={styles.viewAll}>
-                View profile
-              </Link>
-            </div>
-            <div className={styles.profilePreview}>
-              <div className={styles.profileInfo}>
-                <div className={styles.profileName}>{user.fullName}</div>
-                <div className={styles.profileUsername}>@{user.username}</div>
-              </div>
-            </div>
-          </section>
 
           <section className={styles.section}>
             <div className={styles.sectionHeader}>
