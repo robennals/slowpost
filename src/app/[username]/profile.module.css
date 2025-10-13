@@ -44,22 +44,42 @@
 
 .avatar img,
 .avatarPlaceholder {
-  width: 160px;
-  height: 160px;
+  width: 200px;
+  height: 200px;
   object-fit: cover;
-  border-radius: 8px;
+  /* border-radius: 8px; */
   position: relative;
 }
 
 .avatarContainer {
   position: relative;
   display: inline-block;
-  padding: 12px;
-  background: var(--color-paper);
-  border-radius: 8px;
-  box-shadow: 
-    0 2px 8px rgba(74, 59, 48, 0.15),
-    0 0 0 1px var(--color-paper-border);
+  padding-left: 28px;
+  padding-right: 28px;
+  padding-top: 37px;
+  padding-bottom: 26px;
+  background: transparent;
+}
+
+.avatarContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/images/stamp-background.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  z-index: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 8px rgba(74, 59, 48, 0.25));
+}
+
+.avatarContainer > * {
+  position: relative;
+  z-index: 1;
 }
 
 .avatarPlaceholder {
