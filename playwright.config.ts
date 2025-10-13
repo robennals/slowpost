@@ -36,6 +36,20 @@ export default defineConfig({
     baseURL,
     trace: 'on-first-retry',
   },
+  projects: [
+    {
+      name: 'chromium',
+      use: { browserName: 'chromium' },
+    },
+    {
+      name: 'firefox',
+      use: { browserName: 'firefox' },
+    },
+    {
+      name: 'webkit',
+      use: { browserName: 'webkit' },
+    },
+  ],
   globalTeardown: path.resolve(__dirname, 'tests/e2e/global-teardown.ts'),
   webServer: {
     command: 'yarn dev',
