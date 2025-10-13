@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { handleApiRequest } from '../../../src/server/api/router';
+import { executeHandler } from '../../../src/server/api/runHandler';
+import { requestPinHandler } from '../../../src/app/api/auth/request-pin/handler';
+import { currentUserHandler } from '../../../src/app/api/auth/me/handler';
 import { MockDbAdapter } from '../helpers/mockDbAdapter';
 import { AuthService } from '../../../src/server/auth/auth';
 import type { HandlerDeps } from '../../../src/server/api/types';
@@ -13,7 +15,7 @@ function createDeps(): HandlerDeps {
   return { db, authService };
 }
 
-describe('handleApiRequest', () => {
+describe('executeHandler', () => {
   let deps: HandlerDeps;
 
   beforeEach(() => {
@@ -21,29 +23,26 @@ describe('handleApiRequest', () => {
   });
 
   it('routes anonymous request to request-pin handler', async () => {
-    const result = await handleApiRequest(
-      {
-        method: 'POST',
-        url: '/api/auth/request-pin',
-        headers: {},
-        body: { email: 'vercel@example.com' },
-      },
-      deps,
-    );
+    const result = await executeHandler(requestPinHandler, {
+      method: 'POST',
+      url: 'http://localhost/api/auth/request-pin',
+      headers: {},
+      body: { email: 'vercel@example.com' },
+      overrides: deps,
+    });
 
     expect(result.status).toBe(200);
     expect((result.body as any).success).toBe(true);
   });
 
-  it('enforces authentication for protected routes', async () => {
-    const promise = handleApiRequest(
-      {
-        method: 'GET',
-        url: '/api/auth/me',
-        headers: {},
-      },
-      deps,
-    );
+  it('enforces authentication for protected handlers', async () => {
+    const promise = executeHandler(currentUserHandler, {
+      method: 'GET',
+      url: 'http://localhost/api/auth/me',
+      headers: {},
+      requireAuth: true,
+      overrides: deps,
+    });
 
     await expect(promise).rejects.toBeInstanceOf(ApiError);
     await expect(promise).rejects.toMatchObject({ status: 401 });

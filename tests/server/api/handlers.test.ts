@@ -1,27 +1,30 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { requestPinHandler } from '../../../src/app/api/auth/request-pin/handler';
+import { signupHandler } from '../../../src/app/api/auth/signup/handler';
+import { loginHandler } from '../../../src/app/api/auth/login/handler';
+import { currentUserHandler } from '../../../src/app/api/auth/me/handler';
+import { logoutHandler } from '../../../src/app/api/auth/logout/handler';
+import { getProfileHandler, updateProfileHandler } from '../../../src/app/api/profiles/[username]/handlers';
+import { getUpdatesHandler } from '../../../src/app/api/updates/[username]/handler';
 import {
-  requestPinHandler,
-  signupHandler,
-  loginHandler,
-  currentUserHandler,
-  logoutHandler,
-  getProfileHandler,
-  updateProfileHandler,
-  getUpdatesHandler,
   getSubscribersHandler,
-  getSubscriptionsHandler,
   subscribeHandler,
-  addSubscriberByEmailHandler,
+} from '../../../src/app/api/subscribers/[username]/handlers';
+import { getSubscriptionsHandler } from '../../../src/app/api/subscriptions/[username]/handler';
+import { addSubscriberByEmailHandler } from '../../../src/app/api/subscribers/[username]/add-by-email/handler';
+import {
   updateSubscriberHandler,
-  confirmSubscriptionHandler,
   unsubscribeHandler,
-  getUserGroupsHandler,
-  getGroupHandler,
-  createGroupHandler,
-  joinGroupHandler,
+} from '../../../src/app/api/subscribers/[username]/[subscriberUsername]/handlers';
+import { confirmSubscriptionHandler } from '../../../src/app/api/subscribers/[username]/[subscriberUsername]/confirm/handler';
+import { getUserGroupsHandler } from '../../../src/app/api/groups/user/[username]/handler';
+import { getGroupHandler } from '../../../src/app/api/groups/[groupName]/handler';
+import { createGroupHandler } from '../../../src/app/api/groups/handler';
+import { joinGroupHandler } from '../../../src/app/api/groups/[groupName]/join/handler';
+import {
   updateGroupMemberHandler,
   leaveGroupHandler,
-} from '../../../src/server/api/handlers/index';
+} from '../../../src/app/api/groups/[groupName]/members/[username]/handlers';
 import {
   createTestDeps,
   executeHandler,
