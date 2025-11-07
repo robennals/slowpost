@@ -10,9 +10,10 @@ import { composeStories } from '@storybook/react';
 import { within } from '@storybook/test';
 import { createRoot } from 'react-dom/client';
 import { act } from 'react';
+import type { Meta } from '@storybook/react';
 
 type StoryModule = {
-  default?: { title?: string };
+  default?: Meta;
   [key: string]: unknown;
 };
 
@@ -28,9 +29,9 @@ type PlayContext = {
   name: string;
 };
 
-const storiesGlob = import.meta.glob<StoryModule>('../../src/**/*.stories.@(js|jsx|ts|tsx)', {
+const storiesGlob = (import.meta as any).glob('../../src/**/*.stories.@(js|jsx|ts|tsx)', {
   eager: true,
-});
+}) as Record<string, StoryModule>;
 
 function inferStoryId(title: string | undefined, name: string) {
   if (!title) {
@@ -96,7 +97,7 @@ describe('Storybook stories (jsdom)', () => {
       continue;
     }
 
-    const stories = composeStories(storyModule as Record<string, unknown>);
+    const stories = composeStories(storyModule as any);
     const groupTitle = meta.title ?? path;
 
     describe(groupTitle, () => {
@@ -108,7 +109,7 @@ describe('Storybook stories (jsdom)', () => {
 
           try {
             await act(async () => {
-              root.render(React.createElement(storyFn));
+              root.render(React.createElement(storyFn as any));
             });
 
             await runPlayFunction(storyFn, {
@@ -119,12 +120,12 @@ describe('Storybook stories (jsdom)', () => {
                   await runStep();
                 });
               },
-              args: storyFn.args ?? {},
-              loaded: storyFn.loaded ?? {},
+              args: (storyFn as any).args ?? {},
+              loaded: (storyFn as any).loaded ?? {},
               viewMode: 'story',
-              parameters: storyFn.parameters ?? {},
-              id: inferStoryId(meta.title, storyFn.storyName ?? storyName),
-              name: storyFn.storyName ?? storyName,
+              parameters: (storyFn as any).parameters ?? {},
+              id: inferStoryId(meta.title, (storyFn as any).storyName ?? storyName),
+              name: (storyFn as any).storyName ?? storyName,
             });
           } finally {
             root.unmount();
