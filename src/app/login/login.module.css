@@ -172,3 +172,21 @@
   text-align: center;
   border: 1px solid var(--color-paper-border);
 }
+
+.pinInfo {
+  font-family: var(--font-crimson);
+  text-align: center;
+  color: var(--color-text-dark);
+  margin: 0 0 1rem 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.helpText {
+  font-family: var(--font-crimson);
+  text-align: center;
+  color: var(--color-text-medium);
+  margin: 0.5rem 0 0 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
