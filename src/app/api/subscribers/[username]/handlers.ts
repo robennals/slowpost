@@ -8,7 +8,7 @@ export const getSubscribersHandler: Handler<unknown, { username: string }> = asy
 };
 
 export const subscribeHandler: Handler<unknown, { username: string }> = async (_req, ctx) => {
-  const { db } = getHandlerDeps();
+  const { db, mailer } = getHandlerDeps();
   const user = requireUser(ctx);
   const { username } = ctx.params;
   if (username === user.username) {
@@ -39,6 +39,25 @@ export const subscribeHandler: Handler<unknown, { username: string }> = async (_
     timestamp: new Date().toISOString(),
   };
   await db.addLink('updates', username, updateId, update);
+
+  // Send email notification to the user being subscribed to
+  if (mailer) {
+    try {
+      const subscribedToProfile = await db.getDocument<any>('profiles', username);
+      const subscriberProfile = await db.getDocument<any>('profiles', user.username);
+
+      if (subscribedToProfile?.email && subscriberProfile?.fullName) {
+        await mailer.sendNewSubscriberNotification(
+          subscribedToProfile.email,
+          user.username,
+          subscriberProfile.fullName
+        );
+      }
+    } catch (error) {
+      console.error('Failed to send new subscriber notification email:', error);
+      // Don't fail the subscription if email fails
+    }
+  }
 
   return success({ success: true, subscription });
 };

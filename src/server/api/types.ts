@@ -3,6 +3,8 @@ import type { DbAdapter } from '../db/types';
 
 export interface Mailer {
   sendPinEmail(to: string, pin: string): Promise<void>;
+  sendNewSubscriberNotification(to: string, subscriberUsername: string, subscriberFullName: string): Promise<void>;
+  sendGroupJoinRequestNotification(to: string, requesterUsername: string, requesterFullName: string, groupName: string, groupDisplayName: string): Promise<void>;
 }
 
 export interface RequestLike {

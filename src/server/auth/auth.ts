@@ -142,6 +142,7 @@ export class AuthService {
       username,
       fullName,
       bio: '',
+      email, // Store email in profile for easier lookup
     });
 
     return user;

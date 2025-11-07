@@ -31,6 +31,40 @@ export class PostmarkMailer implements Mailer {
       HtmlBody: message.htmlBody,
     });
   }
+
+  async sendNewSubscriberNotification(to: string, subscriberUsername: string, subscriberFullName: string): Promise<void> {
+    const subject = 'New subscriber to your Slowpost';
+    const textBody = `${subscriberFullName} (@${subscriberUsername}) has subscribed to your annual posts!\n\nView their profile: https://slowpost.net/${subscriberUsername}`;
+    const htmlBody = `
+      <p><strong>${subscriberFullName}</strong> (@${subscriberUsername}) has subscribed to your annual posts!</p>
+      <p><a href="https://slowpost.net/${subscriberUsername}">View their profile</a></p>
+    `;
+
+    await this.client.sendEmail({
+      From: this.fromEmail,
+      To: to,
+      Subject: subject,
+      TextBody: textBody,
+      HtmlBody: htmlBody,
+    });
+  }
+
+  async sendGroupJoinRequestNotification(to: string, requesterUsername: string, requesterFullName: string, groupName: string, groupDisplayName: string): Promise<void> {
+    const subject = `New join request for ${groupDisplayName}`;
+    const textBody = `${requesterFullName} (@${requesterUsername}) has requested to join your group "${groupDisplayName}".\n\nView the request: https://slowpost.net/g/${groupName}`;
+    const htmlBody = `
+      <p><strong>${requesterFullName}</strong> (@${requesterUsername}) has requested to join your group <strong>"${groupDisplayName}"</strong>.</p>
+      <p><a href="https://slowpost.net/g/${groupName}">View the request</a></p>
+    `;
+
+    await this.client.sendEmail({
+      From: this.fromEmail,
+      To: to,
+      Subject: subject,
+      TextBody: textBody,
+      HtmlBody: htmlBody,
+    });
+  }
 }
 
 export function createPostmarkMailerFromEnv(): Mailer | undefined {

@@ -64,7 +64,14 @@ describe('API handlers', () => {
       const originalSkip = process.env.SKIP_PIN;
       process.env.SKIP_PIN = 'false';
       const sendPin = vi.fn().mockResolvedValue(undefined);
-      deps = createTestDeps({ skipPin: false, mailer: { sendPinEmail: sendPin } });
+      deps = createTestDeps({
+        skipPin: false,
+        mailer: {
+          sendPinEmail: sendPin,
+          sendNewSubscriberNotification: vi.fn().mockResolvedValue(undefined),
+          sendGroupJoinRequestNotification: vi.fn().mockResolvedValue(undefined),
+        },
+      });
 
       const result = await executeHandler(requestPinHandler, makeContext({ body: { email: 'mail@test.com' } }));
 
@@ -94,7 +101,14 @@ describe('API handlers', () => {
       const originalSkip = process.env.SKIP_PIN;
       process.env.SKIP_PIN = 'false';
       const sendPin = vi.fn().mockResolvedValue(undefined);
-      deps = createTestDeps({ skipPin: false, mailer: { sendPinEmail: sendPin } });
+      deps = createTestDeps({
+        skipPin: false,
+        mailer: {
+          sendPinEmail: sendPin,
+          sendNewSubscriberNotification: vi.fn().mockResolvedValue(undefined),
+          sendGroupJoinRequestNotification: vi.fn().mockResolvedValue(undefined),
+        },
+      });
 
       const result = await executeHandler(
         requestPinHandler,
@@ -318,6 +332,74 @@ describe('API handlers', () => {
       const remaining = await deps.db.getChildLinks('subscriptions', 'alice');
       expect(remaining).toHaveLength(0);
     });
+
+    it('sends email notification when user gets a new subscriber', async () => {
+      const sendNotification = vi.fn().mockResolvedValue(undefined);
+      deps = createTestDeps({
+        mailer: {
+          sendPinEmail: vi.fn().mockResolvedValue(undefined),
+          sendNewSubscriberNotification: sendNotification,
+          sendGroupJoinRequestNotification: vi.fn().mockResolvedValue(undefined),
+        },
+      });
+      await createUserWithProfile(deps, 'alice@example.com', 'alice', 'Alice');
+      await createUserWithProfile(deps, 'bob@example.com', 'bob', 'Bob');
+
+      const result = await executeHandler(
+        subscribeHandler,
+        makeContext({
+          params: { username: 'alice' },
+          user: fakeSession('bob', 'Bob'),
+        })
+      );
+
+      expect(result.status).toBe(200);
+      expect(sendNotification).toHaveBeenCalledWith('alice@example.com', 'bob', 'Bob');
+    });
+
+    it('continues subscription even if email notification fails', async () => {
+      const sendNotification = vi.fn().mockRejectedValue(new Error('Email service down'));
+      deps = createTestDeps({
+        mailer: {
+          sendPinEmail: vi.fn().mockResolvedValue(undefined),
+          sendNewSubscriberNotification: sendNotification,
+          sendGroupJoinRequestNotification: vi.fn().mockResolvedValue(undefined),
+        },
+      });
+      await createUserWithProfile(deps, 'alice@example.com', 'alice', 'Alice');
+      await createUserWithProfile(deps, 'bob@example.com', 'bob', 'Bob');
+
+      const result = await executeHandler(
+        subscribeHandler,
+        makeContext({
+          params: { username: 'alice' },
+          user: fakeSession('bob', 'Bob'),
+        })
+      );
+
+      expect(result.status).toBe(200);
+      expect(sendNotification).toHaveBeenCalled();
+      const subscribers = await deps.db.getChildLinks<any>('subscriptions', 'alice');
+      expect(subscribers).toHaveLength(1);
+    });
+
+    it('does not send email when mailer is not configured', async () => {
+      deps = createTestDeps({ mailer: undefined });
+      await createUserWithProfile(deps, 'alice@example.com', 'alice', 'Alice');
+      await createUserWithProfile(deps, 'bob@example.com', 'bob', 'Bob');
+
+      const result = await executeHandler(
+        subscribeHandler,
+        makeContext({
+          params: { username: 'alice' },
+          user: fakeSession('bob', 'Bob'),
+        })
+      );
+
+      expect(result.status).toBe(200);
+      const subscribers = await deps.db.getChildLinks<any>('subscriptions', 'alice');
+      expect(subscribers).toHaveLength(1);
+    });
   });
 
   describe('Groups', () => {
@@ -453,6 +535,145 @@ describe('API handlers', () => {
       expect(result.status).toBe(200);
       const remaining = await deps.db.getChildLinks<any>('members', 'writers');
       expect(remaining).toHaveLength(0);
+    });
+
+    it('sends email notification to group admins when user requests to join', async () => {
+      const sendGroupJoinNotification = vi.fn().mockResolvedValue(undefined);
+      deps = createTestDeps({
+        mailer: {
+          sendPinEmail: vi.fn().mockResolvedValue(undefined),
+          sendNewSubscriberNotification: vi.fn().mockResolvedValue(undefined),
+          sendGroupJoinRequestNotification: sendGroupJoinNotification,
+        },
+      });
+      await createUserWithProfile(deps, 'owner@example.com', 'owner', 'Owner');
+      await createUserWithProfile(deps, 'member@example.com', 'member', 'Member');
+
+      await deps.db.addDocument('groups', 'writers', { groupName: 'writers', displayName: 'Writers Club' });
+      await deps.db.addLink('members', 'writers', 'owner', {
+        groupName: 'writers',
+        username: 'owner',
+        status: 'approved',
+        isAdmin: true,
+      });
+
+      const result = await executeHandler(
+        joinGroupHandler,
+        makeContext({ params: { groupName: 'writers' }, body: { groupBio: 'I write' }, user: fakeSession('member', 'Member') })
+      );
+
+      expect(result.status).toBe(200);
+      expect(sendGroupJoinNotification).toHaveBeenCalledWith(
+        'owner@example.com',
+        'member',
+        'Member',
+        'writers',
+        'Writers Club'
+      );
+    });
+
+    it('sends email to all group admins when user requests to join', async () => {
+      const sendGroupJoinNotification = vi.fn().mockResolvedValue(undefined);
+      deps = createTestDeps({
+        mailer: {
+          sendPinEmail: vi.fn().mockResolvedValue(undefined),
+          sendNewSubscriberNotification: vi.fn().mockResolvedValue(undefined),
+          sendGroupJoinRequestNotification: sendGroupJoinNotification,
+        },
+      });
+      await createUserWithProfile(deps, 'owner@example.com', 'owner', 'Owner');
+      await createUserWithProfile(deps, 'admin2@example.com', 'admin2', 'Admin Two');
+      await createUserWithProfile(deps, 'member@example.com', 'member', 'Member');
+
+      await deps.db.addDocument('groups', 'writers', { groupName: 'writers', displayName: 'Writers' });
+      await deps.db.addLink('members', 'writers', 'owner', {
+        groupName: 'writers',
+        username: 'owner',
+        status: 'approved',
+        isAdmin: true,
+      });
+      await deps.db.addLink('members', 'writers', 'admin2', {
+        groupName: 'writers',
+        username: 'admin2',
+        status: 'approved',
+        isAdmin: true,
+      });
+
+      const result = await executeHandler(
+        joinGroupHandler,
+        makeContext({ params: { groupName: 'writers' }, user: fakeSession('member', 'Member') })
+      );
+
+      expect(result.status).toBe(200);
+      expect(sendGroupJoinNotification).toHaveBeenCalledTimes(2);
+      expect(sendGroupJoinNotification).toHaveBeenCalledWith(
+        'owner@example.com',
+        'member',
+        'Member',
+        'writers',
+        'Writers'
+      );
+      expect(sendGroupJoinNotification).toHaveBeenCalledWith(
+        'admin2@example.com',
+        'member',
+        'Member',
+        'writers',
+        'Writers'
+      );
+    });
+
+    it('continues group join even if email notification fails', async () => {
+      const sendGroupJoinNotification = vi.fn().mockRejectedValue(new Error('Email service down'));
+      deps = createTestDeps({
+        mailer: {
+          sendPinEmail: vi.fn().mockResolvedValue(undefined),
+          sendNewSubscriberNotification: vi.fn().mockResolvedValue(undefined),
+          sendGroupJoinRequestNotification: sendGroupJoinNotification,
+        },
+      });
+      await createUserWithProfile(deps, 'owner@example.com', 'owner', 'Owner');
+      await createUserWithProfile(deps, 'member@example.com', 'member', 'Member');
+
+      await deps.db.addDocument('groups', 'writers', { groupName: 'writers', displayName: 'Writers' });
+      await deps.db.addLink('members', 'writers', 'owner', {
+        groupName: 'writers',
+        username: 'owner',
+        status: 'approved',
+        isAdmin: true,
+      });
+
+      const result = await executeHandler(
+        joinGroupHandler,
+        makeContext({ params: { groupName: 'writers' }, user: fakeSession('member', 'Member') })
+      );
+
+      expect(result.status).toBe(200);
+      expect(sendGroupJoinNotification).toHaveBeenCalled();
+      const members = await deps.db.getChildLinks<any>('members', 'writers');
+      expect(members.find((m) => m.username === 'member')?.status).toBe('pending');
+    });
+
+    it('does not send group join email when mailer is not configured', async () => {
+      deps = createTestDeps({ mailer: undefined });
+      await createUserWithProfile(deps, 'owner@example.com', 'owner', 'Owner');
+      await createUserWithProfile(deps, 'member@example.com', 'member', 'Member');
+
+      await deps.db.addDocument('groups', 'writers', { groupName: 'writers', displayName: 'Writers' });
+      await deps.db.addLink('members', 'writers', 'owner', {
+        groupName: 'writers',
+        username: 'owner',
+        status: 'approved',
+        isAdmin: true,
+      });
+
+      const result = await executeHandler(
+        joinGroupHandler,
+        makeContext({ params: { groupName: 'writers' }, user: fakeSession('member', 'Member') })
+      );
+
+      expect(result.status).toBe(200);
+      const members = await deps.db.getChildLinks<any>('members', 'writers');
+      expect(members.find((m) => m.username === 'member')?.status).toBe('pending');
     });
   });
 });
