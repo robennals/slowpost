@@ -163,6 +163,7 @@
   color: var(--color-text-dark);
   line-height: 1.6;
   font-size: 1.1rem;
+  white-space: pre-wrap;
 }
 
 .editForm {
