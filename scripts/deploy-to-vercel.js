@@ -30,5 +30,5 @@ function runVercel(command, extraArgs) {
   }
 }
 
-runVercel('build', ['--prod', ...sharedArgs]);
-runVercel('deploy', ['--prod', '--prebuilt', '--confirm', ...sharedArgs]);
+// Just deploy directly and let Vercel handle the build
+runVercel('deploy', ['--prod', '--confirm', ...sharedArgs]);
