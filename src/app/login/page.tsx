@@ -242,6 +242,7 @@ export default function LoginPage() {
         {step === 'signup' && (
           <form onSubmit={handleSignupSubmit} className={styles.form}>
             <p className={styles.description}>Create your account</p>
+            <p className={styles.pinInfo}>A PIN has been sent to {email}</p>
             {devPin && (
               <div className={styles.devInfo}>
                 Development PIN: <strong>{devPin}</strong>
@@ -267,7 +268,7 @@ export default function LoginPage() {
             />
             <input
               type="text"
-              placeholder="Enter 6-digit PIN"
+              placeholder="Enter 6-digit PIN from email"
               value={pin}
               onChange={(e) => setPin(e.target.value)}
               className={styles.input}
@@ -278,6 +279,9 @@ export default function LoginPage() {
             <button type="submit" className={styles.button} disabled={loading}>
               {loading ? 'Creating account...' : 'Sign Up'}
             </button>
+            <p className={styles.helpText}>
+              Don't see the email? Check your spam folder and verify you spelled your email correctly.
+            </p>
             {devPin && (
               <button
                 type="button"
