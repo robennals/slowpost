@@ -33,7 +33,7 @@ interface MemberWithProfile extends Member {
 export default function GroupPage() {
   const params = useParams();
   const router = useRouter();
-  const groupName = params.groupName as string;
+  const groupName = params?.groupName as string;
   const { user } = useAuth();
   const [group, setGroup] = useState<Group | null>(null);
   const [members, setMembers] = useState<MemberWithProfile[]>([]);

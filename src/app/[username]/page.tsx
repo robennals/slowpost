@@ -28,7 +28,7 @@ interface Profile {
 
 export default function ProfilePage() {
   const params = useParams();
-  const username = params.username as string;
+  const username = params?.username as string;
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
