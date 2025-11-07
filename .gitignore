@@ -147,3 +147,6 @@ src/__generated_tests__/
 data/
 *.db
 *.db-journal
+
+# Generated pages (built from markdown)
+public/pages/
