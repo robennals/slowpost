@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Community Standards - Slowpost</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Crimson+Text:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      padding: 0;
+      margin: 0;
+    }
+
+    html, body {
+      max-width: 100vw;
+      overflow-x: hidden;
+    }
+
+    :root {
+      --font-playfair: 'Playfair Display', serif;
+      --font-crimson: 'Crimson Text', serif;
+      --color-paper: #F5F0E6;
+      --color-paper-border: #D9D0C1;
+      --color-text-dark: #4A3B30;
+      --color-text-medium: #6B5B47;
+      --color-wax-seal: #A84437;
+      --color-wax-seal-hover: #8B3A2F;
+    }
+
+    body {
+      color: var(--color-text-dark);
+      background: var(--color-paper);
+      font-family: var(--font-crimson), serif;
+      line-height: 1.6;
+      background-image: radial-gradient(circle at 1px 1px, rgba(74, 59, 48, 0.05) 1px, transparent 0);
+      background-size: 20px 20px;
+      padding: 2rem 1.5rem;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: var(--color-paper);
+      border-radius: 12px;
+      padding: 3rem 2rem;
+      background-image: radial-gradient(circle at 1px 1px, rgba(74, 59, 48, 0.03) 1px, transparent 0);
+      background-size: 20px 20px;
+      box-shadow: 0 2px 8px rgba(74, 59, 48, 0.1);
+    }
+
+    .header {
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--color-paper-border);
+    }
+
+    .back-link {
+      display: inline-block;
+      color: var(--color-wax-seal);
+      text-decoration: none;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      transition: color 0.2s;
+    }
+
+    .back-link:hover {
+      color: var(--color-wax-seal-hover);
+    }
+
+    h1 {
+      font-family: var(--font-playfair);
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--color-text-dark);
+      margin-bottom: 0.5rem;
+    }
+
+    h2 {
+      font-family: var(--font-playfair);
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: var(--color-text-dark);
+      margin: 2rem 0 1rem;
+    }
+
+    h3 {
+      font-family: var(--font-playfair);
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--color-text-dark);
+      margin: 1.5rem 0 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+
+    a {
+      color: var(--color-wax-seal);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    a:hover {
+      color: var(--color-wax-seal-hover);
+      text-decoration: underline;
+    }
+
+    ul, ol {
+      margin: 1rem 0 1rem 2rem;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+    }
+
+    code {
+      background: rgba(74, 59, 48, 0.1);
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+      font-family: monospace;
+      font-size: 0.9em;
+    }
+
+    pre {
+      background: rgba(74, 59, 48, 0.05);
+      padding: 1rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
+
+    pre code {
+      background: none;
+      padding: 0;
+    }
+
+    blockquote {
+      border-left: 4px solid var(--color-paper-border);
+      padding-left: 1.5rem;
+      margin: 1rem 0;
+      font-style: italic;
+      color: var(--color-text-medium);
+    }
+
+    hr {
+      border: none;
+      border-top: 2px solid var(--color-paper-border);
+      margin: 2rem 0;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin: 1rem 0;
+    }
+
+    .footer {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 2px solid var(--color-paper-border);
+      text-align: center;
+      font-size: 0.95rem;
+    }
+
+    .footerLinks {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .footerLink {
+      color: var(--color-wax-seal);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    .footerLink:hover {
+      color: var(--color-wax-seal-hover);
+    }
+
+    .footerSeparator {
+      color: var(--color-text-medium);
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+
+      .container {
+        padding: 2rem 1.5rem;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+      }
+
+      h3 {
+        font-size: 1.25rem;
+      }
+
+      p, li {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <a href="/" class="back-link">← Back to Slowpost</a>
+    </div>
+    <div class="content">
+      <h1>Community Standards</h1>
+<p><strong>Last Updated: November 2024</strong></p>
+<h2>Our Values</h2>
+<p>Slowpost is built on the principle of meaningful, thoughtful annual correspondence. We believe in creating a space where people can share authentic updates with their communities without the pressure of constant engagement.</p>
+<h2>Community Guidelines</h2>
+<h3>Be Respectful</h3>
+<ul>
+<li>Treat others with kindness and respect</li>
+<li>Respect others&#39; privacy and boundaries</li>
+<li>Engage in constructive dialogue</li>
+</ul>
+<h3>Be Authentic</h3>
+<ul>
+<li>Use your real name and identity</li>
+<li>Don&#39;t impersonate others</li>
+<li>Share genuine thoughts and experiences</li>
+</ul>
+<h3>Be Appropriate</h3>
+<ul>
+<li>Keep content appropriate for a general audience</li>
+<li>Don&#39;t share graphic violence, hate speech, or explicit content</li>
+<li>Consider that your audience includes people of all ages and backgrounds</li>
+</ul>
+<h2>Prohibited Content</h2>
+<p>The following types of content are not allowed on Slowpost:</p>
+<h3>Illegal Activity</h3>
+<ul>
+<li>Content that promotes or facilitates illegal activity</li>
+<li>Sharing of illegal or copyrighted materials</li>
+</ul>
+<h3>Hate Speech</h3>
+<ul>
+<li>Content that attacks people based on race, ethnicity, national origin, religion, sexual orientation, gender, disability, or other protected characteristics</li>
+</ul>
+<h3>Harassment and Bullying</h3>
+<ul>
+<li>Targeted harassment of individuals</li>
+<li>Doxxing (sharing private information)</li>
+<li>Threats of violence</li>
+</ul>
+<h3>Spam and Manipulation</h3>
+<ul>
+<li>Spam or misleading content</li>
+<li>Artificial engagement (bots, fake accounts)</li>
+<li>Phishing or scams</li>
+</ul>
+<h3>Explicit Content</h3>
+<ul>
+<li>Sexually explicit content</li>
+<li>Graphic violence or gore</li>
+<li>Content promoting self-harm</li>
+</ul>
+<h2>Annual Post Guidelines</h2>
+<p>Your annual post is an opportunity to share a meaningful update with your community. Consider:</p>
+<ul>
+<li><strong>Reflection</strong>: What were the highlights of your year?</li>
+<li><strong>Authenticity</strong>: Share what matters to you, not what you think others want to hear</li>
+<li><strong>Connection</strong>: How can you help your readers feel connected to your life?</li>
+<li><strong>Respect</strong>: Remember that your subscribers have chosen to receive your update</li>
+</ul>
+<p>For more guidance, see <a href="./writing-a-good-letter.html">Writing a Good Letter</a>.</p>
+<h2>Groups</h2>
+<p>Groups are communities built around shared interests. When participating in groups:</p>
+<ul>
+<li>Respect group-specific rules and norms</li>
+<li>Stay on topic</li>
+<li>Be welcoming to new members</li>
+<li>Let group admins moderate appropriately</li>
+</ul>
+<h2>Reporting Violations</h2>
+<p>If you see content that violates these standards:</p>
+<ol>
+<li>Report it to us at <a href="mailto:rob.ennals@gmail.com">rob.ennals@gmail.com</a></li>
+<li>Include relevant details (username, link, description)</li>
+<li>We will review and take appropriate action</li>
+</ol>
+<h2>Enforcement</h2>
+<p>Violations of these standards may result in:</p>
+<ul>
+<li>Content removal</li>
+<li>Warnings</li>
+<li>Temporary suspension</li>
+<li>Permanent account termination</li>
+</ul>
+<p>The severity of the action depends on the nature and frequency of violations.</p>
+<h2>Appeals</h2>
+<p>If you believe your content was removed in error, you may appeal by contacting <a href="mailto:rob.ennals@gmail.com">rob.ennals@gmail.com</a>.</p>
+<h2>Updates</h2>
+<p>These Community Standards may be updated from time to time. We will notify users of significant changes.</p>
+<h2>Questions</h2>
+<p>If you have questions about these Community Standards, please contact <a href="mailto:rob.ennals@gmail.com">rob.ennals@gmail.com</a>.</p>
+
+    </div>
+    <div class="footer">
+      <div class="footerLinks">
+        <a href="/pages/how-it-works.html" class="footerLink">How it works</a>
+        <span class="footerSeparator">·</span>
+        <a href="/pages/why-slowpost.html" class="footerLink">Why Slowpost?</a>
+        <span class="footerSeparator">·</span>
+        <a href="/pages/about.html" class="footerLink">About</a>
+        <span class="footerSeparator">·</span>
+        <a href="/pages/legal.html" class="footerLink">Legal</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

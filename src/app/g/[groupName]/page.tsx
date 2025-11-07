@@ -260,6 +260,23 @@ export default function GroupPage() {
             ))}
           </div>
         </div>
+
+        {!user && (
+          <div className={styles.howItWorks}>
+            <h2 className={styles.howItWorksTitle}>HOW SLOWPOST WORKS</h2>
+            <h3 className={styles.howItWorksSubtitle}>POST ONCE A YEAR, STAY IN TOUCH FOREVER</h3>
+            <p className={styles.howItWorksText}>
+              Groups on Slowpost allow you to share your annual posts with specific communities. Each member writes once a year, creating a meaningful tradition that keeps you connected.
+            </p>
+            <div className={styles.howItWorksLinks}>
+              <a href="/pages/how-it-works.html" className={styles.howItWorksLink}>Learn more</a>
+              <span className={styles.linkSeparator}>·</span>
+              <a href="/pages/why-slowpost.html" className={styles.howItWorksLink}>Why Slowpost?</a>
+              <span className={styles.linkSeparator}>·</span>
+              <a href="/pages/about.html" className={styles.howItWorksLink}>About</a>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -69,9 +69,36 @@
 .ctaButton:hover {
   background: var(--color-wax-seal-hover);
   transform: translateY(-2px);
-  box-shadow: 
+  box-shadow:
     0 6px 12px rgba(168, 68, 55, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.infoLinks {
+  margin-top: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-crimson);
+}
+
+.infoLink {
+  color: var(--color-wax-seal);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.infoLink:hover {
+  color: var(--color-wax-seal-hover);
+  text-decoration: underline;
+}
+
+.linkSeparator {
+  color: var(--color-text-medium);
+  font-weight: 400;
 }
 
 /* Logged in content */

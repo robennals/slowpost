@@ -371,6 +371,13 @@ export default function ProfilePage() {
             <p className={styles.howItWorksText}>
               Receive one update per year. That's it. No endless feeds, no infinite scrolling – just a single post to stay connected with those you care about.
             </p>
+            <div className={styles.howItWorksLinks}>
+              <a href="/pages/how-it-works.html" className={styles.howItWorksLink}>Learn more</a>
+              <span className={styles.linkSeparator}>·</span>
+              <a href="/pages/why-slowpost.html" className={styles.howItWorksLink}>Why Slowpost?</a>
+              <span className={styles.linkSeparator}>·</span>
+              <a href="/pages/about.html" className={styles.howItWorksLink}>About</a>
+            </div>
           </div>
         )}
 

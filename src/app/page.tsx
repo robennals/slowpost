@@ -124,6 +124,15 @@ export default function HomePage() {
           <Link href="/login" className={styles.ctaButton}>
             Get Started
           </Link>
+          <div className={styles.infoLinks}>
+            <a href="/pages/how-it-works.html" className={styles.infoLink}>How it works</a>
+            <span className={styles.linkSeparator}>·</span>
+            <a href="/pages/why-slowpost.html" className={styles.infoLink}>Why Slowpost?</a>
+            <span className={styles.linkSeparator}>·</span>
+            <a href="/pages/writing-a-good-letter.html" className={styles.infoLink}>Writing a good letter</a>
+            <span className={styles.linkSeparator}>·</span>
+            <a href="/pages/about.html" className={styles.infoLink}>About</a>
+          </div>
         </div>
       </div>
     );

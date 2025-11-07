@@ -440,6 +440,31 @@
   margin-right: auto;
 }
 
+.howItWorksLinks {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.howItWorksLink {
+  color: var(--color-wax-seal);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.howItWorksLink:hover {
+  color: var(--color-wax-seal-hover);
+  text-decoration: underline;
+}
+
+.linkSeparator {
+  color: var(--color-text-medium);
+}
+
 .sections {
   display: flex;
   flex-direction: column;
