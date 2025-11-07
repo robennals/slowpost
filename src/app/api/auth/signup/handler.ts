@@ -19,7 +19,18 @@ export const signupHandler: Handler<{
     throw new ApiError(401, 'Invalid or expired PIN');
   }
 
-  await authService.createUser(email, username, fullName);
+  try {
+    await authService.createUser(email, username, fullName);
+  } catch (error: any) {
+    if (error.message === 'Username already taken') {
+      throw new ApiError(409, 'This username is already taken. Please choose a different username.');
+    }
+    if (error.message === 'User already exists') {
+      throw new ApiError(409, 'An account with this email already exists.');
+    }
+    throw error;
+  }
+
   const session = await authService.createSession(email);
 
   return success(

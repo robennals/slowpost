@@ -123,10 +123,16 @@ export class AuthService {
   }
 
   async createUser(email: string, username: string, fullName: string): Promise<UserProfile> {
-    // Check if username is already taken
+    // Check if email is already registered
     const existingUser = await this.db.getDocument<UserProfile>('users', email);
     if (existingUser) {
       throw new Error('User already exists');
+    }
+
+    // Check if username is already taken
+    const existingProfile = await this.db.getDocument('profiles', username);
+    if (existingProfile) {
+      throw new Error('Username already taken');
     }
 
     const user: UserProfile = {

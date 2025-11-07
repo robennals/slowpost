@@ -27,10 +27,18 @@ export const addSubscriberByEmailHandler: Handler<
       throw new ApiError(400, 'This person is already a subscriber');
     }
 
-    if (fullName) {
-      const profile = await db.getDocument<any>('profiles', subscriberUsername);
-      if (profile && !profile.fullName) {
-        await db.updateDocument('profiles', subscriberUsername, { fullName });
+    // Update profile with any missing data
+    const profile = await db.getDocument<any>('profiles', subscriberUsername);
+    if (profile) {
+      const updates: any = {};
+      if (fullName && !profile.fullName) {
+        updates.fullName = fullName;
+      }
+      if (!profile.email) {
+        updates.email = email;
+      }
+      if (Object.keys(updates).length > 0) {
+        await db.updateDocument('profiles', subscriberUsername, updates);
       }
     }
   } else {
@@ -59,6 +67,7 @@ export const addSubscriberByEmailHandler: Handler<
       username: subscriberUsername,
       fullName,
       bio: '',
+      email, // Store email in profile for easier lookup
     });
   }
 

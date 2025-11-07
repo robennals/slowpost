@@ -9,10 +9,17 @@ export const getProfileHandler: Handler<unknown, { username: string }> = async (
     throw new ApiError(404, 'Profile not found');
   }
 
-  const allAuth = await db.getAllDocuments<any>('auth');
-  const authRecord = allAuth.find((auth) => auth.data.username === username);
+  // const allAuth = await db.getAllDocuments<any>('auth');
+  // const authRecord = allAuth.find((auth) => auth.data.username === username);
 
-  return success({ ...profile, hasAccount: authRecord?.data.hasAccount !== false });
+  // If profile doesn't have email but auth record does, use auth email as fallback
+  const email = profile.email;
+
+  return success({
+    ...profile,
+    email,
+    hasAccount: profile.hasAccount ?? true
+  });
 };
 
 export const updateProfileHandler: Handler<

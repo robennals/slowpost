@@ -55,6 +55,7 @@ export default function SubscribersPage() {
         return {
           ...subscriber,
           fullName: profile?.fullName || subscriber.subscriberUsername,
+          email: profile?.email,
           hasAccount: profile?.hasAccount !== false, // Use the hasAccount field from profile
         };
       })
