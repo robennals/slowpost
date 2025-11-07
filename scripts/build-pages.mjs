@@ -265,6 +265,8 @@ function createHtmlTemplate(title, content) {
         <span class="footerSeparator">·</span>
         <a href="/pages/why-slowpost.html" class="footerLink">Why Slowpost?</a>
         <span class="footerSeparator">·</span>
+        <a href="/pages/writing-a-good-letter.html" class="footerLink">Writing a good letter</a>
+        <span class="footerSeparator">·</span>
         <a href="/pages/about.html" class="footerLink">About</a>
         <span class="footerSeparator">·</span>
         <a href="/pages/legal.html" class="footerLink">Legal</a>
