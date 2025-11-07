@@ -18,7 +18,7 @@ Good things to include in an annual letter include:
 Things to avoid:
 * **Vacations** - It's hard to talk about vacations without being braggy
 * **Promotions** - People want to know where you work, but don't need to know you got promoted.
-* **Awards** - People want to know what your interests are, but don't need to know your how well you are doing.
+* **Awards** - People want to know what your interests are, but don't need to know how impressive you are at those things
 * **Politics & Identity** - People want to hear about you, not national level conflicts.
 * **Over-polished photos** - People want to know what you actually look like, not how skilled you are at using filters.
 

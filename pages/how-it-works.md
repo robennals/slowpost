@@ -2,7 +2,7 @@
 
 ## Slowpost re-imagines the New Year Letter
 
-Slowpost is a simple app that lets people know that you plan to write an annual letter, and lets peolpe express interest in receiving it. That's it. No bells and whistles. You still send the letter by regular email using the addresses you collect.
+Slowpost is a simple app that lets people know that you plan to write an annual letter, and lets people express interest in receiving it. That's it. No bells and whistles. You still send the letter by regular email using the addresses you collect.
 
 ## An Annual Letter Should be a Gift
 
@@ -33,7 +33,7 @@ We recommend adding your slowpost profile link to the following locations, so th
 
 ## The World's Least Addictive Social Network
 
-You can think of Slowpost as being the world's least additive social network:
+You can think of Slowpost as being the world's least addictive social network:
 * No likes
 * No public followers
 * No feed

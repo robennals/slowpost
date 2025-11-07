@@ -65,7 +65,7 @@ For more guidance, see [Writing a Good Letter](./writing-a-good-letter.html).
 
 ## Groups
 
-A group reflects a real world community such as a family, school, workplace, or real world friend group. Do not attempt to join a group if you are not part of the group's real world equilvalent.
+A group reflects a real world community such as a family, school, workplace, or real world friend group. Do not attempt to join a group if you are not part of the group's real world equivalent.
 
 ## Reporting Violations
 
