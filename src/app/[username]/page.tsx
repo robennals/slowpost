@@ -279,7 +279,9 @@ export default function ProfilePage() {
             <div className={styles.info}>
               <h1 className={styles.name}>{profile.fullName}</h1>
               <div className={styles.username}>@{profile.username}</div>
-              <p className={styles.bio}>{profile.bio || 'No bio yet'}</p>
+              <p className={styles.bio}>
+                {profile.bio || `${profile.fullName.split(' ')[0]} hasn't yet said what they will write about`}
+              </p>
             </div>
           ) : (
             <div className={styles.editForm}>
@@ -294,7 +296,7 @@ export default function ProfilePage() {
                 value={editedBio}
                 onChange={(e) => setEditedBio(e.target.value)}
                 className={styles.textarea}
-                placeholder="Tell us about yourself..."
+                placeholder="What will you write about in your annual posts?"
                 rows={4}
               />
             </div>
