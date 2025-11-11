@@ -115,15 +115,28 @@ export default function HomePage() {
       <div className={styles.container}>
         <div className={styles.hero}>
           <div className={styles.logoLarge}>Slowpost</div>
-          <p className={styles.tagline}>
-            Post once a year. Stay in touch forever.
-          </p>
+          <h2 className={styles.heroTitle}>WRITE ONCE A YEAR, STAY IN TOUCH FOREVER</h2>
+
           <p className={styles.description}>
-            Slowpost is the world's least addictive social platform, and the online equivalent of the traditional family letter.
+          Slowpost is the world's least addictive social platform, reviving the tradition of the annual New Year letter. No doomscrolling, no likes, no apps, no ranking. Just one email a year. 
           </p>
+
+          <div className={styles.valueProposition}>
+          <p className={styles.valueText}>
+            
+            Create a profile, share your link, and collect email addresses. Then once a year, write an email to everyone who wants to hear from you.
+          </p>
+            <div className={styles.valueLinks}>
+              <a href="/pages/why-slowpost.html" className={styles.valueLink}>Why Slowpost?</a>
+              <span className={styles.valueLinkSeparator}>·</span>
+              <a href="/pages/how-it-works.html" className={styles.valueLink}>How it works</a>
+            </div>
+          </div>
+
           <Link href="/login" className={styles.ctaButton}>
             Get Started
           </Link>
+
           <div className={styles.infoLinks}>
             <a href="/pages/how-it-works.html" className={styles.infoLink}>How it works</a>
             <span className={styles.linkSeparator}>·</span>
