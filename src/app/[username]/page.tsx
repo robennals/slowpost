@@ -364,23 +364,6 @@ export default function ProfilePage() {
           )}
         </div>
 
-        {!user && (
-          <div className={styles.howItWorks}>
-            <h2 className={styles.howItWorksTitle}>HOW SLOWPOST WORKS</h2>
-            <h3 className={styles.howItWorksSubtitle}>POST ONCE A YEAR, STAY IN TOUCH FOREVER</h3>
-            <p className={styles.howItWorksText}>
-              Receive one update per year. That's it. No endless feeds, no infinite scrolling – just a single post to stay connected with those you care about.
-            </p>
-            <div className={styles.howItWorksLinks}>
-              <a href="/pages/how-it-works.html" className={styles.howItWorksLink}>Learn more</a>
-              <span className={styles.linkSeparator}>·</span>
-              <a href="/pages/why-slowpost.html" className={styles.howItWorksLink}>Why Slowpost?</a>
-              <span className={styles.linkSeparator}>·</span>
-              <a href="/pages/about.html" className={styles.howItWorksLink}>About</a>
-            </div>
-          </div>
-        )}
-
         <div className={styles.sections}>
           {groups.length > 0 ? (
             <div className={styles.section}>
@@ -412,6 +395,23 @@ export default function ProfilePage() {
             </div>
           )}
         </div>
+
+        {!user && (
+          <div className={styles.howItWorks}>
+            <h2 className={styles.howItWorksTitle}>HOW SLOWPOST WORKS</h2>
+            <h3 className={styles.howItWorksSubtitle}>POST ONCE A YEAR, STAY IN TOUCH FOREVER</h3>
+            <p className={styles.howItWorksText}>
+              Receive one update per year. That's it. No endless feeds, no infinite scrolling – just a single post to stay connected with those you care about.
+            </p>
+            <div className={styles.howItWorksLinks}>
+              <a href="/pages/how-it-works.html" className={styles.howItWorksLink}>Learn more</a>
+              <span className={styles.linkSeparator}>·</span>
+              <a href="/pages/why-slowpost.html" className={styles.howItWorksLink}>Why Slowpost?</a>
+              <span className={styles.linkSeparator}>·</span>
+              <a href="/pages/about.html" className={styles.howItWorksLink}>About</a>
+            </div>
+          </div>
+        )}
 
         <div className={styles.infoLinksFooter}>
           <a href="/pages/how-it-works.html" className={styles.infoLink}>How it works</a>
