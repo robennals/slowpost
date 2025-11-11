@@ -155,6 +155,26 @@ export class TursoAdapter implements DbAdapter {
       {
         sql: 'CREATE INDEX IF NOT EXISTS idx_links_child ON links(collection, child_key)',
       },
+      {
+        sql: `CREATE INDEX IF NOT EXISTS idx_subscriptions_subscribed_to
+              ON links(json_extract(data, '$.subscribedToUsername'))
+              WHERE collection = 'subscriptions'`,
+      },
+      {
+        sql: `CREATE INDEX IF NOT EXISTS idx_subscriptions_subscriber
+              ON links(json_extract(data, '$.subscriberUsername'))
+              WHERE collection = 'subscriptions'`,
+      },
+      {
+        sql: `CREATE INDEX IF NOT EXISTS idx_updates_username
+              ON links(json_extract(data, '$.username'))
+              WHERE collection = 'updates'`,
+      },
+      {
+        sql: `CREATE INDEX IF NOT EXISTS idx_updates_groupname
+              ON links(json_extract(data, '$.groupName'))
+              WHERE collection = 'updates'`,
+      },
     ]);
   }
 
@@ -211,6 +231,63 @@ export class TursoAdapter implements DbAdapter {
     return result.rows.map((row: any) => ({
       membership: JSON.parse(String(row.membership_data)),
       profile: JSON.parse(String(row.profile_data)),
+    }));
+  }
+
+  async getSubscriptionsWithProfiles(username: string): Promise<Array<{ subscription: any; profile: any }>> {
+    const sql = `
+      SELECT
+        s.data as subscription_data,
+        p.data as profile_data
+      FROM links s
+      INNER JOIN documents p ON p.collection = 'profiles' AND p.key = json_extract(s.data, '$.subscribedToUsername')
+      WHERE s.collection = 'subscriptions' AND s.child_key = ?1
+    `;
+
+    const result = await (await this.client()).execute({ sql, args: [username] });
+
+    return result.rows.map((row: any) => ({
+      subscription: JSON.parse(String(row.subscription_data)),
+      profile: JSON.parse(String(row.profile_data)),
+    }));
+  }
+
+  async getSubscribersWithProfiles(username: string): Promise<Array<{ subscription: any; profile: any }>> {
+    const sql = `
+      SELECT
+        s.data as subscription_data,
+        p.data as profile_data
+      FROM links s
+      INNER JOIN documents p ON p.collection = 'profiles' AND p.key = json_extract(s.data, '$.subscriberUsername')
+      WHERE s.collection = 'subscriptions' AND s.parent_key = ?1
+    `;
+
+    const result = await (await this.client()).execute({ sql, args: [username] });
+
+    return result.rows.map((row: any) => ({
+      subscription: JSON.parse(String(row.subscription_data)),
+      profile: JSON.parse(String(row.profile_data)),
+    }));
+  }
+
+  async getUpdatesWithProfilesAndGroups(username: string): Promise<Array<{ update: any; profile: any; group: any | null }>> {
+    const sql = `
+      SELECT
+        u.data as update_data,
+        p.data as profile_data,
+        g.data as group_data
+      FROM links u
+      INNER JOIN documents p ON p.collection = 'profiles' AND p.key = json_extract(u.data, '$.username')
+      LEFT JOIN documents g ON g.collection = 'groups' AND g.key = json_extract(u.data, '$.groupName')
+      WHERE u.collection = 'updates' AND u.parent_key = ?1
+    `;
+
+    const result = await (await this.client()).execute({ sql, args: [username] });
+
+    return result.rows.map((row: any) => ({
+      update: JSON.parse(String(row.update_data)),
+      profile: JSON.parse(String(row.profile_data)),
+      group: row.group_data ? JSON.parse(String(row.group_data)) : null,
     }));
   }
 

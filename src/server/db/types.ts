@@ -10,6 +10,9 @@ export interface DbAdapter {
   getAllDocuments<T>(collection: string): Promise<Array<{ key: string; data: T }>>;
   getUserGroupsWithMembership(username: string, viewerUsername: string | null): Promise<Array<{ group: any; membership: any; viewerMembership: any | null }>>;
   getGroupMembersWithProfiles(groupName: string): Promise<Array<{ membership: any; profile: any }>>;
+  getSubscriptionsWithProfiles(username: string): Promise<Array<{ subscription: any; profile: any }>>;
+  getSubscribersWithProfiles(username: string): Promise<Array<{ subscription: any; profile: any }>>;
+  getUpdatesWithProfilesAndGroups(username: string): Promise<Array<{ update: any; profile: any; group: any | null }>>;
 }
 
 export interface AdapterFactoryEnv {

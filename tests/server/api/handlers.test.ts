@@ -235,8 +235,18 @@ describe('API handlers', () => {
     });
 
     it('returns updates sorted by timestamp', async () => {
-      await deps.db.addLink('updates', 'alice', 'old', { id: 'old', timestamp: '2020-01-01T00:00:00Z' });
-      await deps.db.addLink('updates', 'alice', 'new', { id: 'new', timestamp: '2024-01-01T00:00:00Z' });
+      await createUserWithProfile(deps, 'alice@example.com', 'alice', 'Alice');
+      await createUserWithProfile(deps, 'bob@example.com', 'bob', 'Bob');
+      await deps.db.addLink('updates', 'alice', 'old', {
+        id: 'old',
+        username: 'bob',
+        timestamp: '2020-01-01T00:00:00Z',
+      });
+      await deps.db.addLink('updates', 'alice', 'new', {
+        id: 'new',
+        username: 'bob',
+        timestamp: '2024-01-01T00:00:00Z',
+      });
       const result = await executeHandler(getUpdatesHandler, makeContext({ params: { username: 'alice' } }));
       expect(result.body.map((u: any) => u.id)).toEqual(['new', 'old']);
     });
@@ -249,8 +259,15 @@ describe('API handlers', () => {
     });
 
     it('lists subscribers and subscriptions', async () => {
-      await deps.db.addLink('subscriptions', 'alice', 'bob', { subscriberUsername: 'bob' });
-      await deps.db.addLink('subscriptions', 'carol', 'alice', { subscriberUsername: 'alice' });
+      await createUserWithProfile(deps, 'carol@example.com', 'carol', 'Carol');
+      await deps.db.addLink('subscriptions', 'alice', 'bob', {
+        subscriberUsername: 'bob',
+        subscribedToUsername: 'alice',
+      });
+      await deps.db.addLink('subscriptions', 'carol', 'alice', {
+        subscriberUsername: 'alice',
+        subscribedToUsername: 'carol',
+      });
 
       const subs = await executeHandler(getSubscribersHandler, makeContext({ params: { username: 'alice' } }));
       expect(subs.body[0].subscriberUsername).toBe('bob');

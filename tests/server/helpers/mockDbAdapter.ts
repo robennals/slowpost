@@ -128,6 +128,49 @@ export class MockDbAdapter implements DbAdapter {
     return result;
   }
 
+  async getSubscriptionsWithProfiles(username: string): Promise<Array<{ subscription: any; profile: any }>> {
+    const subscriptions = await this.getParentLinks<any>('subscriptions', username);
+    const result: Array<{ subscription: any; profile: any }> = [];
+
+    for (const subscription of subscriptions) {
+      const profile = await this.getDocument<any>('profiles', subscription.subscribedToUsername);
+      if (profile) {
+        result.push({ subscription, profile });
+      }
+    }
+
+    return result;
+  }
+
+  async getSubscribersWithProfiles(username: string): Promise<Array<{ subscription: any; profile: any }>> {
+    const subscriptions = await this.getChildLinks<any>('subscriptions', username);
+    const result: Array<{ subscription: any; profile: any }> = [];
+
+    for (const subscription of subscriptions) {
+      const profile = await this.getDocument<any>('profiles', subscription.subscriberUsername);
+      if (profile) {
+        result.push({ subscription, profile });
+      }
+    }
+
+    return result;
+  }
+
+  async getUpdatesWithProfilesAndGroups(username: string): Promise<Array<{ update: any; profile: any; group: any | null }>> {
+    const updates = await this.getChildLinks<any>('updates', username);
+    const result: Array<{ update: any; profile: any; group: any | null }> = [];
+
+    for (const update of updates) {
+      const profile = await this.getDocument<any>('profiles', update.username);
+      if (profile) {
+        const group = update.groupName ? await this.getDocument<any>('groups', update.groupName) : null;
+        result.push({ update, profile, group });
+      }
+    }
+
+    return result;
+  }
+
   reset() {
     this.documents.clear();
     this.links.clear();

@@ -3,7 +3,11 @@ import { getHandlerDeps } from '@/server/api/context';
 
 export const getSubscribersHandler: Handler<unknown, { username: string }> = async (_req, { params }) => {
   const { db } = getHandlerDeps();
-  const subscribers = await db.getChildLinks('subscriptions', params.username);
+  const subscribersWithProfiles = await db.getSubscribersWithProfiles(params.username);
+  const subscribers = subscribersWithProfiles.map(({ subscription, profile }) => ({
+    ...subscription,
+    fullName: profile.fullName || subscription.subscriberUsername,
+  }));
   return success(subscribers);
 };
 

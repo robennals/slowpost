@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserGroups, getSubscriptions, getProfile, getSubscribers, getUpdates, getGroup } from '@/lib/api';
+import { getUserGroups, getSubscriptions, getSubscribers, getUpdates } from '@/lib/api';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import styles from './page.module.css';
@@ -32,62 +32,19 @@ export default function HomePage() {
   const loadSubscriptions = async () => {
     if (!user) return;
     const data = await getSubscriptions(user.username);
-
-    // Enrich subscriptions with profile data
-    const enriched = await Promise.all(
-      data.map(async (sub: any) => {
-        const profile = await getProfile(sub.subscribedToUsername);
-        return {
-          ...sub,
-          fullName: profile?.fullName || sub.subscribedToUsername,
-        };
-      })
-    );
-
-    setSubscriptions(enriched);
+    setSubscriptions(data || []);
   };
 
   const loadSubscribers = async () => {
     if (!user) return;
     const data = await getSubscribers(user.username);
-
-    // Enrich subscribers with profile data
-    const enriched = await Promise.all(
-      data.map(async (sub: any) => {
-        const profile = await getProfile(sub.subscriberUsername);
-        return {
-          ...sub,
-          fullName: profile?.fullName || sub.subscriberUsername,
-        };
-      })
-    );
-
-    setSubscribers(enriched);
+    setSubscribers(data || []);
   };
 
   const loadUpdates = async () => {
     if (!user) return;
     const data = await getUpdates(user.username);
-
-    // Enrich updates with profile and group data
-    const enriched = await Promise.all(
-      data.map(async (update: any) => {
-        const profile = await getProfile(update.username);
-        const enrichedUpdate: any = {
-          ...update,
-          fullName: profile?.fullName || update.username,
-        };
-
-        if (update.groupName) {
-          const group = await getGroup(update.groupName);
-          enrichedUpdate.groupDisplayName = group?.displayName || update.groupName;
-        }
-
-        return enrichedUpdate;
-      })
-    );
-
-    setUpdates(enriched);
+    setUpdates(data || []);
   };
 
   const formatTime = (timestamp: string) => {
