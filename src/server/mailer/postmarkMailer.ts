@@ -1,6 +1,20 @@
 import { ServerClient } from 'postmark';
 import type { Mailer } from '../api/types';
 
+class StubMailer implements Mailer {
+  async sendPinEmail(_to: string, _pin: string): Promise<void> {
+    // No-op for e2e tests
+  }
+
+  async sendNewSubscriberNotification(_to: string, _subscriberUsername: string, _subscriberFullName: string): Promise<void> {
+    // No-op for e2e tests
+  }
+
+  async sendGroupJoinRequestNotification(_to: string, _requesterUsername: string, _requesterFullName: string, _groupName: string, _groupDisplayName: string): Promise<void> {
+    // No-op for e2e tests
+  }
+}
+
 export interface PostmarkMailerOptions {
   serverToken: string;
   fromEmail: string;
@@ -68,6 +82,11 @@ export class PostmarkMailer implements Mailer {
 }
 
 export function createPostmarkMailerFromEnv(): Mailer | undefined {
+  // Use stub mailer for e2e tests
+  if (process.env.DISABLE_EMAIL === 'true') {
+    return new StubMailer();
+  }
+
   const serverToken = process.env.POSTMARK_SERVER_TOKEN;
   const fromEmail = process.env.POSTMARK_FROM_EMAIL;
 

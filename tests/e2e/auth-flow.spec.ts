@@ -38,7 +38,7 @@ test('new user can sign up and log back in without sending PIN emails when SKIP_
   await page.waitForURL('**/');
   await expect(page.getByRole('link', { name: 'Get Started' })).toBeVisible();
 
-  await page.getByRole('link', { name: 'Log In | Sign Up' }).click();
+  await page.getByRole('link', { name: 'Get Started' }).click();
   await expect(page).toHaveURL(/\/login/);
 
   await page.getByPlaceholder('your@email.com').fill(email);

@@ -13,6 +13,7 @@ process.env.PLAYWRIGHT_POSTMARK_LOG = postmarkLogPath;
 process.env.TURSO_URL = `file:${dbPath}`;
 process.env.TURSO_AUTH_TOKEN = 'playwright-test-token';
 process.env.SKIP_PIN = 'true';
+process.env.DISABLE_EMAIL = 'true';
 process.env.POSTMARK_SERVER_TOKEN = 'playwright-postmark-token';
 process.env.POSTMARK_FROM_EMAIL = 'no-reply@slowpost.test';
 process.env.NEXT_TELEMETRY_DISABLED = '1';
