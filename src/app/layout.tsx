@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, Playfair_Display, Crimson_Text } from 'next/font/google';
 import { AuthProvider } from '@/contexts/AuthContext';
 import StatusBar from '@/components/StatusBar';
+import Footer from '@/components/Footer';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -33,6 +34,7 @@ export default function RootLayout({
         <AuthProvider>
           <StatusBar />
           {children}
+          <Footer />
         </AuthProvider>
       </body>
     </html>
