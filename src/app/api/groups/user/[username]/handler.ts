@@ -3,8 +3,8 @@ import { getHandlerDeps } from '@/server/api/context';
 
 export const getUserGroupsHandler: Handler<unknown, { username: string }> = async (_req, ctx) => {
   const { db, authService } = getHandlerDeps();
-  const memberships = await db.getParentLinks<any>('members', ctx.params.username);
 
+  // Get viewer username for visibility checks
   let viewerUsername: string | null = null;
   const token = ctx.cookies?.auth_token;
   if (token) {
@@ -14,6 +14,51 @@ export const getUserGroupsHandler: Handler<unknown, { username: string }> = asyn
     }
   }
 
+  // Use optimized single-query method if available, otherwise fall back
+  if (db.getUserGroupsWithMembership) {
+    const groupsData = await db.getUserGroupsWithMembership(ctx.params.username, viewerUsername);
+
+    const visibleGroups = groupsData
+      .filter(({ group, membership, viewerMembership }) => {
+        const groupWithMembership = {
+          ...group,
+          memberBio: membership.groupBio,
+          memberStatus: membership.status,
+        };
+
+        // Pending memberships: only visible to user themselves or group admins
+        if (membership.status === 'pending') {
+          if (viewerUsername === ctx.params.username) {
+            return true;
+          }
+          if (viewerMembership?.isAdmin && viewerMembership?.status === 'approved') {
+            return true;
+          }
+          return false;
+        }
+
+        // Public groups: visible to everyone
+        if (group.isPublic) {
+          return true;
+        }
+
+        // Private groups: only visible to approved members
+        if (!viewerUsername) {
+          return false;
+        }
+        return viewerMembership && viewerMembership.status === 'approved';
+      })
+      .map(({ group, membership }) => ({
+        ...group,
+        memberBio: membership.groupBio,
+        memberStatus: membership.status,
+      }));
+
+    return success(visibleGroups);
+  }
+
+  // Fallback to old implementation if optimized method not available
+  const memberships = await db.getParentLinks<any>('members', ctx.params.username);
   const visibleGroups: any[] = [];
 
   for (const membership of memberships) {

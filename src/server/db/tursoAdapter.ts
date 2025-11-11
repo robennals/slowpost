@@ -158,6 +158,44 @@ export class TursoAdapter implements DbAdapter {
     ]);
   }
 
+  async getUserGroupsWithMembership(
+    username: string,
+    viewerUsername: string | null
+  ): Promise<Array<{ group: any; membership: any; viewerMembership: any | null }>> {
+    const sql = viewerUsername
+      ? `
+        SELECT
+          g.data as group_data,
+          m.data as membership_data,
+          v.data as viewer_membership_data
+        FROM links m
+        INNER JOIN documents g ON g.collection = 'groups' AND g.key = m.parent_key
+        LEFT JOIN links v ON v.collection = 'members'
+          AND v.parent_key = m.parent_key
+          AND v.child_key = ?2
+        WHERE m.collection = 'members' AND m.child_key = ?1
+      `
+      : `
+        SELECT
+          g.data as group_data,
+          m.data as membership_data,
+          NULL as viewer_membership_data
+        FROM links m
+        INNER JOIN documents g ON g.collection = 'groups' AND g.key = m.parent_key
+        WHERE m.collection = 'members' AND m.child_key = ?1
+      `;
+
+    const args = viewerUsername ? [username, viewerUsername] : [username];
+
+    const result = await (await this.client()).execute({ sql, args });
+
+    return result.rows.map((row: any) => ({
+      group: JSON.parse(String(row.group_data)),
+      membership: JSON.parse(String(row.membership_data)),
+      viewerMembership: row.viewer_membership_data ? JSON.parse(String(row.viewer_membership_data)) : null,
+    }));
+  }
+
   async close(): Promise<void> {
     await (await this.client()).close();
   }
