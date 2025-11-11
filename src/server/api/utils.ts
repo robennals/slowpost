@@ -18,25 +18,48 @@ export function isSkipPinMode(): boolean {
   return process.env.NODE_ENV !== 'production';
 }
 
-export function authCookie(token: string): CookieAction {
-  return {
-    type: 'set',
-    name: 'auth_token',
-    value: token,
-    options: {
-      httpOnly: true,
-      secure: isProduction(),
-      sameSite: 'lax',
-      maxAge: THIRTY_DAYS_MS,
-      path: '/',
+export function authCookie(token: string): CookieAction[] {
+  return [
+    {
+      type: 'set',
+      name: 'auth_token',
+      value: token,
+      options: {
+        httpOnly: true,
+        secure: isProduction(),
+        sameSite: 'lax',
+        maxAge: THIRTY_DAYS_MS,
+        path: '/',
+      },
     },
-  };
+    {
+      type: 'set',
+      name: 'has_auth',
+      value: '1',
+      options: {
+        httpOnly: false, // Allow JavaScript to read this
+        secure: isProduction(),
+        sameSite: 'lax',
+        maxAge: THIRTY_DAYS_MS,
+        path: '/',
+      },
+    },
+  ];
 }
 
-export const CLEAR_AUTH_COOKIE: CookieAction = {
-  type: 'clear',
-  name: 'auth_token',
-  options: {
-    path: '/',
+export const CLEAR_AUTH_COOKIE: CookieAction[] = [
+  {
+    type: 'clear',
+    name: 'auth_token',
+    options: {
+      path: '/',
+    },
   },
-};
+  {
+    type: 'clear',
+    name: 'has_auth',
+    options: {
+      path: '/',
+    },
+  },
+];

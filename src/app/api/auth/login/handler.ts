@@ -33,7 +33,7 @@ export const loginHandler: Handler<{ email?: string; pin?: string }> = async (_r
       },
     },
     {
-      cookies: [authCookie(session.token)],
+      cookies: authCookie(session.token),
     }
   );
 };

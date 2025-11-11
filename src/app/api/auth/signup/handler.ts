@@ -43,7 +43,7 @@ export const signupHandler: Handler<{
       },
     },
     {
-      cookies: [authCookie(session.token)],
+      cookies: authCookie(session.token),
     }
   );
 };

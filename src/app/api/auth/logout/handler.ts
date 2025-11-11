@@ -5,7 +5,7 @@ export const logoutHandler: Handler = async () => {
   return success(
     { success: true },
     {
-      cookies: [CLEAR_AUTH_COOKIE],
+      cookies: CLEAR_AUTH_COOKIE,
     }
   );
 };
