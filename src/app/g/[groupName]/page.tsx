@@ -162,7 +162,7 @@ export default function GroupPage() {
                 type="text"
                 value={groupBio}
                 onChange={(e) => setGroupBio(e.target.value)}
-                placeholder="Your role in this group (optional)"
+                placeholder="Your group-specific bio (optional)"
                 className={styles.input}
               />
               <button type="submit" className={styles.joinButton} disabled={joining}>
