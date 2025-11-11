@@ -3,7 +3,7 @@
 import React from 'react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { requestPin, login, signup, subscribeToUser } from '@/lib/api';
+import { requestPin, login, signup, subscribeToUser, joinGroup } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import styles from './login.module.css';
 
@@ -34,6 +34,15 @@ export default function LoginPage() {
           return true;
         } catch (error) {
           console.error('Failed to auto-subscribe:', error);
+        }
+      } else if (redirectUrl.startsWith('/join-group/')) {
+        const groupName = redirectUrl.replace('/join-group/', '');
+        try {
+          await joinGroup(groupName, '');
+          router.push(`/g/${groupName}`);
+          return true;
+        } catch (error) {
+          console.error('Failed to auto-join group:', error);
         }
       }
     }

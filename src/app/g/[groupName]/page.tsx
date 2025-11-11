@@ -79,6 +79,8 @@ export default function GroupPage() {
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
+      // Save redirect URL and send to login
+      localStorage.setItem('redirectAfterLogin', `/join-group/${groupName}`);
       router.push('/login');
       return;
     }
