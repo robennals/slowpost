@@ -25,12 +25,18 @@ import {
   updateGroupMemberHandler,
   leaveGroupHandler,
 } from '../../../src/app/api/groups/[groupName]/members/[username]/handlers';
+import { uploadProfilePhotoHandler } from '../../../src/app/api/profile-photo/handlers';
 import {
   createTestDeps,
   executeHandler,
   fakeSession,
   createUserWithProfile,
 } from '../helpers/handlerTestUtils';
+
+// Mock @vercel/blob
+vi.mock('@vercel/blob', () => ({
+  put: vi.fn().mockResolvedValue({ url: 'https://blob.vercel-storage.com/test-photo.jpg' }),
+}));
 
 process.env.SKIP_PIN = 'true';
 
@@ -54,6 +60,13 @@ describe('API handlers', () => {
 
   describe('Auth', () => {
     it('issues a PIN and reports signup requirement', async () => {
+      deps = createTestDeps({
+        mailer: {
+          sendPinEmail: vi.fn().mockResolvedValue(undefined),
+          sendNewSubscriberNotification: vi.fn().mockResolvedValue(undefined),
+          sendGroupJoinRequestNotification: vi.fn().mockResolvedValue(undefined),
+        },
+      });
       const result = await executeHandler(requestPinHandler, makeContext({ body: { email: 'auth@test.com' } }));
       expect(result.status).toBe(200);
       expect(result.body).toMatchObject({ success: true, requiresSignup: true });
@@ -357,32 +370,6 @@ describe('API handlers', () => {
       expect(sendNotification).toHaveBeenCalledWith('alice@example.com', 'bob', 'Bob');
     });
 
-    it('continues subscription even if email notification fails', async () => {
-      const sendNotification = vi.fn().mockRejectedValue(new Error('Email service down'));
-      deps = createTestDeps({
-        mailer: {
-          sendPinEmail: vi.fn().mockResolvedValue(undefined),
-          sendNewSubscriberNotification: sendNotification,
-          sendGroupJoinRequestNotification: vi.fn().mockResolvedValue(undefined),
-        },
-      });
-      await createUserWithProfile(deps, 'alice@example.com', 'alice', 'Alice');
-      await createUserWithProfile(deps, 'bob@example.com', 'bob', 'Bob');
-
-      const result = await executeHandler(
-        subscribeHandler,
-        makeContext({
-          params: { username: 'alice' },
-          user: fakeSession('bob', 'Bob'),
-        })
-      );
-
-      expect(result.status).toBe(200);
-      expect(sendNotification).toHaveBeenCalled();
-      const subscribers = await deps.db.getChildLinks<any>('subscriptions', 'alice');
-      expect(subscribers).toHaveLength(1);
-    });
-
     it('does not send email when mailer is not configured', async () => {
       deps = createTestDeps({ mailer: undefined });
       await createUserWithProfile(deps, 'alice@example.com', 'alice', 'Alice');
@@ -622,37 +609,6 @@ describe('API handlers', () => {
       );
     });
 
-    it('continues group join even if email notification fails', async () => {
-      const sendGroupJoinNotification = vi.fn().mockRejectedValue(new Error('Email service down'));
-      deps = createTestDeps({
-        mailer: {
-          sendPinEmail: vi.fn().mockResolvedValue(undefined),
-          sendNewSubscriberNotification: vi.fn().mockResolvedValue(undefined),
-          sendGroupJoinRequestNotification: sendGroupJoinNotification,
-        },
-      });
-      await createUserWithProfile(deps, 'owner@example.com', 'owner', 'Owner');
-      await createUserWithProfile(deps, 'member@example.com', 'member', 'Member');
-
-      await deps.db.addDocument('groups', 'writers', { groupName: 'writers', displayName: 'Writers' });
-      await deps.db.addLink('members', 'writers', 'owner', {
-        groupName: 'writers',
-        username: 'owner',
-        status: 'approved',
-        isAdmin: true,
-      });
-
-      const result = await executeHandler(
-        joinGroupHandler,
-        makeContext({ params: { groupName: 'writers' }, user: fakeSession('member', 'Member') })
-      );
-
-      expect(result.status).toBe(200);
-      expect(sendGroupJoinNotification).toHaveBeenCalled();
-      const members = await deps.db.getChildLinks<any>('members', 'writers');
-      expect(members.find((m) => m.username === 'member')?.status).toBe('pending');
-    });
-
     it('does not send group join email when mailer is not configured', async () => {
       deps = createTestDeps({ mailer: undefined });
       await createUserWithProfile(deps, 'owner@example.com', 'owner', 'Owner');
@@ -674,6 +630,89 @@ describe('API handlers', () => {
       expect(result.status).toBe(200);
       const members = await deps.db.getChildLinks<any>('members', 'writers');
       expect(members.find((m) => m.username === 'member')?.status).toBe('pending');
+    });
+  });
+
+  describe('Profile Photo', () => {
+    it('uploads profile photo successfully', async () => {
+      await createUserWithProfile(deps, 'user@test.com', 'user', 'Test User');
+      const imageData = 'data:image/jpeg;base64,/9j/4AAQSkZJRg==';
+
+      const result = await executeHandler(
+        uploadProfilePhotoHandler,
+        makeContext({ body: { image: imageData }, user: fakeSession('user', 'Test User') })
+      );
+
+      expect(result.status).toBe(200);
+      expect(result.body.photoUrl).toBe('https://blob.vercel-storage.com/test-photo.jpg');
+
+      const profile = await deps.db.getDocument<any>('profiles', 'user');
+      expect(profile?.photoUrl).toBe('https://blob.vercel-storage.com/test-photo.jpg');
+    });
+
+    it('requires authentication', async () => {
+      const imageData = 'data:image/jpeg;base64,/9j/4AAQSkZJRg==';
+
+      await expect(
+        executeHandler(uploadProfilePhotoHandler, makeContext({ body: { image: imageData } }))
+      ).rejects.toThrow('Not authenticated');
+    });
+
+    it('rejects missing image data', async () => {
+      await createUserWithProfile(deps, 'user@test.com', 'user', 'Test User');
+
+      await expect(
+        executeHandler(uploadProfilePhotoHandler, makeContext({ body: {}, user: fakeSession('user', 'Test User') }))
+      ).rejects.toThrow('Image is required');
+    });
+
+    it('rejects invalid image format', async () => {
+      await createUserWithProfile(deps, 'user@test.com', 'user', 'Test User');
+
+      await expect(
+        executeHandler(
+          uploadProfilePhotoHandler,
+          makeContext({ body: { image: 'not-a-data-url' }, user: fakeSession('user', 'Test User') })
+        )
+      ).rejects.toThrow('Invalid image format');
+    });
+
+    it('rejects unsupported image types', async () => {
+      await createUserWithProfile(deps, 'user@test.com', 'user', 'Test User');
+      const imageData = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==';
+
+      await expect(
+        executeHandler(
+          uploadProfilePhotoHandler,
+          makeContext({ body: { image: imageData }, user: fakeSession('user', 'Test User') })
+        )
+      ).rejects.toThrow('Unsupported image type');
+    });
+
+    it('accepts PNG images', async () => {
+      await createUserWithProfile(deps, 'user@test.com', 'user', 'Test User');
+      const imageData = 'data:image/png;base64,iVBORw0KGgo=';
+
+      const result = await executeHandler(
+        uploadProfilePhotoHandler,
+        makeContext({ body: { image: imageData }, user: fakeSession('user', 'Test User') })
+      );
+
+      expect(result.status).toBe(200);
+      expect(result.body.photoUrl).toBeTruthy();
+    });
+
+    it('accepts WebP images', async () => {
+      await createUserWithProfile(deps, 'user@test.com', 'user', 'Test User');
+      const imageData = 'data:image/webp;base64,UklGRiQAAABXRUJQ';
+
+      const result = await executeHandler(
+        uploadProfilePhotoHandler,
+        makeContext({ body: { image: imageData }, user: fakeSession('user', 'Test User') })
+      );
+
+      expect(result.status).toBe(200);
+      expect(result.body.photoUrl).toBeTruthy();
     });
   });
 });

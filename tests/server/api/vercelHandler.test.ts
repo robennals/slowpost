@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { executeHandler } from '../../../src/server/api/runHandler';
 import { requestPinHandler } from '../../../src/app/api/auth/request-pin/handler';
 import { currentUserHandler } from '../../../src/app/api/auth/me/handler';
@@ -12,7 +12,15 @@ process.env.SKIP_PIN = 'true';
 function createDeps(): HandlerDeps {
   const db = new MockDbAdapter();
   const authService = new AuthService(db, true);
-  return { db, authService };
+  return {
+    db,
+    authService,
+    mailer: {
+      sendPinEmail: vi.fn().mockResolvedValue(undefined),
+      sendNewSubscriberNotification: vi.fn().mockResolvedValue(undefined),
+      sendGroupJoinRequestNotification: vi.fn().mockResolvedValue(undefined),
+    },
+  };
 }
 
 describe('executeHandler', () => {
