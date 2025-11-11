@@ -8,6 +8,11 @@ export const getGroupHandler: Handler<unknown, { groupName: string }> = async (_
     throw new ApiError(404, 'Group not found');
   }
 
-  const members = await db.getChildLinks('members', params.groupName);
+  const membersWithProfiles = await db.getGroupMembersWithProfiles(params.groupName);
+  const members = membersWithProfiles.map(({ membership, profile }) => ({
+    ...membership,
+    fullName: profile.fullName || membership.username,
+  }));
+
   return success({ ...group, members });
 };

@@ -91,6 +91,43 @@ export class MockDbAdapter implements DbAdapter {
     return Array.from(col.entries()).map(([key, value]) => ({ key, data: this.clone(value) }));
   }
 
+  async getUserGroupsWithMembership(
+    username: string,
+    viewerUsername: string | null
+  ): Promise<Array<{ group: any; membership: any; viewerMembership: any | null }>> {
+    const memberships = await this.getParentLinks<any>('members', username);
+    const result: Array<{ group: any; membership: any; viewerMembership: any | null }> = [];
+
+    for (const membership of memberships) {
+      const group = await this.getDocument<any>('groups', membership.groupName);
+      if (!group) continue;
+
+      let viewerMembership = null;
+      if (viewerUsername) {
+        const allMembers = await this.getChildLinks<any>('members', membership.groupName);
+        viewerMembership = allMembers.find((m: any) => m.username === viewerUsername) || null;
+      }
+
+      result.push({ group, membership, viewerMembership });
+    }
+
+    return result;
+  }
+
+  async getGroupMembersWithProfiles(groupName: string): Promise<Array<{ membership: any; profile: any }>> {
+    const memberships = await this.getChildLinks<any>('members', groupName);
+    const result: Array<{ membership: any; profile: any }> = [];
+
+    for (const membership of memberships) {
+      const profile = await this.getDocument<any>('profiles', membership.username);
+      if (profile) {
+        result.push({ membership, profile });
+      }
+    }
+
+    return result;
+  }
+
   reset() {
     this.documents.clear();
     this.links.clear();

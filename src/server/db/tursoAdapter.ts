@@ -196,6 +196,24 @@ export class TursoAdapter implements DbAdapter {
     }));
   }
 
+  async getGroupMembersWithProfiles(groupName: string): Promise<Array<{ membership: any; profile: any }>> {
+    const sql = `
+      SELECT
+        m.data as membership_data,
+        p.data as profile_data
+      FROM links m
+      INNER JOIN documents p ON p.collection = 'profiles' AND p.key = m.child_key
+      WHERE m.collection = 'members' AND m.parent_key = ?1
+    `;
+
+    const result = await (await this.client()).execute({ sql, args: [groupName] });
+
+    return result.rows.map((row: any) => ({
+      membership: JSON.parse(String(row.membership_data)),
+      profile: JSON.parse(String(row.profile_data)),
+    }));
+  }
+
   async close(): Promise<void> {
     await (await this.client()).close();
   }

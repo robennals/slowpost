@@ -8,7 +8,8 @@ export interface DbAdapter {
   deleteLink(collection: string, parentKey: string, childKey: string): Promise<void>;
   updateLink<T>(collection: string, parentKey: string, childKey: string, update: Partial<T>): Promise<void>;
   getAllDocuments<T>(collection: string): Promise<Array<{ key: string; data: T }>>;
-  getUserGroupsWithMembership?(username: string, viewerUsername: string | null): Promise<Array<{ group: any; membership: any; viewerMembership: any | null }>>;
+  getUserGroupsWithMembership(username: string, viewerUsername: string | null): Promise<Array<{ group: any; membership: any; viewerMembership: any | null }>>;
+  getGroupMembersWithProfiles(groupName: string): Promise<Array<{ membership: any; profile: any }>>;
 }
 
 export interface AdapterFactoryEnv {

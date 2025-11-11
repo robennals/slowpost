@@ -70,19 +70,8 @@ export default function GroupPage() {
     const data = await getGroup(groupName);
     if (data) {
       setGroup(data);
-
-      // Enrich members with profile data
-      const enriched = await Promise.all(
-        data.members.map(async (member: Member) => {
-          const profile = await getProfile(member.username);
-          return {
-            ...member,
-            fullName: profile?.fullName || member.username,
-          };
-        })
-      );
-
-      setMembers(enriched);
+      // Members now come pre-enriched with profile data from the API
+      setMembers(data.members || []);
     }
     setLoading(false);
   };
