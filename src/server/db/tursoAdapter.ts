@@ -156,16 +156,6 @@ export class TursoAdapter implements DbAdapter {
         sql: 'CREATE INDEX IF NOT EXISTS idx_links_child ON links(collection, child_key)',
       },
       {
-        sql: `CREATE INDEX IF NOT EXISTS idx_subscriptions_subscribed_to
-              ON links(json_extract(data, '$.subscribedToUsername'))
-              WHERE collection = 'subscriptions'`,
-      },
-      {
-        sql: `CREATE INDEX IF NOT EXISTS idx_subscriptions_subscriber
-              ON links(json_extract(data, '$.subscriberUsername'))
-              WHERE collection = 'subscriptions'`,
-      },
-      {
         sql: `CREATE INDEX IF NOT EXISTS idx_updates_username
               ON links(json_extract(data, '$.username'))
               WHERE collection = 'updates'`,
@@ -240,7 +230,7 @@ export class TursoAdapter implements DbAdapter {
         s.data as subscription_data,
         p.data as profile_data
       FROM links s
-      INNER JOIN documents p ON p.collection = 'profiles' AND p.key = json_extract(s.data, '$.subscribedToUsername')
+      INNER JOIN documents p ON p.collection = 'profiles' AND p.key = s.parent_key
       WHERE s.collection = 'subscriptions' AND s.child_key = ?1
     `;
 
@@ -258,7 +248,7 @@ export class TursoAdapter implements DbAdapter {
         s.data as subscription_data,
         p.data as profile_data
       FROM links s
-      INNER JOIN documents p ON p.collection = 'profiles' AND p.key = json_extract(s.data, '$.subscriberUsername')
+      INNER JOIN documents p ON p.collection = 'profiles' AND p.key = s.child_key
       WHERE s.collection = 'subscriptions' AND s.parent_key = ?1
     `;
 
