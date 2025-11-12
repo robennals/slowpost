@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserGroups, getSubscriptions, getSubscribers, getUpdates } from '@/lib/api';
+import { getUserGroups, getSubscriptions, getSubscribers, getUpdates, getProfile } from '@/lib/api';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import styles from './page.module.css';
@@ -13,15 +13,23 @@ export default function HomePage() {
   const [subscriptions, setSubscriptions] = useState<any[]>([]);
   const [subscribers, setSubscribers] = useState<any[]>([]);
   const [updates, setUpdates] = useState<any[]>([]);
+  const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
     if (user) {
+      loadProfile();
       loadGroups();
       loadSubscriptions();
       loadSubscribers();
       loadUpdates();
     }
   }, [user]);
+
+  const loadProfile = async () => {
+    if (!user) return;
+    const data = await getProfile(user.username);
+    setProfile(data);
+  };
 
   const loadGroups = async () => {
     if (!user) return;
@@ -110,6 +118,44 @@ export default function HomePage() {
     );
   }
 
+  // Determine next action
+  const getNextAction = () => {
+    const missingDescription = !profile?.bio || profile.bio.trim() === '';
+    const missingPhoto = !profile?.photoUrl;
+
+    if (missingDescription || missingPhoto) {
+      let message = 'Complete your profile to tell people what you\'ll write about';
+      if (missingDescription && !missingPhoto) {
+        message = 'Edit your profile to tell people what you\'ll write about';
+      } else if (!missingDescription && missingPhoto) {
+        message = 'Add a profile photo so subscribers can recognize you';
+      }
+
+      return {
+        message,
+        link: `/${user.username}`,
+        linkText: 'Edit your profile',
+        helpDoc: '/pages/setting-up-your-profile.html'
+      };
+    }
+    if (groups.length === 0) {
+      return {
+        message: 'Create a group to reconnect with people you know',
+        link: '/groups',
+        linkText: 'Create a group',
+        helpDoc: '/pages/joining-groups.html'
+      };
+    }
+    return {
+      message: `You have ${subscribers.length} ${subscribers.length === 1 ? 'subscriber' : 'subscribers'}. Share your profile to get more!`,
+      link: `/${user.username}`,
+      linkText: 'View your profile',
+      helpDoc: '/pages/getting-subscribers.html'
+    };
+  };
+
+  const nextAction = getNextAction();
+
   return (
     <div className={styles.container}>
       <div className={styles.content}>
@@ -118,6 +164,19 @@ export default function HomePage() {
           <Link href={`/${user.username}`} className={styles.profileButton}>
             Your Profile
           </Link>
+        </div>
+
+        <div className={styles.nextThingToDo}>
+          <h2 className={styles.nextThingTitle}>Complete your setup</h2>
+          <p className={styles.nextThingMessage}>{nextAction.message}</p>
+          <div className={styles.nextThingActions}>
+            <Link href={nextAction.link} className={styles.nextThingButton}>
+              {nextAction.linkText}
+            </Link>
+            <a href={nextAction.helpDoc} className={styles.nextThingHelp}>
+              Learn more
+            </a>
+          </div>
         </div>
 
         <div className={styles.sections}>

@@ -222,6 +222,83 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
+.nextThingToDo {
+  background: linear-gradient(135deg, rgba(168, 68, 55, 0.08) 0%, rgba(168, 68, 55, 0.05) 100%);
+  border: 2px solid var(--color-wax-seal);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(168, 68, 55, 0.15);
+}
+
+.nextThingTitle {
+  font-family: var(--font-playfair);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-wax-seal);
+  margin: 0 0 0.75rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.nextThingMessage {
+  font-family: var(--font-crimson);
+  font-size: 1rem;
+  color: var(--color-text-dark);
+  line-height: 1.6;
+  margin: 0 0 1rem 0;
+}
+
+.nextThingActions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.nextThingButton {
+  padding: 0.75rem 1.5rem;
+  background: var(--color-wax-seal);
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-family: var(--font-crimson);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+  box-shadow:
+    0 4px 8px rgba(168, 68, 55, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.nextThingButton:hover {
+  background: var(--color-wax-seal-hover);
+  transform: translateY(-1px);
+  box-shadow:
+    0 6px 12px rgba(168, 68, 55, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.nextThingHelp {
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  color: var(--color-wax-seal);
+  text-decoration: none;
+  border: 2px solid var(--color-wax-seal);
+  border-radius: 8px;
+  font-weight: 600;
+  font-family: var(--font-crimson);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+}
+
+.nextThingHelp:hover {
+  background: var(--color-wax-seal);
+  color: white;
+  transform: translateY(-1px);
+}
+
 .sections {
   display: flex;
   flex-direction: column;
