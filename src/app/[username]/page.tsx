@@ -45,6 +45,7 @@ export default function ProfilePage() {
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoUploadError, setPhotoUploadError] = useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+  const [urlCopied, setUrlCopied] = useState(false);
 
   const isOwnProfile = user?.username === username;
 
@@ -221,6 +222,31 @@ export default function ProfilePage() {
     }
   };
 
+  const handleCopyUrl = async () => {
+    const profileUrl = `https://slowpost.org/${username}`;
+    try {
+      await navigator.clipboard.writeText(profileUrl);
+      setUrlCopied(true);
+      setTimeout(() => setUrlCopied(false), 2000);
+    } catch (error) {
+      // Fallback for browsers that don't support clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = profileUrl;
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        setUrlCopied(true);
+        setTimeout(() => setUrlCopied(false), 2000);
+      } catch (err) {
+        console.error('Failed to copy:', err);
+      }
+      document.body.removeChild(textArea);
+    }
+  };
+
   if (loading) {
     return (
       <div className={styles.container}>
@@ -363,6 +389,24 @@ export default function ProfilePage() {
             </button>
           )}
         </div>
+
+        {isOwnProfile && (
+          <div className={styles.shareWidget}>
+            <h2 className={styles.shareWidgetTitle}>Share your profile</h2>
+            <div className={styles.shareUrlContainer}>
+              <div className={styles.shareUrl} onClick={handleCopyUrl}>
+                https://slowpost.org/{username}
+              </div>
+              <button
+                onClick={handleCopyUrl}
+                className={styles.copyButton}
+                disabled={urlCopied}
+              >
+                {urlCopied ? 'Copied!' : 'Copy URL'}
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className={styles.sections}>
           {groups.length > 0 ? (

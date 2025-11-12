@@ -572,3 +572,81 @@
   color: var(--color-text-medium);
   font-style: italic;
 }
+
+.shareWidget {
+  width: 100%;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(168, 68, 55, 0.08) 0%, rgba(168, 68, 55, 0.05) 100%);
+  border: 2px solid var(--color-wax-seal);
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(168, 68, 55, 0.15);
+}
+
+.shareWidgetTitle {
+  font-family: var(--font-playfair);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-wax-seal);
+  margin: 0 0 1rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+.shareUrlContainer {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.shareUrl {
+  padding: 0.75rem 1.25rem;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid var(--color-paper-border);
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 1rem;
+  color: var(--color-text-dark);
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: all;
+}
+
+.shareUrl:hover {
+  border-color: var(--color-wax-seal);
+  background: white;
+  box-shadow: 0 2px 4px rgba(168, 68, 55, 0.1);
+}
+
+.copyButton {
+  padding: 0.75rem 1.5rem;
+  background: var(--color-wax-seal);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-family: var(--font-crimson);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow:
+    0 4px 8px rgba(168, 68, 55, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.copyButton:hover:not(:disabled) {
+  background: var(--color-wax-seal-hover);
+  transform: translateY(-1px);
+  box-shadow:
+    0 6px 12px rgba(168, 68, 55, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.copyButton:disabled {
+  background: #6B5B47;
+  cursor: default;
+}
