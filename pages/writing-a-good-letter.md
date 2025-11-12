@@ -23,3 +23,16 @@ A good annual letter gives people reason to connect with you, or provides them w
 * **Over-polished photos** - People want to know what you actually look like, not how skilled you are at using filters.
 
 If in doubt, think about what you would love to hear from someone else, and what would make someone want to connect with you in person.
+
+Or just ignore this guidance, and write what you think people will value. 
+
+
+## Example Letters
+
+Here are three examples of good annual letters that follow the principles:
+
+- [Sarah's Letter](/pages/examples/letter-example-1.html) - A parent balancing career change, new hobbies, and family life
+- [Marcus's Letter](/pages/examples/letter-example-2.html) - Processing loss while exploring new directions
+- [Jamie's Letter](/pages/examples/letter-example-3.html) - A new parent reflecting on community and public institutions
+
+You can use those as inspiration, or ignore them and write something totally different.

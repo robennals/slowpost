@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { readFileSync, writeFileSync, mkdirSync, readdirSync } from 'fs';
-import { join, basename } from 'path';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync } from 'fs';
+import { join, basename, relative } from 'path';
 import { marked } from 'marked';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -286,6 +286,24 @@ function extractTitle(markdownContent) {
   return 'Page';
 }
 
+function getAllMarkdownFiles(dir, baseDir = dir, fileList = []) {
+  const files = readdirSync(dir);
+
+  for (const file of files) {
+    const filePath = join(dir, file);
+    const stat = statSync(filePath);
+
+    if (stat.isDirectory()) {
+      getAllMarkdownFiles(filePath, baseDir, fileList);
+    } else if (file.endsWith('.md')) {
+      const relativePath = relative(baseDir, filePath);
+      fileList.push(relativePath);
+    }
+  }
+
+  return fileList;
+}
+
 function buildPages() {
   console.log('Building pages from markdown...');
 
@@ -296,8 +314,8 @@ function buildPages() {
     // Directory might already exist
   }
 
-  // Read all markdown files
-  const files = readdirSync(PAGES_DIR).filter(f => f.endsWith('.md'));
+  // Read all markdown files recursively
+  const files = getAllMarkdownFiles(PAGES_DIR);
 
   if (files.length === 0) {
     console.log('No markdown files found in pages/ directory');
@@ -308,8 +326,16 @@ function buildPages() {
 
   for (const file of files) {
     const inputPath = join(PAGES_DIR, file);
-    const outputFilename = basename(file, '.md') + '.html';
+    const outputFilename = file.replace(/\.md$/, '.html');
     const outputPath = join(OUTPUT_DIR, outputFilename);
+
+    // Create subdirectories in output if needed
+    const outputDir = dirname(outputPath);
+    try {
+      mkdirSync(outputDir, { recursive: true });
+    } catch (err) {
+      // Directory might already exist
+    }
 
     try {
       const markdown = readFileSync(inputPath, 'utf-8');
