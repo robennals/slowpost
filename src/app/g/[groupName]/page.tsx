@@ -41,6 +41,8 @@ export default function GroupPage() {
   const [joining, setJoining] = useState(false);
   const [groupBio, setGroupBio] = useState('');
   const [sortBy, setSortBy] = useState<'recent' | 'alphabetical'>('recent');
+  const [ownProfile, setOwnProfile] = useState<any>(null);
+  const [ownProfileLoaded, setOwnProfileLoaded] = useState(false);
 
   const userMembership = members.find(m => m.username === user?.username);
   const isMember = !!userMembership && (userMembership.status === 'approved' || !userMembership.status); // Treat members without status as approved
@@ -64,6 +66,19 @@ export default function GroupPage() {
   useEffect(() => {
     loadGroup();
   }, [groupName]);
+
+  useEffect(() => {
+    if (user && !ownProfileLoaded) {
+      loadOwnProfile();
+    }
+  }, [user, ownProfileLoaded]);
+
+  const loadOwnProfile = async () => {
+    if (!user) return;
+    const data = await getProfile(user.username);
+    setOwnProfile(data);
+    setOwnProfileLoaded(true);
+  };
 
   const loadGroup = async () => {
     setLoading(true);
@@ -117,6 +132,13 @@ export default function GroupPage() {
     } catch (error: any) {
       alert(error.message || 'Failed to toggle admin status');
     }
+  };
+
+  const shouldShowSetupPrompt = () => {
+    if (!user || !ownProfileLoaded) return false;
+    const missingBio = !ownProfile?.bio || ownProfile.bio.trim() === '';
+    const missingPhoto = !ownProfile?.photoUrl;
+    return missingBio || missingPhoto;
   };
 
   if (loading) {
@@ -251,6 +273,21 @@ export default function GroupPage() {
             ))}
           </div>
         </div>
+
+        {shouldShowSetupPrompt() && (
+          <div className={styles.setupPrompt}>
+            <h3 className={styles.setupPromptTitle}>Want your own annual letter?</h3>
+            <p className={styles.setupPromptMessage}>Set up your profile to start collecting subscribers</p>
+            <div className={styles.setupPromptActions}>
+              <Link href="/me" className={styles.setupPromptButton}>
+                Set up your profile
+              </Link>
+              <a href="/pages/how-it-works.html" className={styles.setupPromptHelp}>
+                Learn more
+              </a>
+            </div>
+          </div>
+        )}
 
         {!user && (
           <div className={styles.howItWorks}>

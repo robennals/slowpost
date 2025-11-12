@@ -46,6 +46,8 @@ export default function ProfilePage() {
   const [photoUploadError, setPhotoUploadError] = useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const [urlCopied, setUrlCopied] = useState(false);
+  const [ownProfile, setOwnProfile] = useState<any>(null);
+  const [ownProfileLoaded, setOwnProfileLoaded] = useState(false);
 
   const isOwnProfile = user?.username === username;
 
@@ -59,6 +61,19 @@ export default function ProfilePage() {
       checkSubscription();
     }
   }, [user, username]);
+
+  useEffect(() => {
+    if (user && !isOwnProfile && !ownProfileLoaded) {
+      loadOwnProfile();
+    }
+  }, [user, isOwnProfile, ownProfileLoaded]);
+
+  const loadOwnProfile = async () => {
+    if (!user) return;
+    const data = await getProfile(user.username);
+    setOwnProfile(data);
+    setOwnProfileLoaded(true);
+  };
 
   const loadGroups = async () => {
     const data = await getUserGroups(username);
@@ -245,6 +260,13 @@ export default function ProfilePage() {
       }
       document.body.removeChild(textArea);
     }
+  };
+
+  const shouldShowSetupPrompt = () => {
+    if (!user || isOwnProfile || !ownProfileLoaded) return false;
+    const missingBio = !ownProfile?.bio || ownProfile.bio.trim() === '';
+    const missingPhoto = !ownProfile?.photoUrl;
+    return missingBio || missingPhoto;
   };
 
   if (loading) {
@@ -439,6 +461,21 @@ export default function ProfilePage() {
             </div>
           )}
         </div>
+
+        {shouldShowSetupPrompt() && (
+          <div className={styles.setupPrompt}>
+            <h3 className={styles.setupPromptTitle}>Want your own annual letter?</h3>
+            <p className={styles.setupPromptMessage}>Set up your profile to start collecting subscribers</p>
+            <div className={styles.setupPromptActions}>
+              <Link href="/me" className={styles.setupPromptButton}>
+                Set up your profile
+              </Link>
+              <a href="/pages/how-it-works.html" className={styles.setupPromptHelp}>
+                Learn more
+              </a>
+            </div>
+          </div>
+        )}
 
         {!user && (
           <div className={styles.howItWorks}>

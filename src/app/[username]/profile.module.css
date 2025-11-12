@@ -650,3 +650,81 @@
   background: #6B5B47;
   cursor: default;
 }
+
+.setupPrompt {
+  width: 100%;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(168, 68, 55, 0.08) 0%, rgba(168, 68, 55, 0.05) 100%);
+  border: 2px solid var(--color-wax-seal);
+  border-radius: 12px;
+  margin-top: 3rem;
+  box-shadow: 0 4px 12px rgba(168, 68, 55, 0.15);
+  text-align: center;
+}
+
+.setupPromptTitle {
+  font-family: var(--font-playfair);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-wax-seal);
+  margin: 0 0 0.5rem 0;
+}
+
+.setupPromptMessage {
+  font-family: var(--font-crimson);
+  font-size: 1rem;
+  color: var(--color-text-dark);
+  margin: 0 0 1.25rem 0;
+  line-height: 1.5;
+}
+
+.setupPromptActions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.setupPromptButton {
+  padding: 0.75rem 1.5rem;
+  background: var(--color-wax-seal);
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-family: var(--font-crimson);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+  box-shadow:
+    0 4px 8px rgba(168, 68, 55, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.setupPromptButton:hover {
+  background: var(--color-wax-seal-hover);
+  transform: translateY(-1px);
+  box-shadow:
+    0 6px 12px rgba(168, 68, 55, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.setupPromptHelp {
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  color: var(--color-wax-seal);
+  text-decoration: none;
+  border: 2px solid var(--color-wax-seal);
+  border-radius: 8px;
+  font-weight: 600;
+  font-family: var(--font-crimson);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s;
+}
+
+.setupPromptHelp:hover {
+  background: rgba(168, 68, 55, 0.1);
+  transform: translateY(-1px);
+}
