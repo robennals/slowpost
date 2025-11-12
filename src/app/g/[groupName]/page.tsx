@@ -4,7 +4,7 @@ import React from 'react';
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { getGroup, joinGroup, getProfile, updateMemberStatus, toggleMemberAdmin, updateGroup } from '@/lib/api';
+import { getGroup, joinGroup, getProfile, updateMemberStatus, toggleMemberAdmin, updateGroup, updateGroupBio } from '@/lib/api';
 import Link from 'next/link';
 import styles from './group.module.css';
 
@@ -46,6 +46,9 @@ export default function GroupPage() {
   const [editingDescription, setEditingDescription] = useState(false);
   const [editedDescription, setEditedDescription] = useState('');
   const [savingDescription, setSavingDescription] = useState(false);
+  const [editingOwnBio, setEditingOwnBio] = useState(false);
+  const [editedOwnBio, setEditedOwnBio] = useState('');
+  const [savingOwnBio, setSavingOwnBio] = useState(false);
 
   const userMembership = members.find(m => m.username === user?.username);
   const isMember = !!userMembership && (userMembership.status === 'approved' || !userMembership.status); // Treat members without status as approved
@@ -139,6 +142,16 @@ export default function GroupPage() {
 
   const handleTogglePublic = async () => {
     if (!group) return;
+
+    const action = group.isPublic ? 'make this group private' : 'make this group public';
+    const confirmation = group.isPublic
+      ? 'Making the group private will hide it from non-members. Are you sure?'
+      : 'Making the group public will allow anyone to see it and request to join. Are you sure?';
+
+    if (!confirm(confirmation)) {
+      return;
+    }
+
     try {
       const result = await updateGroup(groupName, { isPublic: !group.isPublic });
       if (result.error) {
@@ -176,6 +189,34 @@ export default function GroupPage() {
       alert(error.message || 'Failed to update description');
     } finally {
       setSavingDescription(false);
+    }
+  };
+
+  const handleEditOwnBio = () => {
+    setEditedOwnBio(userMembership?.groupBio || '');
+    setEditingOwnBio(true);
+  };
+
+  const handleCancelEditOwnBio = () => {
+    setEditingOwnBio(false);
+    setEditedOwnBio('');
+  };
+
+  const handleSaveOwnBio = async () => {
+    if (!user) return;
+    setSavingOwnBio(true);
+    try {
+      const result = await updateGroupBio(groupName, user.username, editedOwnBio);
+      if (result.error) {
+        alert(result.error);
+      } else {
+        await loadGroup();
+        setEditingOwnBio(false);
+      }
+    } catch (error: any) {
+      alert(error.message || 'Failed to update bio');
+    } finally {
+      setSavingOwnBio(false);
     }
   };
 
@@ -334,25 +375,70 @@ export default function GroupPage() {
           <div className={styles.memberList}>
             {approvedMembers.map((member) => (
               <div key={member.username} className={styles.memberCard}>
-                <Link href={`/${member.username}`} className={styles.memberLink}>
-                  <div className={styles.memberInfo}>
-                    <div className={styles.memberName}>
-                      {member.fullName}
-                      {member.isAdmin && <span className={styles.adminBadge}>Admin</span>}
+                {member.username === user?.username && editingOwnBio ? (
+                  <div className={styles.bioEdit}>
+                    <div className={styles.memberInfo}>
+                      <div className={styles.memberName}>
+                        {member.fullName}
+                        {member.isAdmin && <span className={styles.adminBadge}>Admin</span>}
+                      </div>
+                      <div className={styles.memberUsername}>@{member.username}</div>
                     </div>
-                    <div className={styles.memberUsername}>@{member.username}</div>
+                    <textarea
+                      value={editedOwnBio}
+                      onChange={(e) => setEditedOwnBio(e.target.value)}
+                      className={styles.bioTextarea}
+                      placeholder="Your group-specific bio (optional)"
+                      rows={2}
+                    />
+                    <div className={styles.bioEditActions}>
+                      <button
+                        onClick={handleSaveOwnBio}
+                        className={styles.saveBioButton}
+                        disabled={savingOwnBio}
+                      >
+                        {savingOwnBio ? 'Saving...' : 'Save'}
+                      </button>
+                      <button
+                        onClick={handleCancelEditOwnBio}
+                        className={styles.cancelBioButton}
+                        disabled={savingOwnBio}
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
-                  {member.groupBio && (
-                    <div className={styles.memberBio}>{member.groupBio}</div>
-                  )}
-                </Link>
-                {isAdmin && member.username !== user?.username && (
-                  <button
-                    onClick={() => handleToggleAdmin(member.username, member.isAdmin)}
-                    className={styles.adminToggle}
-                  >
-                    {member.isAdmin ? 'Remove Admin' : 'Make Admin'}
-                  </button>
+                ) : (
+                  <>
+                    <Link href={`/${member.username}`} className={styles.memberLink}>
+                      <div className={styles.memberInfo}>
+                        <div className={styles.memberName}>
+                          {member.fullName}
+                          {member.isAdmin && <span className={styles.adminBadge}>Admin</span>}
+                        </div>
+                        <div className={styles.memberUsername}>@{member.username}</div>
+                      </div>
+                      {member.groupBio && (
+                        <div className={styles.memberBio}>{member.groupBio}</div>
+                      )}
+                    </Link>
+                    {member.username === user?.username && (
+                      <button
+                        onClick={handleEditOwnBio}
+                        className={styles.editBioButton}
+                      >
+                        {member.groupBio ? 'Edit Bio' : 'Add Bio'}
+                      </button>
+                    )}
+                    {isAdmin && member.username !== user?.username && (
+                      <button
+                        onClick={() => handleToggleAdmin(member.username, member.isAdmin)}
+                        className={styles.adminToggle}
+                      >
+                        {member.isAdmin ? 'Remove Admin' : 'Make Admin'}
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             ))}

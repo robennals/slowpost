@@ -76,23 +76,22 @@
 }
 
 .toggleVisibilityButton {
-  padding: 0.5rem 1rem;
-  background: var(--color-wax-seal);
-  color: white;
-  border: none;
-  border-radius: 8px;
+  padding: 0.4rem 0.75rem;
+  background: transparent;
+  color: var(--color-text-medium);
+  border: 1px solid var(--color-paper-border);
+  border-radius: 6px;
   font-family: var(--font-crimson);
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 0.8rem;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
 }
 
 .toggleVisibilityButton:hover {
-  background: #9C3B2F;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(168, 68, 55, 0.3);
+  border-color: var(--color-text-dark);
+  color: var(--color-text-dark);
 }
 
 .descriptionSection {
@@ -371,6 +370,104 @@
   font-size: 0.875rem;
   color: var(--color-wax-seal);
   font-style: italic;
+}
+
+.editBioButton {
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  background: transparent;
+  color: var(--color-text-medium);
+  border: 1px solid var(--color-paper-border);
+  border-radius: 6px;
+  font-family: var(--font-crimson);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  align-self: flex-start;
+}
+
+.editBioButton:hover {
+  border-color: var(--color-wax-seal);
+  color: var(--color-wax-seal);
+}
+
+.bioEdit {
+  padding: 1rem;
+  border: 1px solid var(--color-paper-border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.bioTextarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--color-paper-border);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-family: var(--font-crimson);
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--color-text-dark);
+  resize: vertical;
+  line-height: 1.4;
+  margin-top: 0.5rem;
+}
+
+.bioTextarea:focus {
+  outline: none;
+  border-color: var(--color-wax-seal);
+}
+
+.bioEditActions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.saveBioButton {
+  padding: 0.4rem 0.75rem;
+  background: var(--color-wax-seal);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--font-crimson);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.saveBioButton:hover:not(:disabled) {
+  background: #9C3B2F;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(168, 68, 55, 0.3);
+}
+
+.saveBioButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cancelBioButton {
+  padding: 0.4rem 0.75rem;
+  background: transparent;
+  color: var(--color-text-dark);
+  border: 1px solid var(--color-paper-border);
+  border-radius: 6px;
+  font-family: var(--font-crimson);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancelBioButton:hover:not(:disabled) {
+  border-color: var(--color-text-dark);
+}
+
+.cancelBioButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .pendingNotice {
