@@ -26,6 +26,7 @@ import {
   leaveGroupHandler,
 } from '../../../src/app/api/groups/[groupName]/members/[username]/handlers';
 import { uploadProfilePhotoHandler } from '../../../src/app/api/profile-photo/handlers';
+import { markLetterSentHandler } from '../../../src/app/api/profiles/[username]/handlers';
 import {
   createTestDeps,
   executeHandler,
@@ -230,6 +231,34 @@ describe('API handlers', () => {
       expect(result.body).toMatchObject({ bio: 'New bio' });
     });
 
+    it('allows owner to update expectedSendMonth', async () => {
+      await deps.db.addDocument('profiles', 'owner', { username: 'owner', fullName: 'Owner', bio: '' });
+      const session = fakeSession('owner', 'Owner');
+      const result = await executeHandler(
+        updateProfileHandler,
+        makeContext({ params: { username: 'owner' }, body: { expectedSendMonth: 'January' }, user: session })
+      );
+      expect(result.body).toMatchObject({ expectedSendMonth: 'January' });
+    });
+
+    it('allows owner to update multiple fields at once', async () => {
+      await deps.db.addDocument('profiles', 'owner', { username: 'owner', fullName: 'Owner', bio: '' });
+      const session = fakeSession('owner', 'Owner');
+      const result = await executeHandler(
+        updateProfileHandler,
+        makeContext({
+          params: { username: 'owner' },
+          body: { bio: 'New bio', photoUrl: 'https://example.com/photo.jpg', expectedSendMonth: 'December' },
+          user: session
+        })
+      );
+      expect(result.body).toMatchObject({
+        bio: 'New bio',
+        photoUrl: 'https://example.com/photo.jpg',
+        expectedSendMonth: 'December'
+      });
+    });
+
     it('rejects profile update when acting on another user', async () => {
       await deps.db.addDocument('profiles', 'owner', { username: 'owner', fullName: 'Owner', bio: '' });
       await expect(
@@ -238,6 +267,42 @@ describe('API handlers', () => {
           makeContext({ params: { username: 'owner' }, body: { bio: 'Hack' }, user: fakeSession('other') })
         )
       ).rejects.toThrow('You can only edit your own profile');
+    });
+
+    it('allows user to mark letter as sent', async () => {
+      await deps.db.addDocument('profiles', 'owner', {
+        username: 'owner',
+        fullName: 'Owner',
+        bio: 'Test bio',
+        expectedSendMonth: 'January'
+      });
+      const session = fakeSession('owner', 'Owner');
+      const result = await executeHandler(
+        markLetterSentHandler,
+        makeContext({ params: { username: 'owner' }, user: session })
+      );
+
+      expect(result.status).toBe(200);
+      expect(result.body).toHaveProperty('lastSentDate');
+      expect(new Date(result.body.lastSentDate).getTime()).toBeGreaterThan(Date.now() - 5000);
+      expect(new Date(result.body.lastSentDate).getTime()).toBeLessThanOrEqual(Date.now());
+    });
+
+    it('rejects marking letter as sent for another user', async () => {
+      await deps.db.addDocument('profiles', 'owner', { username: 'owner', fullName: 'Owner', bio: '' });
+      await expect(
+        executeHandler(
+          markLetterSentHandler,
+          makeContext({ params: { username: 'owner' }, user: fakeSession('other') })
+        )
+      ).rejects.toThrow('You can only mark your own letter as sent');
+    });
+
+    it('requires authentication to mark letter as sent', async () => {
+      await deps.db.addDocument('profiles', 'owner', { username: 'owner', fullName: 'Owner', bio: '' });
+      await expect(
+        executeHandler(markLetterSentHandler, makeContext({ params: { username: 'owner' } }))
+      ).rejects.toThrow('Not authenticated');
     });
 
     it('returns updates sorted by timestamp', async () => {
@@ -314,6 +379,93 @@ describe('API handlers', () => {
       expect(result.body.success).toBe(true);
       const authDoc = await deps.db.getDocument<any>('auth', 'invitee@example.com');
       expect(authDoc?.hasAccount).toBe(false);
+    });
+
+    it('handles username collisions when adding subscriber by email', async () => {
+      // Create an existing user with username 'invitee'
+      await createUserWithProfile(deps, 'existing@example.com', 'invitee', 'Existing User');
+
+      const result = await executeHandler(
+        addSubscriberByEmailHandler,
+        makeContext({
+          params: { username: 'alice' },
+          body: { email: 'invitee@example.com', fullName: 'Invitee' },
+          user: fakeSession('alice'),
+        })
+      );
+
+      expect(result.body.success).toBe(true);
+      expect(result.body.subscriberUsername).toBe('invitee1'); // Should get incremented username
+      const profile = await deps.db.getDocument<any>('profiles', 'invitee1');
+      expect(profile?.fullName).toBe('Invitee');
+    });
+
+    it('adds existing user as subscriber and updates missing profile data', async () => {
+      // Create existing user without fullName in profile
+      await deps.db.addDocument('auth', 'existing@example.com', {
+        email: 'existing@example.com',
+        username: 'existinguser',
+        hasAccount: true,
+      });
+      await deps.db.addDocument('profiles', 'existinguser', {
+        username: 'existinguser',
+        fullName: '', // Missing fullName
+        bio: 'Test bio',
+        // Missing email in profile
+      });
+
+      const result = await executeHandler(
+        addSubscriberByEmailHandler,
+        makeContext({
+          params: { username: 'alice' },
+          body: { email: 'existing@example.com', fullName: 'Updated Name' },
+          user: fakeSession('alice'),
+        })
+      );
+
+      expect(result.body.success).toBe(true);
+      expect(result.body.subscriberUsername).toBe('existinguser');
+
+      const profile = await deps.db.getDocument<any>('profiles', 'existinguser');
+      expect(profile?.fullName).toBe('Updated Name'); // Should be updated
+      expect(profile?.email).toBe('existing@example.com'); // Should be added
+    });
+
+    it('does not overwrite existing profile data when adding subscriber', async () => {
+      await createUserWithProfile(deps, 'existing@example.com', 'existinguser', 'Existing Name');
+
+      // Update profile to have email
+      await deps.db.updateDocument('profiles', 'existinguser', {
+        email: 'existing@example.com'
+      });
+
+      const result = await executeHandler(
+        addSubscriberByEmailHandler,
+        makeContext({
+          params: { username: 'alice' },
+          body: { email: 'existing@example.com', fullName: 'Different Name' },
+          user: fakeSession('alice'),
+        })
+      );
+
+      expect(result.body.success).toBe(true);
+
+      const profile = await deps.db.getDocument<any>('profiles', 'existinguser');
+      expect(profile?.fullName).toBe('Existing Name'); // Should NOT be overwritten
+      expect(profile?.email).toBe('existing@example.com'); // Should remain
+    });
+
+    it('rejects adding subscriber by email without fullName for new users', async () => {
+      await expect(
+        executeHandler(
+          addSubscriberByEmailHandler,
+          makeContext({
+            params: { username: 'alice' },
+            body: { email: 'newuser@example.com' }, // Missing fullName
+            user: fakeSession('alice'),
+          })
+        )
+      ).rejects.toThrow('Full name is required for new users');
     });
 
     it('updates subscriber relationship flags', async () => {
