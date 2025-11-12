@@ -166,6 +166,13 @@
   white-space: pre-wrap;
 }
 
+.expectedMonth {
+  margin-top: 0.75rem;
+  color: var(--color-text-dark);
+  font-size: 0.95rem;
+  font-style: italic;
+}
+
 .missingInfo {
   margin-top: 0.75rem;
   color: var(--color-text-medium);

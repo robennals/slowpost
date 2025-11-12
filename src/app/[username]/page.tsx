@@ -355,6 +355,11 @@ export default function ProfilePage() {
               <p className={styles.bio}>
                 {profile.bio || `${profile.fullName.split(' ')[0]} hasn't yet said what they will write about`}
               </p>
+              {profile.expectedSendMonth && (
+                <p className={styles.expectedMonth}>
+                  Plans to send annual letter in {profile.expectedSendMonth}
+                </p>
+              )}
               {isOwnProfile && !profile.expectedSendMonth && (
                 <p className={styles.missingInfo}>
                   You haven't said when you'll send your annual letter
