@@ -4,7 +4,7 @@ import React from 'react';
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { getGroup, joinGroup, getProfile, updateMemberStatus, toggleMemberAdmin } from '@/lib/api';
+import { getGroup, joinGroup, getProfile, updateMemberStatus, toggleMemberAdmin, updateGroup } from '@/lib/api';
 import Link from 'next/link';
 import styles from './group.module.css';
 
@@ -43,6 +43,9 @@ export default function GroupPage() {
   const [sortBy, setSortBy] = useState<'recent' | 'alphabetical'>('recent');
   const [ownProfile, setOwnProfile] = useState<any>(null);
   const [ownProfileLoaded, setOwnProfileLoaded] = useState(false);
+  const [editingDescription, setEditingDescription] = useState(false);
+  const [editedDescription, setEditedDescription] = useState('');
+  const [savingDescription, setSavingDescription] = useState(false);
 
   const userMembership = members.find(m => m.username === user?.username);
   const isMember = !!userMembership && (userMembership.status === 'approved' || !userMembership.status); // Treat members without status as approved
@@ -134,6 +137,48 @@ export default function GroupPage() {
     }
   };
 
+  const handleTogglePublic = async () => {
+    if (!group) return;
+    try {
+      const result = await updateGroup(groupName, { isPublic: !group.isPublic });
+      if (result.error) {
+        alert(result.error);
+      } else {
+        setGroup({ ...group, isPublic: result.isPublic });
+      }
+    } catch (error: any) {
+      alert(error.message || 'Failed to update group visibility');
+    }
+  };
+
+  const handleEditDescription = () => {
+    setEditedDescription(group?.description || '');
+    setEditingDescription(true);
+  };
+
+  const handleCancelEditDescription = () => {
+    setEditingDescription(false);
+    setEditedDescription('');
+  };
+
+  const handleSaveDescription = async () => {
+    if (!group) return;
+    setSavingDescription(true);
+    try {
+      const result = await updateGroup(groupName, { description: editedDescription });
+      if (result.error) {
+        alert(result.error);
+      } else {
+        setGroup({ ...group, description: result.description });
+        setEditingDescription(false);
+      }
+    } catch (error: any) {
+      alert(error.message || 'Failed to update description');
+    } finally {
+      setSavingDescription(false);
+    }
+  };
+
   const shouldShowSetupPrompt = () => {
     if (!user || !ownProfileLoaded) return false;
     const missingBio = !ownProfile?.bio || ownProfile.bio.trim() === '';
@@ -172,10 +217,50 @@ export default function GroupPage() {
               </span>
             </div>
           </div>
+          {isAdmin && (
+            <button onClick={handleTogglePublic} className={styles.toggleVisibilityButton}>
+              Make {group.isPublic ? 'Private' : 'Public'}
+            </button>
+          )}
         </div>
 
-        {group.description && (
-          <div className={styles.description}>{group.description}</div>
+        {editingDescription ? (
+          <div className={styles.descriptionEdit}>
+            <textarea
+              value={editedDescription}
+              onChange={(e) => setEditedDescription(e.target.value)}
+              className={styles.textarea}
+              placeholder="Group description"
+              rows={3}
+            />
+            <div className={styles.editActions}>
+              <button
+                onClick={handleSaveDescription}
+                className={styles.saveButton}
+                disabled={savingDescription}
+              >
+                {savingDescription ? 'Saving...' : 'Save'}
+              </button>
+              <button
+                onClick={handleCancelEditDescription}
+                className={styles.cancelButton}
+                disabled={savingDescription}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className={styles.descriptionSection}>
+            {group.description && (
+              <div className={styles.description}>{group.description}</div>
+            )}
+            {isAdmin && (
+              <button onClick={handleEditDescription} className={styles.editDescriptionButton}>
+                {group.description ? 'Edit Description' : 'Add Description'}
+              </button>
+            )}
+          </div>
         )}
 
         {!isMember && !isPending && (

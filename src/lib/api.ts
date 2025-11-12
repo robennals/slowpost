@@ -168,6 +168,16 @@ export async function createGroup(groupName: string, displayName: string, descri
   return res.json();
 }
 
+export async function updateGroup(groupName: string, updates: { isPublic?: boolean; displayName?: string; description?: string }) {
+  const res = await fetch(`${API_BASE}/groups/${groupName}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updates),
+    credentials: 'include',
+  });
+  return res.json();
+}
+
 export async function joinGroup(groupName: string, groupBio: string) {
   const res = await fetch(`${API_BASE}/groups/${groupName}/join`, {
     method: 'POST',

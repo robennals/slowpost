@@ -25,6 +25,7 @@ import {
   updateGroupMemberHandler,
   leaveGroupHandler,
 } from '../../../src/app/api/groups/[groupName]/members/[username]/handlers';
+import { updateGroupHandler } from '../../../src/app/api/groups/[groupName]/handler';
 import { uploadProfilePhotoHandler } from '../../../src/app/api/profile-photo/handlers';
 import { markLetterSentHandler } from '../../../src/app/api/profiles/[username]/handlers';
 import {
@@ -699,6 +700,151 @@ describe('API handlers', () => {
       expect(result.status).toBe(200);
       const remaining = await deps.db.getChildLinks<any>('members', 'writers');
       expect(remaining).toHaveLength(0);
+    });
+
+    it('allows admin to toggle group visibility', async () => {
+      await deps.db.addDocument('groups', 'writers', { groupName: 'writers', displayName: 'Writers', isPublic: true });
+      await deps.db.addLink('members', 'writers', 'owner', {
+        groupName: 'writers',
+        username: 'owner',
+        status: 'approved',
+        isAdmin: true,
+      });
+
+      const result = await executeHandler(
+        updateGroupHandler,
+        makeContext({
+          params: { groupName: 'writers' },
+          body: { isPublic: false },
+          user: fakeSession('owner'),
+        })
+      );
+
+      expect(result.status).toBe(200);
+      expect(result.body.isPublic).toBe(false);
+
+      const group = await deps.db.getDocument<any>('groups', 'writers');
+      expect(group?.isPublic).toBe(false);
+    });
+
+    it('allows admin to update group description', async () => {
+      await deps.db.addDocument('groups', 'writers', { groupName: 'writers', displayName: 'Writers', description: 'Old description' });
+      await deps.db.addLink('members', 'writers', 'owner', {
+        groupName: 'writers',
+        username: 'owner',
+        status: 'approved',
+        isAdmin: true,
+      });
+
+      const result = await executeHandler(
+        updateGroupHandler,
+        makeContext({
+          params: { groupName: 'writers' },
+          body: { description: 'New description' },
+          user: fakeSession('owner'),
+        })
+      );
+
+      expect(result.status).toBe(200);
+      expect(result.body.description).toBe('New description');
+    });
+
+    it('allows admin to update multiple group fields at once', async () => {
+      await deps.db.addDocument('groups', 'writers', { groupName: 'writers', displayName: 'Writers', description: 'Old', isPublic: true });
+      await deps.db.addLink('members', 'writers', 'owner', {
+        groupName: 'writers',
+        username: 'owner',
+        status: 'approved',
+        isAdmin: true,
+      });
+
+      const result = await executeHandler(
+        updateGroupHandler,
+        makeContext({
+          params: { groupName: 'writers' },
+          body: { description: 'New description', isPublic: false },
+          user: fakeSession('owner'),
+        })
+      );
+
+      expect(result.status).toBe(200);
+      expect(result.body.description).toBe('New description');
+      expect(result.body.isPublic).toBe(false);
+    });
+
+    it('rejects group update from non-admin', async () => {
+      await deps.db.addDocument('groups', 'writers', { groupName: 'writers', displayName: 'Writers', isPublic: true });
+      await deps.db.addLink('members', 'writers', 'owner', {
+        groupName: 'writers',
+        username: 'owner',
+        status: 'approved',
+        isAdmin: true,
+      });
+      await deps.db.addLink('members', 'writers', 'member', {
+        groupName: 'writers',
+        username: 'member',
+        status: 'approved',
+        isAdmin: false,
+      });
+
+      await expect(
+        executeHandler(
+          updateGroupHandler,
+          makeContext({
+            params: { groupName: 'writers' },
+            body: { isPublic: false },
+            user: fakeSession('member'),
+          })
+        )
+      ).rejects.toThrow('Only group admins can update group settings');
+    });
+
+    it('rejects group update from non-member', async () => {
+      await deps.db.addDocument('groups', 'writers', { groupName: 'writers', displayName: 'Writers', isPublic: true });
+      await deps.db.addLink('members', 'writers', 'owner', {
+        groupName: 'writers',
+        username: 'owner',
+        status: 'approved',
+        isAdmin: true,
+      });
+
+      await expect(
+        executeHandler(
+          updateGroupHandler,
+          makeContext({
+            params: { groupName: 'writers' },
+            body: { isPublic: false },
+            user: fakeSession('viewer'),
+          })
+        )
+      ).rejects.toThrow('Only group admins can update group settings');
+    });
+
+    it('requires authentication to update group', async () => {
+      await deps.db.addDocument('groups', 'writers', { groupName: 'writers', displayName: 'Writers' });
+
+      await expect(
+        executeHandler(
+          updateGroupHandler,
+          makeContext({
+            params: { groupName: 'writers' },
+            body: { isPublic: false },
+          })
+        )
+      ).rejects.toThrow('Not authenticated');
+    });
+
+    it('returns 404 for non-existent group', async () => {
+      await expect(
+        executeHandler(
+          updateGroupHandler,
+          makeContext({
+            params: { groupName: 'nonexistent' },
+            body: { isPublic: false },
+            user: fakeSession('owner'),
+          })
+        )
+      ).rejects.toThrow('Group not found');
     });
 
     it('sends email notification to group admins when user requests to join', async () => {

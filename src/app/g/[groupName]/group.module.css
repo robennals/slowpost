@@ -27,6 +27,10 @@
 
 .header {
   margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
 }
 
 .title {
@@ -71,19 +75,140 @@
   text-decoration: underline;
 }
 
+.toggleVisibilityButton {
+  padding: 0.5rem 1rem;
+  background: var(--color-wax-seal);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-crimson);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.toggleVisibilityButton:hover {
+  background: #9C3B2F;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(168, 68, 55, 0.3);
+}
+
+.descriptionSection {
+  margin-bottom: 2rem;
+}
+
 .description {
   background: var(--color-paper);
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 2px 8px rgba(74, 59, 48, 0.1);
   border: 1px solid var(--color-paper-border);
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   color: var(--color-text-dark);
   line-height: 1.6;
   font-family: var(--font-crimson);
-  background-image: 
+  background-image:
     radial-gradient(circle at 1px 1px, rgba(74, 59, 48, 0.03) 1px, transparent 0);
   background-size: 20px 20px;
+}
+
+.editDescriptionButton {
+  padding: 0.5rem 1rem;
+  background: var(--color-paper);
+  color: var(--color-text-dark);
+  border: 2px solid var(--color-paper-border);
+  border-radius: 8px;
+  font-family: var(--font-crimson);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.editDescriptionButton:hover {
+  border-color: var(--color-wax-seal);
+  color: var(--color-wax-seal);
+}
+
+.descriptionEdit {
+  background: var(--color-paper);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(74, 59, 48, 0.1);
+  border: 2px solid var(--color-wax-seal);
+  margin-bottom: 2rem;
+}
+
+.textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid var(--color-paper-border);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: var(--font-crimson);
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-dark);
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--color-wax-seal);
+}
+
+.editActions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.saveButton {
+  padding: 0.5rem 1rem;
+  background: var(--color-wax-seal);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-crimson);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.saveButton:hover:not(:disabled) {
+  background: #9C3B2F;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(168, 68, 55, 0.3);
+}
+
+.saveButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cancelButton {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: var(--color-text-dark);
+  border: 2px solid var(--color-paper-border);
+  border-radius: 8px;
+  font-family: var(--font-crimson);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancelButton:hover:not(:disabled) {
+  border-color: var(--color-text-dark);
+}
+
+.cancelButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .joinSection {
