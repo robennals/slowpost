@@ -48,6 +48,7 @@ export default function ProfilePage() {
   const [urlCopied, setUrlCopied] = useState(false);
   const [ownProfile, setOwnProfile] = useState<any>(null);
   const [ownProfileLoaded, setOwnProfileLoaded] = useState(false);
+  const [unsubscribing, setUnsubscribing] = useState(false);
 
   const isOwnProfile = user?.username === username;
 
@@ -237,6 +238,23 @@ export default function ProfilePage() {
     }
   };
 
+  const handleUnsubscribe = async () => {
+    if (!user) return;
+    const confirmed = window.confirm(`Are you sure you want to unsubscribe from ${profile?.fullName}'s annual letter?`);
+    if (!confirmed) return;
+
+    setUnsubscribing(true);
+    try {
+      await unsubscribeFromUser(username, user.username);
+      setIsSubscribed(false);
+      setSubscriptionInfo(null);
+    } catch (error: any) {
+      alert(error.message || 'Failed to unsubscribe');
+    } finally {
+      setUnsubscribing(false);
+    }
+  };
+
   const handleCopyUrl = async () => {
     const profileUrl = `https://slowpost.org/${username}`;
     try {
@@ -402,13 +420,24 @@ export default function ProfilePage() {
               {profile.fullName} has not created an account yet
             </div>
           ) : (
-            <button
-              onClick={handleSubscribe}
-              className={isSubscribed ? styles.subscribedButton : styles.subscribeButton}
-              disabled={subscribing || isSubscribed}
-            >
-              {subscribing ? 'Subscribing...' : isSubscribed ? 'Subscribed' : 'Subscribe to Annual Post'}
-            </button>
+            <div className={styles.subscribeContainer}>
+              <button
+                onClick={handleSubscribe}
+                className={isSubscribed ? styles.subscribedButton : styles.subscribeButton}
+                disabled={subscribing || isSubscribed || unsubscribing}
+              >
+                {subscribing ? 'Subscribing...' : isSubscribed ? 'Subscribed' : 'Subscribe to Annual Post'}
+              </button>
+              {(isSubscribed || unsubscribing) && !subscribing && (
+                <button
+                  onClick={handleUnsubscribe}
+                  className={styles.unsubscribeLink}
+                  disabled={unsubscribing}
+                >
+                  {unsubscribing ? 'Unsubscribing...' : 'Unsubscribe'}
+                </button>
+              )}
+            </div>
           )}
         </div>
 

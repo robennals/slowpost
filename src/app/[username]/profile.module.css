@@ -303,6 +303,13 @@
   box-shadow: none;
 }
 
+.subscribeContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .subscribedButton {
   padding: 1rem 2rem;
   background: #6B5B47;
@@ -315,10 +322,31 @@
   cursor: not-allowed;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  box-shadow: 
+  box-shadow:
     0 2px 4px rgba(107, 91, 71, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
   display: inline-block;
+}
+
+.unsubscribeLink {
+  background: none;
+  border: none;
+  color: var(--color-text-medium);
+  font-family: var(--font-crimson);
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+
+.unsubscribeLink:hover:not(:disabled) {
+  color: var(--color-wax-seal);
+}
+
+.unsubscribeLink:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .subscriptionConfirm {
