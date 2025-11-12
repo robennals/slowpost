@@ -65,6 +65,8 @@ describe('API handlers', () => {
           sendPinEmail: vi.fn().mockResolvedValue(undefined),
           sendNewSubscriberNotification: vi.fn().mockResolvedValue(undefined),
           sendGroupJoinRequestNotification: vi.fn().mockResolvedValue(undefined),
+          sendAnnualLetterReminder: vi.fn().mockResolvedValue(undefined),
+          sendAnnualLetterFollowUp: vi.fn().mockResolvedValue(undefined),
         },
       });
       const result = await executeHandler(requestPinHandler, makeContext({ body: { email: 'auth@test.com' } }));
@@ -83,6 +85,8 @@ describe('API handlers', () => {
           sendPinEmail: sendPin,
           sendNewSubscriberNotification: vi.fn().mockResolvedValue(undefined),
           sendGroupJoinRequestNotification: vi.fn().mockResolvedValue(undefined),
+          sendAnnualLetterReminder: vi.fn().mockResolvedValue(undefined),
+          sendAnnualLetterFollowUp: vi.fn().mockResolvedValue(undefined),
         },
       });
 
@@ -120,6 +124,8 @@ describe('API handlers', () => {
           sendPinEmail: sendPin,
           sendNewSubscriberNotification: vi.fn().mockResolvedValue(undefined),
           sendGroupJoinRequestNotification: vi.fn().mockResolvedValue(undefined),
+          sendAnnualLetterReminder: vi.fn().mockResolvedValue(undefined),
+          sendAnnualLetterFollowUp: vi.fn().mockResolvedValue(undefined),
         },
       });
 
@@ -370,6 +376,8 @@ describe('API handlers', () => {
           sendPinEmail: vi.fn().mockResolvedValue(undefined),
           sendNewSubscriberNotification: sendNotification,
           sendGroupJoinRequestNotification: vi.fn().mockResolvedValue(undefined),
+          sendAnnualLetterReminder: vi.fn().mockResolvedValue(undefined),
+          sendAnnualLetterFollowUp: vi.fn().mockResolvedValue(undefined),
         },
       });
       await createUserWithProfile(deps, 'alice@example.com', 'alice', 'Alice');
@@ -548,6 +556,8 @@ describe('API handlers', () => {
           sendPinEmail: vi.fn().mockResolvedValue(undefined),
           sendNewSubscriberNotification: vi.fn().mockResolvedValue(undefined),
           sendGroupJoinRequestNotification: sendGroupJoinNotification,
+          sendAnnualLetterReminder: vi.fn().mockResolvedValue(undefined),
+          sendAnnualLetterFollowUp: vi.fn().mockResolvedValue(undefined),
         },
       });
       await createUserWithProfile(deps, 'owner@example.com', 'owner', 'Owner');
@@ -583,6 +593,8 @@ describe('API handlers', () => {
           sendPinEmail: vi.fn().mockResolvedValue(undefined),
           sendNewSubscriberNotification: vi.fn().mockResolvedValue(undefined),
           sendGroupJoinRequestNotification: sendGroupJoinNotification,
+          sendAnnualLetterReminder: vi.fn().mockResolvedValue(undefined),
+          sendAnnualLetterFollowUp: vi.fn().mockResolvedValue(undefined),
         },
       });
       await createUserWithProfile(deps, 'owner@example.com', 'owner', 'Owner');

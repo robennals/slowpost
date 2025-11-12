@@ -23,6 +23,9 @@ interface Profile {
   fullName: string;
   bio: string;
   photoUrl?: string;
+  email?: string;
+  expectedSendMonth?: string;
+  lastSentDate?: string;
   hasAccount?: boolean;
 }
 
@@ -36,6 +39,7 @@ export default function ProfilePage() {
   const [editing, setEditing] = useState(false);
   const [editedBio, setEditedBio] = useState('');
   const [editedFullName, setEditedFullName] = useState('');
+  const [editedExpectedSendMonth, setEditedExpectedSendMonth] = useState('');
   const [saving, setSaving] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
@@ -88,6 +92,7 @@ export default function ProfilePage() {
       setProfile(data);
       setEditedBio(data.bio || '');
       setEditedFullName(data.fullName);
+      setEditedExpectedSendMonth(data.expectedSendMonth || '');
     }
     setLoading(false);
   };
@@ -132,6 +137,7 @@ export default function ProfilePage() {
     if (profile) {
       setEditedBio(profile.bio || '');
       setEditedFullName(profile.fullName);
+      setEditedExpectedSendMonth(profile.expectedSendMonth || '');
     }
   };
 
@@ -196,6 +202,7 @@ export default function ProfilePage() {
       const result = await updateProfile(username, {
         fullName: editedFullName,
         bio: editedBio,
+        expectedSendMonth: editedExpectedSendMonth,
       });
 
       if (result.error) {
@@ -348,6 +355,11 @@ export default function ProfilePage() {
               <p className={styles.bio}>
                 {profile.bio || `${profile.fullName.split(' ')[0]} hasn't yet said what they will write about`}
               </p>
+              {isOwnProfile && !profile.expectedSendMonth && (
+                <p className={styles.missingInfo}>
+                  You haven't said when you'll send your annual letter
+                </p>
+              )}
             </div>
           ) : (
             <div className={styles.editForm}>
@@ -365,6 +377,25 @@ export default function ProfilePage() {
                 placeholder="What will you write about in your annual posts?"
                 rows={4}
               />
+              <select
+                value={editedExpectedSendMonth}
+                onChange={(e) => setEditedExpectedSendMonth(e.target.value)}
+                className={styles.select}
+              >
+                <option value="">When do you plan to send your annual letter?</option>
+                <option value="January">January</option>
+                <option value="February">February</option>
+                <option value="March">March</option>
+                <option value="April">April</option>
+                <option value="May">May</option>
+                <option value="June">June</option>
+                <option value="July">July</option>
+                <option value="August">August</option>
+                <option value="September">September</option>
+                <option value="October">October</option>
+                <option value="November">November</option>
+                <option value="December">December</option>
+              </select>
             </div>
           )}
         </div>

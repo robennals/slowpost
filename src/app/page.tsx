@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserGroups, getSubscriptions, getSubscribers, getUpdates, getProfile } from '@/lib/api';
+import { getUserGroups, getSubscriptions, getSubscribers, getUpdates, getProfile, markLetterSent } from '@/lib/api';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import styles from './page.module.css';
@@ -14,6 +14,7 @@ export default function HomePage() {
   const [subscribers, setSubscribers] = useState<any[]>([]);
   const [updates, setUpdates] = useState<any[]>([]);
   const [profile, setProfile] = useState<any>(null);
+  const [markingSent, setMarkingSent] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -118,35 +119,99 @@ export default function HomePage() {
     );
   }
 
+  const isTimeToSend = () => {
+    if (!profile?.expectedSendMonth) return false;
+
+    const currentMonth = new Date().toLocaleString('en-US', { month: 'long' });
+
+    // Check if we're in the expected send month
+    if (profile.expectedSendMonth === currentMonth) {
+      // Check if they haven't sent this year yet
+      if (!profile.lastSentDate) return true;
+
+      const lastSentDate = new Date(profile.lastSentDate);
+      const now = new Date();
+
+      // Check if last sent was more than 6 months ago (to handle year boundary)
+      const monthsSinceLastSent = (now.getFullYear() - lastSentDate.getFullYear()) * 12 +
+                                  (now.getMonth() - lastSentDate.getMonth());
+      return monthsSinceLastSent >= 6;
+    }
+
+    return false;
+  };
+
+  const handleMarkSent = async () => {
+    if (!user) return;
+    setMarkingSent(true);
+    try {
+      const result = await markLetterSent(user.username);
+      if (result.error) {
+        alert(result.error);
+      } else {
+        setProfile(result);
+      }
+    } catch (error: any) {
+      alert(error.message || 'Failed to mark letter as sent');
+    } finally {
+      setMarkingSent(false);
+    }
+  };
+
+  // Check what's missing from profile and return appropriate message
+  const getProfileSetupMessage = (profile: any): string | null => {
+    if (!profile.bio || profile.bio.trim() === '') {
+      return 'Edit your profile to tell people what you\'ll write about';
+    }
+    if (!profile.photoUrl) {
+      return 'Add a profile photo so subscribers can recognize you';
+    }
+    if (!profile.expectedSendMonth) {
+      return 'Set when you plan to send your annual letter';
+    }
+    return null; // Profile is complete
+  };
+
   // Determine next action
   const getNextAction = () => {
-    const missingDescription = !profile?.bio || profile.bio.trim() === '';
-    const missingPhoto = !profile?.photoUrl;
+    // Don't show setup widget if profile hasn't loaded yet
+    if (!profile) {
+      return null;
+    }
 
-    if (missingDescription || missingPhoto) {
-      let message = 'Complete your profile to tell people what you\'ll write about';
-      if (missingDescription && !missingPhoto) {
-        message = 'Edit your profile to tell people what you\'ll write about';
-      } else if (!missingDescription && missingPhoto) {
-        message = 'Add a profile photo so subscribers can recognize you';
-      }
-
+    const setupMessage = getProfileSetupMessage(profile);
+    if (setupMessage) {
       return {
-        message,
+        type: 'setup' as const,
+        message: setupMessage,
         link: `/${user.username}`,
         linkText: 'Edit your profile',
         helpDoc: '/pages/setting-up-your-profile.html'
       };
     }
+
+    if (isTimeToSend() && subscribers.length > 0) {
+      return {
+        type: 'send' as const,
+        message: `It's time to send your annual letter! You have ${subscribers.length} ${subscribers.length === 1 ? 'subscriber' : 'subscribers'} waiting to hear from you.`,
+        link: '/subscribers',
+        linkText: 'View subscribers',
+        helpDoc: '/pages/writing-a-good-letter.html'
+      };
+    }
+
     if (groups.length === 0) {
       return {
+        type: 'setup' as const,
         message: 'Create a group to reconnect with people you know',
         link: '/groups',
         linkText: 'Create a group',
         helpDoc: '/pages/joining-groups.html'
       };
     }
+
     return {
+      type: 'setup' as const,
       message: `You have ${subscribers.length} ${subscribers.length === 1 ? 'subscriber' : 'subscribers'}. Share your profile to get more!`,
       link: `/${user.username}`,
       linkText: 'View your profile',
@@ -166,18 +231,31 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className={styles.nextThingToDo}>
-          <h2 className={styles.nextThingTitle}>Complete your setup</h2>
-          <p className={styles.nextThingMessage}>{nextAction.message}</p>
-          <div className={styles.nextThingActions}>
-            <Link href={nextAction.link} className={styles.nextThingButton}>
-              {nextAction.linkText}
-            </Link>
-            <a href={nextAction.helpDoc} className={styles.nextThingHelp}>
-              Learn more
-            </a>
+        {nextAction && (
+          <div className={styles.nextThingToDo}>
+            <h2 className={styles.nextThingTitle}>
+              {nextAction.type === 'send' ? 'Time to send your annual letter!' : 'Complete your setup'}
+            </h2>
+            <p className={styles.nextThingMessage}>{nextAction.message}</p>
+            <div className={styles.nextThingActions}>
+              <Link href={nextAction.link} className={styles.nextThingButton}>
+                {nextAction.linkText}
+              </Link>
+              {nextAction.type === 'send' && (
+                <button
+                  onClick={handleMarkSent}
+                  className={styles.nextThingButton}
+                  disabled={markingSent}
+                >
+                  {markingSent ? 'Marking...' : 'Mark as sent'}
+                </button>
+              )}
+              <a href={nextAction.helpDoc} className={styles.nextThingHelp}>
+                Learn more
+              </a>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className={styles.sections}>
 

@@ -5,6 +5,8 @@ export interface Mailer {
   sendPinEmail(to: string, pin: string): Promise<void>;
   sendNewSubscriberNotification(to: string, subscriberUsername: string, subscriberFullName: string): Promise<void>;
   sendGroupJoinRequestNotification(to: string, requesterUsername: string, requesterFullName: string, groupName: string, groupDisplayName: string): Promise<void>;
+  sendAnnualLetterReminder(to: string, fullName: string, username: string, subscriberCount: number, expectedMonth: string): Promise<void>;
+  sendAnnualLetterFollowUp(to: string, fullName: string, username: string, subscriberCount: number, expectedMonth: string): Promise<void>;
 }
 
 export interface RequestLike {

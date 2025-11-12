@@ -54,11 +54,19 @@ export async function getProfile(username: string) {
   return res.json();
 }
 
-export async function updateProfile(username: string, updates: { fullName?: string; bio?: string; photoUrl?: string }) {
+export async function updateProfile(username: string, updates: { fullName?: string; bio?: string; photoUrl?: string; expectedSendMonth?: string }) {
   const res = await fetch(`${API_BASE}/profiles/${username}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(updates),
+    credentials: 'include',
+  });
+  return res.json();
+}
+
+export async function markLetterSent(username: string) {
+  const res = await fetch(`${API_BASE}/profiles/${username}/mark-sent`, {
+    method: 'POST',
     credentials: 'include',
   });
   return res.json();

@@ -166,6 +166,13 @@
   white-space: pre-wrap;
 }
 
+.missingInfo {
+  margin-top: 0.75rem;
+  color: var(--color-text-medium);
+  font-size: 0.95rem;
+  font-style: italic;
+}
+
 .editForm {
   width: 100%;
   display: flex;
@@ -199,6 +206,27 @@
 .textarea {
   resize: vertical;
   min-height: 100px;
+}
+
+.select {
+  width: 100%;
+  max-width: 500px;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--color-paper-border);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: var(--font-crimson);
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-dark);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.select:focus {
+  outline: none;
+  border-color: var(--color-text-medium);
+  box-shadow: 0 0 0 3px rgba(107, 91, 71, 0.1);
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .actions {

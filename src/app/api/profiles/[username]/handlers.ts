@@ -23,7 +23,7 @@ export const getProfileHandler: Handler<unknown, { username: string }> = async (
 };
 
 export const updateProfileHandler: Handler<
-  { fullName?: string; bio?: string; photoUrl?: string },
+  { fullName?: string; bio?: string; photoUrl?: string; expectedSendMonth?: string },
   { username: string }
 > = async (_req, ctx) => {
   const { db } = getHandlerDeps();
@@ -37,6 +37,24 @@ export const updateProfileHandler: Handler<
   if (ctx.body?.fullName !== undefined) updates.fullName = ctx.body.fullName;
   if (ctx.body?.bio !== undefined) updates.bio = ctx.body.bio;
   if (ctx.body?.photoUrl !== undefined) updates.photoUrl = ctx.body.photoUrl;
+  if (ctx.body?.expectedSendMonth !== undefined) updates.expectedSendMonth = ctx.body.expectedSendMonth;
+
+  await db.updateDocument('profiles', username, updates);
+  const updatedProfile = await db.getDocument('profiles', username);
+  return success(updatedProfile);
+};
+
+export const markLetterSentHandler: Handler<unknown, { username: string }> = async (_req, ctx) => {
+  const { db } = getHandlerDeps();
+  const user = requireUser(ctx);
+  const { username } = ctx.params;
+  if (user.username !== username) {
+    throw new ApiError(403, 'You can only mark your own letter as sent');
+  }
+
+  const updates = {
+    lastSentDate: new Date().toISOString(),
+  };
 
   await db.updateDocument('profiles', username, updates);
   const updatedProfile = await db.getDocument('profiles', username);

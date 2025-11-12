@@ -30,8 +30,13 @@ A profile photo helps subscribers recognize you and makes your profile feel more
 1. Go to [your home page](/)
 2. Click "Your Profile" in the top right
 3. Click "Edit Profile"
-4. Write what you'll post about and upload a photo
+4. Fill in your profile:
+   - Write what you'll post about
+   - Upload a photo
+   - Set when you plan to send your annual letter (e.g., "January", "December")
 5. Click "Save Changes"
+
+Setting when you plan to send helps you remember and lets Slowpost remind you when it's time.
 
 ## Next Steps
 

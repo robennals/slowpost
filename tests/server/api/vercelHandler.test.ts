@@ -19,6 +19,8 @@ function createDeps(): HandlerDeps {
       sendPinEmail: vi.fn().mockResolvedValue(undefined),
       sendNewSubscriberNotification: vi.fn().mockResolvedValue(undefined),
       sendGroupJoinRequestNotification: vi.fn().mockResolvedValue(undefined),
+      sendAnnualLetterReminder: vi.fn().mockResolvedValue(undefined),
+      sendAnnualLetterFollowUp: vi.fn().mockResolvedValue(undefined),
     },
   };
 }

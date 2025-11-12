@@ -5,6 +5,11 @@ export interface Profile {
   fullName: string;
   bio: string;
   photoUrl?: string;
+  email?: string;
+  expectedSendMonth?: string; // e.g., "January", "December", etc.
+  lastSentDate?: string; // ISO date string of when they last marked letter as sent
+  lastReminderSentDate?: string; // ISO date string of when initial reminder was sent
+  lastFollowUpSentDate?: string; // ISO date string of when follow-up reminder was sent
 }
 
 export interface Group {
