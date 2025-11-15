@@ -84,13 +84,13 @@ export default function HomePage() {
           <h2 className={styles.heroTitle}>WRITE ONCE A YEAR, STAY IN TOUCH FOREVER</h2>
 
           <p className={styles.description}>
-          Slowpost is the world's least addictive social platform, reviving the tradition of the annual New Year letter. No doomscrolling, no likes, no apps, no ranking. Just one email a year. 
+          Slowpost is the world's least addictive social platform, reviving the tradition of the annual New Year letter. No doomscrolling, no likes, no apps, no ranking. Just one email a year.
           </p>
 
           <div className={styles.valueProposition}>
           <p className={styles.valueText}>
 
-            Create a profile, share your link, and collect email addresses. Then once a year, write an email to everyone who wants to hear from you.
+            Create a profile, share your link, and collect subscribers. Once a year, you'll send your annual update directly to their inboxes by email. Slowpost just helps you manage who to send to.
           </p>
             <div className={styles.valueLinks}>
               <a href="/pages/why-slowpost.html" className={styles.valueLink}>Why Slowpost?</a>
@@ -181,9 +181,9 @@ export default function HomePage() {
     if (isTimeToSend() && subscribers.length > 0) {
       return {
         type: 'send' as const,
-        message: `It's time to send your annual letter! You have ${subscribers.length} ${subscribers.length === 1 ? 'subscriber' : 'subscribers'} waiting to hear from you.`,
+        message: `It's time to send your annual letter by email! You have ${subscribers.length} ${subscribers.length === 1 ? 'subscriber' : 'subscribers'} waiting to hear from you.`,
         link: '/subscribers',
-        linkText: 'View subscribers',
+        linkText: 'View subscriber emails',
         helpDoc: '/pages/writing-a-good-letter.html'
       };
     }

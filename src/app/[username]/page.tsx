@@ -353,7 +353,7 @@ export default function ProfilePage() {
               <h1 className={styles.name}>{profile.fullName}</h1>
               <div className={styles.username}>@{profile.username}</div>
               <p className={styles.bio}>
-                {profile.bio || `${profile.fullName.split(' ')[0]} hasn't yet said what they will write about`}
+                {profile.bio || `${profile.fullName.split(' ')[0]} hasn't yet said what they'll write about in their annual letter`}
               </p>
               {profile.expectedSendMonth && (
                 <p className={styles.expectedMonth}>
@@ -379,7 +379,7 @@ export default function ProfilePage() {
                 value={editedBio}
                 onChange={(e) => setEditedBio(e.target.value)}
                 className={styles.textarea}
-                placeholder="What will you write about in your annual posts?"
+                placeholder="What will you write about in your annual letter?"
                 rows={4}
               />
               <select
@@ -462,7 +462,7 @@ export default function ProfilePage() {
                 className={isSubscribed ? styles.subscribedButton : styles.subscribeButton}
                 disabled={subscribing || isSubscribed || unsubscribing}
               >
-                {subscribing ? 'Subscribing...' : isSubscribed ? 'Subscribed' : 'Subscribe to Annual Post'}
+                {subscribing ? 'Subscribing...' : isSubscribed ? 'Subscribed' : 'Subscribe to Annual Letter'}
               </button>
               {(isSubscribed || unsubscribing) && !subscribing && (
                 <button
@@ -479,7 +479,10 @@ export default function ProfilePage() {
 
         {isOwnProfile && (
           <div className={styles.shareWidget}>
-            <h2 className={styles.shareWidgetTitle}>Share your profile</h2>
+            <h2 className={styles.shareWidgetTitle}>Share your profile to collect subscribers</h2>
+            <p className={styles.shareWidgetDescription}>
+              When people visit your profile, they can subscribe to receive your annual letter by email
+            </p>
             <div className={styles.shareUrlContainer}>
               <div className={styles.shareUrl} onClick={handleCopyUrl}>
                 https://slowpost.org/{username}
@@ -545,9 +548,9 @@ export default function ProfilePage() {
         {!user && (
           <div className={styles.howItWorks}>
             <h2 className={styles.howItWorksTitle}>HOW SLOWPOST WORKS</h2>
-            <h3 className={styles.howItWorksSubtitle}>POST ONCE A YEAR, STAY IN TOUCH FOREVER</h3>
+            <h3 className={styles.howItWorksSubtitle}>WRITE ONCE A YEAR, STAY IN TOUCH FOREVER</h3>
             <p className={styles.howItWorksText}>
-              Receive one update per year. That's it. No endless feeds, no infinite scrolling – just a single post to stay connected with those you care about.
+              Receive one email per year from people you care about. No posting on a platform, no feeds to check – just annual letters sent directly to your inbox.
             </p>
             <div className={styles.howItWorksLinks}>
               <a href="/pages/how-it-works.html" className={styles.howItWorksLink}>Learn more</a>

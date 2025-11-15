@@ -257,15 +257,23 @@ export default function LoginPage() {
                 Development PIN: <strong>{devPin}</strong>
               </div>
             )}
-            <input
-              type="text"
-              placeholder="Username (e.g., johndoe)"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className={styles.input}
-              required
-              disabled={loading}
-            />
+            <div className={styles.inputGroup}>
+              <label className={styles.label}>Handle (your profile URL)</label>
+              <input
+                type="text"
+                placeholder="johndoe"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className={styles.input}
+                required
+                disabled={loading}
+              />
+              {username && (
+                <div className={styles.urlPreview}>
+                  Your profile: <strong>slowpost.org/{username}</strong>
+                </div>
+              )}
+            </div>
             <input
               type="text"
               placeholder="Full Name"
