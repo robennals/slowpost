@@ -301,6 +301,9 @@ export default function GroupPage() {
                 {group.description ? 'Edit Description' : 'Add Description'}
               </button>
             )}
+            <div className={styles.groupExplanation}>
+              Groups help you discover people you know and subscribe to their annual letters.
+            </div>
           </div>
         )}
 
@@ -463,9 +466,9 @@ export default function GroupPage() {
         {!user && (
           <div className={styles.howItWorks}>
             <h2 className={styles.howItWorksTitle}>HOW SLOWPOST WORKS</h2>
-            <h3 className={styles.howItWorksSubtitle}>POST ONCE A YEAR, STAY IN TOUCH FOREVER</h3>
+            <h3 className={styles.howItWorksSubtitle}>WRITE ONCE A YEAR, STAY IN TOUCH FOREVER</h3>
             <p className={styles.howItWorksText}>
-              Groups on Slowpost allow you to share your annual posts with specific communities. Each member writes once a year, creating a meaningful tradition that keeps you connected.
+              Groups help you discover people you know and subscribe to their annual letters. Browse member profiles and subscribe to receive their yearly updates by email—groups aren't for posting, just for finding people.
             </p>
             <div className={styles.howItWorksLinks}>
               <a href="/pages/how-it-works.html" className={styles.howItWorksLink}>Learn more</a>

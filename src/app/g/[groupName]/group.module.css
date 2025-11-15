@@ -131,6 +131,18 @@
   color: var(--color-wax-seal);
 }
 
+.groupExplanation {
+  font-family: var(--font-crimson);
+  font-size: 0.9rem;
+  color: var(--color-text-medium);
+  padding: 1rem;
+  background: rgba(74, 59, 48, 0.05);
+  border-radius: 8px;
+  border: 1px solid var(--color-paper-border);
+  margin-top: 1rem;
+  line-height: 1.5;
+}
+
 .descriptionEdit {
   background: var(--color-paper);
   border-radius: 12px;

@@ -97,6 +97,10 @@ export default function GroupsPage() {
           </button>
         </div>
 
+        <p className={styles.explanation}>
+          Groups help you discover people you know and subscribe to their annual letters. Browse members' profiles and subscribe to stay connected—groups aren't for posting, just for finding people.
+        </p>
+
         {showCreateForm && (
           <div className={styles.createForm}>
             <h2 className={styles.formTitle}>Create New Group</h2>

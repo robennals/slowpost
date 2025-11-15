@@ -24,7 +24,15 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
+}
+
+.explanation {
+  font-family: var(--font-crimson);
+  font-size: 0.95rem;
+  color: var(--color-text-medium);
+  margin: 0 0 2rem 0;
+  line-height: 1.5;
 }
 
 .title {
