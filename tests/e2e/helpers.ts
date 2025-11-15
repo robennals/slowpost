@@ -15,7 +15,7 @@ export async function signUp(page: Page, email: string, username: string, fullNa
   await page.getByRole('button', { name: 'Continue' }).click();
 
   await expect(page.getByText('Create your account')).toBeVisible();
-  await page.getByPlaceholder('Username (e.g., johndoe)').fill(username);
+  await page.getByPlaceholder('johndoe').fill(username);
   await page.getByPlaceholder('Full Name').fill(fullName);
   await page.getByRole('button', { name: 'Skip PIN (localhost only)' }).click();
 

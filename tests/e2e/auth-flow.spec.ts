@@ -27,7 +27,7 @@ test('new user can sign up and log back in without sending PIN emails when SKIP_
   await expect(page.getByText('Development PIN')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Skip PIN (localhost only)' })).toBeVisible();
 
-  await page.getByPlaceholder('Username (e.g., johndoe)').fill(username);
+  await page.getByPlaceholder('johndoe').fill(username);
   await page.getByPlaceholder('Full Name').fill(fullName);
   await page.getByRole('button', { name: 'Skip PIN (localhost only)' }).click();
 

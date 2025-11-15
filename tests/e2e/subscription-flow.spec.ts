@@ -20,7 +20,7 @@ test.describe('Subscription flows', () => {
     await expect(page.getByRole('heading', { name: 'Alice', level: 1 })).toBeVisible();
 
     // Subscribe to Alice
-    await page.getByRole('button', { name: 'Subscribe to Annual Post' }).click();
+    await page.getByRole('button', { name: 'Subscribe to Annual Letter' }).click();
     await expect(page.getByRole('button', { name: 'Subscribed' })).toBeVisible();
 
     // Check subscriptions list on home page
@@ -43,7 +43,7 @@ test.describe('Subscription flows', () => {
 
     // Try to subscribe to Alice while logged out
     await page.goto(`/${aliceUsername}`);
-    await page.getByRole('button', { name: 'Subscribe to Annual Post' }).click();
+    await page.getByRole('button', { name: 'Subscribe to Annual Letter' }).click();
 
     // Should redirect to login
     await expect(page).toHaveURL(/\/login/);
@@ -51,7 +51,7 @@ test.describe('Subscription flows', () => {
     // Sign up as Bob
     await page.getByPlaceholder('your@email.com').fill(bobEmail);
     await page.getByRole('button', { name: 'Continue' }).click();
-    await page.getByPlaceholder('Username (e.g., johndoe)').fill(bobUsername);
+    await page.getByPlaceholder('johndoe').fill(bobUsername);
     await page.getByPlaceholder('Full Name').fill('Bob');
     await page.getByRole('button', { name: 'Skip PIN (localhost only)' }).click();
 
@@ -73,7 +73,7 @@ test.describe('Subscription flows', () => {
     // Bob signs up and subscribes to Alice
     await signUp(page, bobEmail, bobUsername, 'Bob');
     await page.goto(`/${aliceUsername}`);
-    await page.getByRole('button', { name: 'Subscribe to Annual Post' }).click();
+    await page.getByRole('button', { name: 'Subscribe to Annual Letter' }).click();
     await logout(page);
 
     // Alice logs back in and checks subscribers
@@ -104,7 +104,7 @@ test.describe('Subscription flows', () => {
     // Bob signs up and subscribes to Alice
     await signUp(page, bobEmail, bobUsername, 'Bob');
     await page.goto(`/${aliceUsername}`);
-    await page.getByRole('button', { name: 'Subscribe to Annual Post' }).click();
+    await page.getByRole('button', { name: 'Subscribe to Annual Letter' }).click();
     await logout(page);
 
     // Alice logs back in and checks updates
