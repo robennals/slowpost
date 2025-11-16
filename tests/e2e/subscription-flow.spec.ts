@@ -190,4 +190,43 @@ test.describe('Subscription flows', () => {
     await expect(page.getByRole('button', { name: 'Subscribe to Annual Letter' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Unsubscribe' })).not.toBeVisible();
   });
+
+  test('user can subscribe back to their subscribers', async ({ page }) => {
+    const aliceEmail = randomEmail();
+    const aliceUsername = randomUsername();
+    const bobEmail = randomEmail();
+    const bobUsername = randomUsername();
+
+    // Alice and Bob sign up
+    await signUp(page, aliceEmail, aliceUsername, 'Alice');
+    await logout(page);
+    await signUp(page, bobEmail, bobUsername, 'Bob');
+
+    // Bob subscribes to Alice
+    await page.goto(`/${aliceUsername}`);
+    await expect(page.getByRole('heading', { name: 'Alice', level: 1 })).toBeVisible();
+    await page.getByRole('button', { name: 'Subscribe to Annual Letter' }).click();
+    await expect(page.getByRole('button', { name: 'Subscribed' })).toBeVisible();
+    await logout(page);
+
+    // Alice logs in and goes to subscribers page
+    await login(page, aliceEmail);
+    await page.goto('/subscribers', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('heading', { name: 'Your Subscribers' })).toBeVisible();
+
+    // Alice should see Bob in her subscribers list with a Subscribe Back button
+    const bobCard = page.locator('.subscriberCard, [class*="subscriberCard"]').filter({ hasText: 'Bob' });
+    await expect(bobCard).toBeVisible();
+    await expect(bobCard.getByRole('button', { name: 'Subscribe Back' })).toBeVisible();
+
+    // Alice clicks Subscribe Back
+    await bobCard.getByRole('button', { name: 'Subscribe Back' }).click();
+
+    // The Subscribe Back button should disappear (Alice is now subscribed to Bob)
+    await expect(bobCard.getByRole('button', { name: 'Subscribe Back' })).not.toBeVisible();
+
+    // Verify Alice is now subscribed to Bob by visiting Bob's profile
+    await page.goto(`/${bobUsername}`);
+    await expect(page.getByRole('button', { name: 'Subscribed' })).toBeVisible();
+  });
 });

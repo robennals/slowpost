@@ -719,6 +719,55 @@ describe('API handlers', () => {
       const subscribers = await deps.db.getChildLinks<any>('subscriptions', 'alice');
       expect(subscribers).toHaveLength(1);
     });
+
+    it('allows user to subscribe back to their subscribers', async () => {
+      // Bob subscribes to Alice
+      await executeHandler(
+        subscribeHandler,
+        makeContext({
+          params: { username: 'alice' },
+          user: fakeSession('bob', 'Bob'),
+        })
+      );
+
+      // Alice checks her subscribers - should see Bob
+      const subscribersResult = await executeHandler(
+        getSubscribersHandler,
+        makeContext({
+          params: { username: 'alice' },
+        })
+      );
+      expect(subscribersResult.body).toHaveLength(1);
+      expect(subscribersResult.body[0].subscriberUsername).toBe('bob');
+
+      // Alice checks her subscriptions - should not include Bob yet
+      const subscriptionsBeforeResult = await executeHandler(
+        getSubscriptionsHandler,
+        makeContext({
+          params: { username: 'alice' },
+        })
+      );
+      expect(subscriptionsBeforeResult.body).toHaveLength(0);
+
+      // Alice subscribes back to Bob
+      await executeHandler(
+        subscribeHandler,
+        makeContext({
+          params: { username: 'bob' },
+          user: fakeSession('alice', 'Alice'),
+        })
+      );
+
+      // Alice checks her subscriptions again - should now include Bob
+      const subscriptionsAfterResult = await executeHandler(
+        getSubscriptionsHandler,
+        makeContext({
+          params: { username: 'alice' },
+        })
+      );
+      expect(subscriptionsAfterResult.body).toHaveLength(1);
+      expect(subscriptionsAfterResult.body[0].subscribedToUsername).toBe('bob');
+    });
   });
 
   describe('Groups', () => {

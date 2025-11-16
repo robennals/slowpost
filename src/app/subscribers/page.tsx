@@ -3,7 +3,7 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getSubscribers, updateSubscriber, getProfile, addSubscriberByEmail } from '@/lib/api';
+import { getSubscribers, updateSubscriber, getProfile, addSubscriberByEmail, getSubscriptions, subscribeToUser } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import styles from './subscribers.module.css';
@@ -27,6 +27,7 @@ export default function SubscribersPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [subscribers, setSubscribers] = useState<SubscriberWithProfile[]>([]);
+  const [subscriptions, setSubscriptions] = useState<string[]>([]); // Usernames of people this user subscribes to
   const [loading, setLoading] = useState(true);
   const [addingEmail, setAddingEmail] = useState('');
   const [addingName, setAddingName] = useState('');
@@ -49,11 +50,20 @@ export default function SubscribersPage() {
     if (!user) return;
 
     setLoading(true);
-    const data = await getSubscribers(user.username);
+
+    // Fetch both subscribers and subscriptions in parallel
+    const [subscribersData, subscriptionsData] = await Promise.all([
+      getSubscribers(user.username),
+      getSubscriptions(user.username)
+    ]);
+
+    // Extract usernames of people this user subscribes to
+    const subscribedToUsernames = subscriptionsData.map((sub: any) => sub.subscribedToUsername);
+    setSubscriptions(subscribedToUsernames);
 
     // Enrich with profile data
     const enriched = await Promise.all(
-      data.map(async (subscriber: Subscriber) => {
+      subscribersData.map(async (subscriber: Subscriber) => {
         // Check if this is a pending subscriber (not yet signed up)
         const isPending = subscriber.subscriberUsername.startsWith('pending-');
 
@@ -126,6 +136,22 @@ export default function SubscribersPage() {
       alert(error.message || 'Failed to add subscriber');
     } finally {
       setAdding(false);
+    }
+  };
+
+  const handleSubscribeBack = async (subscriberUsername: string) => {
+    if (!user) return;
+
+    try {
+      const result = await subscribeToUser(subscriberUsername);
+      if (result.error) {
+        alert(result.error);
+      } else {
+        // Update subscriptions list
+        setSubscriptions([...subscriptions, subscriberUsername]);
+      }
+    } catch (error: any) {
+      alert(error.message || 'Failed to subscribe');
     }
   };
 
@@ -296,6 +322,14 @@ export default function SubscribersPage() {
                     </div>
                   )}
                   <div className={styles.subscriberActions}>
+                    {subscriber.hasAccount && !subscriptions.includes(subscriber.subscriberUsername) && (
+                      <button
+                        onClick={() => handleSubscribeBack(subscriber.subscriberUsername)}
+                        className={styles.subscribeBackButton}
+                      >
+                        Subscribe Back
+                      </button>
+                    )}
                     <label className={styles.toggleLabel}>
                       <input
                         type="checkbox"
