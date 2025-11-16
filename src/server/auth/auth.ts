@@ -103,7 +103,7 @@ export class AuthService {
     const authData = await this.db.getDocument<AuthData>('auth', email);
     if (authData) {
       await this.db.updateDocument<AuthData>('auth', email, {
-        sessions: [...authData.sessions, session],
+        sessions: [...(authData.sessions || []), session],
       });
     }
 
@@ -122,7 +122,7 @@ export class AuthService {
     return session;
   }
 
-  async createUser(email: string, username: string, fullName: string): Promise<UserProfile> {
+  async createUser(email: string, username: string, fullName: string, planToSend?: boolean): Promise<UserProfile> {
     // Check if email is already registered
     const existingUser = await this.db.getDocument<UserProfile>('users', email);
     if (existingUser) {
@@ -135,6 +135,10 @@ export class AuthService {
       throw new Error('Username already taken');
     }
 
+    // Check if this email was previously added manually (has auth record but no user record)
+    const existingAuth = await this.db.getDocument<any>('auth', email);
+    const pendingIdentifier = `pending-${email}`;
+
     const user: UserProfile = {
       email,
       username,
@@ -143,13 +147,43 @@ export class AuthService {
 
     await this.db.addDocument<UserProfile>('users', email, user);
 
-    // Also create the profile
+    // Create the profile with chosen username
     await this.db.addDocument('profiles', username, {
       username,
       fullName,
       bio: '',
-      email, // Store email in profile for easier lookup
+      email,
+      planToSend: planToSend !== undefined ? planToSend : true,
     });
+
+    // If this email was previously added manually, migrate the pending subscriptions
+    if (existingAuth && !existingAuth.hasAccount) {
+      // Get all subscriptions where the pending identifier is the subscriber
+      const subscriptions = await this.db.getParentLinks<any>('subscriptions', pendingIdentifier);
+
+      // For each subscription, update it to use the new real username
+      for (const subscription of subscriptions) {
+        const subscribedToUsername = subscription.subscribedToUsername;
+        if (subscribedToUsername) {
+          // Delete the old pending link and create a new one with the real username
+          await this.db.deleteLink('subscriptions', subscribedToUsername, pendingIdentifier);
+          await this.db.addLink('subscriptions', subscribedToUsername, username, {
+            ...subscription,
+            subscriberUsername: username,
+            // Remove pending fields since they now have a real account
+            pendingEmail: undefined,
+            pendingFullName: undefined,
+          });
+        }
+      }
+    }
+
+    // Update or create auth record to mark that the account is now fully created
+    if (existingAuth) {
+      await this.db.updateDocument('auth', email, {
+        hasAccount: true,
+      });
+    }
 
     return user;
   }

@@ -10,6 +10,7 @@ export interface Profile {
   lastSentDate?: string; // ISO date string of when they last marked letter as sent
   lastReminderSentDate?: string; // ISO date string of when initial reminder was sent
   lastFollowUpSentDate?: string; // ISO date string of when follow-up reminder was sent
+  planToSend?: boolean; // Whether user plans to send annual letters
 }
 
 export interface Group {
@@ -72,6 +73,7 @@ export interface SignupRequest {
   username: string;
   fullName: string;
   pin?: string;
+  planToSend?: boolean;
 }
 
 export interface ApiError {

@@ -46,28 +46,13 @@ export const addSubscriberByEmailHandler: Handler<
       throw new ApiError(400, 'Full name is required for new users');
     }
 
-    const baseUsername = email.split('@')[0].replace(/[^a-z0-9]/gi, '').toLowerCase();
-    let newUsername = baseUsername;
-    let counter = 1;
-
-    while (await db.getDocument('profiles', newUsername)) {
-      newUsername = `${baseUsername}${counter}`;
-      counter += 1;
-    }
-
-    subscriberUsername = newUsername;
+    // For pending subscribers (no account yet), use the email as the identifier
+    // Don't create a profile or reserve a username - they'll choose their own when signing up
+    subscriberUsername = `pending-${email}`;
 
     await db.addDocument('auth', email, {
       email,
-      username: subscriberUsername,
       hasAccount: false,
-    });
-
-    await db.addDocument('profiles', subscriberUsername, {
-      username: subscriberUsername,
-      fullName,
-      bio: '',
-      email, // Store email in profile for easier lookup
     });
   }
 
@@ -78,6 +63,9 @@ export const addSubscriberByEmailHandler: Handler<
     addedBy: username,
     confirmed: false,
     timestamp: new Date().toISOString(),
+    // For pending subscribers, store their info in the subscription
+    pendingEmail: authData?.username ? undefined : email,
+    pendingFullName: authData?.username ? undefined : fullName,
   };
 
   await db.addLink('subscriptions', username, subscriberUsername, subscription);

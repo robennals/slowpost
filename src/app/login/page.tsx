@@ -17,6 +17,7 @@ export default function LoginPage() {
   const [pin, setPin] = useState('');
   const [username, setUsername] = useState('');
   const [fullName, setFullName] = useState('');
+  const [planToSend, setPlanToSend] = useState(true);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [requiresSignup, setRequiresSignup] = useState(false);
@@ -138,7 +139,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const result = await signup(email, username, fullName, pin);
+      const result = await signup(email, username, fullName, pin, planToSend);
       if (result.error) {
         setError(result.error);
         return;
@@ -163,7 +164,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const result = await signup(email, username, fullName, 'skip');
+      const result = await signup(email, username, fullName, 'skip', planToSend);
       if (result.error) {
         setError(result.error);
         return;
@@ -293,6 +294,15 @@ export default function LoginPage() {
               required
               disabled={loading}
             />
+            <label className={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                checked={planToSend}
+                onChange={(e) => setPlanToSend(e.target.checked)}
+                className={styles.checkbox}
+              />
+              <span>I plan to send an annual letter</span>
+            </label>
             <button type="submit" className={styles.button} disabled={loading}>
               {loading ? 'Creating account...' : 'Sign Up'}
             </button>

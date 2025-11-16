@@ -96,6 +96,17 @@
   margin: 0 0 0.75rem 0;
 }
 
+.emailWarning {
+  font-family: var(--font-crimson);
+  font-size: 0.875rem;
+  color: var(--color-wax-seal);
+  background: rgba(168, 68, 55, 0.1);
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+  border-left: 3px solid var(--color-wax-seal);
+}
+
 .emailListTextarea {
   width: 100%;
   padding: 0.75rem;
@@ -242,6 +253,12 @@
   font-size: 0.875rem;
   color: var(--color-text-medium);
   font-style: italic;
+}
+
+.subscriberEmail {
+  font-family: var(--font-crimson);
+  font-size: 0.875rem;
+  color: var(--color-text-medium);
 }
 
 .subscriberSource {

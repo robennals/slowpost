@@ -85,10 +85,10 @@ test.describe('Subscription flows', () => {
 
     await expect(page.getByRole('heading', { name: 'Your Subscribers' })).toBeVisible();
 
-    // Check that Bob appears in the subscriber list
+    // Check that Bob appears in the subscriber list with his email
     const subscriberCard = page.locator('.subscriberCard, [class*="subscriberCard"]').filter({ hasText: 'Bob' });
     await expect(subscriberCard).toBeVisible();
-    await expect(subscriberCard.getByText(`@${bobUsername}`)).toBeVisible();
+    await expect(subscriberCard.getByText(bobEmail)).toBeVisible();
   });
 
   test('user sees updates when someone subscribes to them', async ({ page }) => {
@@ -111,5 +111,83 @@ test.describe('Subscription flows', () => {
     await login(page, aliceEmail);
     await page.goto('/updates');
     await expect(page.getByText('Bob subscribed to you')).toBeVisible();
+  });
+
+  test('manually added subscriber can decline subscription', async ({ page }) => {
+    const aliceEmail = randomEmail();
+    const aliceUsername = randomUsername();
+    const bobEmail = randomEmail();
+    const bobUsername = randomUsername();
+
+    // Alice signs up
+    await signUp(page, aliceEmail, aliceUsername, 'Alice');
+
+    // Ensure we're on home page and fully logged in
+    await expect(page).toHaveURL('/');
+    await expect(page.getByRole('link', { name: 'Alice' })).toBeVisible(); // Wait for Alice's profile link in banner
+
+    // Alice manually adds Bob by email
+    await page.goto('/subscribers', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('heading', { name: 'Your Subscribers' })).toBeVisible();
+    await page.getByPlaceholder('email@example.com').fill(bobEmail);
+    await page.getByPlaceholder('Full Name').fill('Bob Smith');
+    await page.getByRole('button', { name: 'Add Subscriber' }).click();
+    // Wait for Bob to appear in the subscriber list
+    await expect(page.locator('.subscriberCard, [class*="subscriberCard"]').filter({ hasText: 'Bob Smith' })).toBeVisible();
+    await logout(page);
+
+    // Bob signs up with the same email
+    await signUp(page, bobEmail, bobUsername, 'Bob');
+
+    // Bob visits Alice's profile and should see confirmation prompt with both options
+    await page.goto(`/${aliceUsername}`);
+    await expect(page.getByText('Alice added you as a subscriber')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Confirm Subscription' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Cancel' })).toBeVisible();
+
+    // Bob declines by clicking Cancel
+    await page.getByRole('button', { name: 'Cancel' }).click();
+
+    // Should now show Subscribe button (Bob is no longer subscribed)
+    await expect(page.getByRole('button', { name: 'Subscribe to Annual Letter' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Cancel' })).not.toBeVisible();
+  });
+
+  test('manually added subscriber can confirm then later unsubscribe', async ({ page }) => {
+    const aliceEmail = randomEmail();
+    const aliceUsername = randomUsername();
+    const bobEmail = randomEmail();
+    const bobUsername = randomUsername();
+
+    // Alice signs up and manually adds Bob
+    await signUp(page, aliceEmail, aliceUsername, 'Alice');
+    await expect(page).toHaveURL('/');
+    await expect(page.getByRole('link', { name: 'Alice' })).toBeVisible();
+
+    await page.goto('/subscribers', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('heading', { name: 'Your Subscribers' })).toBeVisible();
+    await page.getByPlaceholder('email@example.com').fill(bobEmail);
+    await page.getByPlaceholder('Full Name').fill('Bob Smith');
+    await page.getByRole('button', { name: 'Add Subscriber' }).click();
+    await expect(page.locator('.subscriberCard, [class*="subscriberCard"]').filter({ hasText: 'Bob Smith' })).toBeVisible();
+    await logout(page);
+
+    // Bob signs up and confirms the subscription
+    await signUp(page, bobEmail, bobUsername, 'Bob');
+    await page.goto(`/${aliceUsername}`);
+    await expect(page.getByText('Alice added you as a subscriber')).toBeVisible();
+    await page.getByRole('button', { name: 'Confirm Subscription' }).click();
+
+    // After confirming, Bob should see the Subscribed button and Unsubscribe option
+    await expect(page.getByRole('button', { name: 'Subscribed' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Unsubscribe' })).toBeVisible();
+
+    // Bob later decides to unsubscribe
+    page.on('dialog', dialog => dialog.accept()); // Accept the confirmation dialog
+    await page.getByRole('button', { name: 'Unsubscribe' }).click();
+
+    // Should now show Subscribe button again
+    await expect(page.getByRole('button', { name: 'Subscribe to Annual Letter' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Unsubscribe' })).not.toBeVisible();
   });
 });

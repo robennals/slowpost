@@ -20,11 +20,11 @@ export async function login(email: string, pin: string) {
   return res.json();
 }
 
-export async function signup(email: string, username: string, fullName: string, pin: string) {
+export async function signup(email: string, username: string, fullName: string, pin: string, planToSend?: boolean) {
   const res = await fetch(`${API_BASE}/auth/signup`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, username, fullName, pin }),
+    body: JSON.stringify({ email, username, fullName, pin, planToSend }),
     credentials: 'include',
   });
   return res.json();
@@ -54,7 +54,7 @@ export async function getProfile(username: string) {
   return res.json();
 }
 
-export async function updateProfile(username: string, updates: { fullName?: string; bio?: string; photoUrl?: string; expectedSendMonth?: string }) {
+export async function updateProfile(username: string, updates: { fullName?: string; bio?: string; photoUrl?: string; expectedSendMonth?: string; planToSend?: boolean }) {
   const res = await fetch(`${API_BASE}/profiles/${username}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },

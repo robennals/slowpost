@@ -7,9 +7,10 @@ export const signupHandler: Handler<{
   username?: string;
   fullName?: string;
   pin?: string;
+  planToSend?: boolean;
 }> = async (_req, { body }) => {
   const { authService } = getHandlerDeps();
-  const { email, username, fullName, pin } = body ?? {};
+  const { email, username, fullName, pin, planToSend } = body ?? {};
   if (!email || !username || !fullName || !pin) {
     throw new ApiError(400, 'All fields are required');
   }
@@ -20,7 +21,7 @@ export const signupHandler: Handler<{
   }
 
   try {
-    await authService.createUser(email, username, fullName);
+    await authService.createUser(email, username, fullName, planToSend);
   } catch (error: any) {
     if (error.message === 'Username already taken') {
       throw new ApiError(409, 'This username is already taken. Please choose a different username.');

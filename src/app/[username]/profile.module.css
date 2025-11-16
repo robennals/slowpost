@@ -180,6 +180,14 @@
   font-style: italic;
 }
 
+.notPlanning {
+  margin-top: 0.75rem;
+  color: var(--color-text-medium);
+  font-size: 0.95rem;
+  font-style: italic;
+  opacity: 0.8;
+}
+
 .editForm {
   width: 100%;
   display: flex;
@@ -799,4 +807,23 @@
 .setupPromptHelp:hover {
   background: rgba(168, 68, 55, 0.1);
   transform: translateY(-1px);
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-crimson);
+  font-size: 0.9rem;
+  color: var(--color-text-dark);
+  cursor: pointer;
+  user-select: none;
+  margin-top: 0.75rem;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--color-wax-seal);
 }

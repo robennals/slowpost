@@ -21,6 +21,8 @@ export async function signUp(page: Page, email: string, username: string, fullNa
 
   await page.waitForURL('**/');
   await expect(page.getByRole('heading', { name: new RegExp(`Welcome back, ${fullName}!`) })).toBeVisible();
+  // Wait for auth to be fully established
+  await page.waitForLoadState('networkidle');
 }
 
 export async function login(page: Page, email: string) {

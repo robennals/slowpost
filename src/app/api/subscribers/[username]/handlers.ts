@@ -4,10 +4,18 @@ import { getHandlerDeps } from '@/server/api/context';
 export const getSubscribersHandler: Handler<unknown, { username: string }> = async (_req, { params }) => {
   const { db } = getHandlerDeps();
   const subscribersWithProfiles = await db.getSubscribersWithProfiles(params.username);
-  const subscribers = subscribersWithProfiles.map(({ subscription, profile }) => ({
-    ...subscription,
-    fullName: profile.fullName || subscription.subscriberUsername,
-  }));
+  const subscribers = subscribersWithProfiles.map(({ subscription, profile }) => {
+    // For pending subscribers (no profile yet), return the subscription with pending data
+    if (!profile) {
+      return subscription;
+    }
+    // For subscribers with profiles, enrich with profile data
+    return {
+      ...subscription,
+      fullName: profile.fullName || subscription.subscriberUsername,
+      email: profile.email,
+    };
+  });
   return success(subscribers);
 };
 

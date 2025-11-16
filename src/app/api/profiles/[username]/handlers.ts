@@ -23,7 +23,7 @@ export const getProfileHandler: Handler<unknown, { username: string }> = async (
 };
 
 export const updateProfileHandler: Handler<
-  { fullName?: string; bio?: string; photoUrl?: string; expectedSendMonth?: string },
+  { fullName?: string; bio?: string; photoUrl?: string; expectedSendMonth?: string; planToSend?: boolean },
   { username: string }
 > = async (_req, ctx) => {
   const { db } = getHandlerDeps();
@@ -38,6 +38,7 @@ export const updateProfileHandler: Handler<
   if (ctx.body?.bio !== undefined) updates.bio = ctx.body.bio;
   if (ctx.body?.photoUrl !== undefined) updates.photoUrl = ctx.body.photoUrl;
   if (ctx.body?.expectedSendMonth !== undefined) updates.expectedSendMonth = ctx.body.expectedSendMonth;
+  if (ctx.body?.planToSend !== undefined) updates.planToSend = ctx.body.planToSend;
 
   await db.updateDocument('profiles', username, updates);
   const updatedProfile = await db.getDocument('profiles', username);

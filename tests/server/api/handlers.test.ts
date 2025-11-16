@@ -173,6 +173,110 @@ describe('API handlers', () => {
       ).rejects.toThrow('All fields are required');
     });
 
+    it('signs up a user with planToSend=true', async () => {
+      const result = await executeHandler(
+        signupHandler,
+        makeContext({
+          body: {
+            email: 'planner@test.com',
+            username: 'planner',
+            fullName: 'Plan To Send',
+            pin: 'skip',
+            planToSend: true,
+          },
+        })
+      );
+      expect(result.status).toBe(200);
+      const profile = await deps.db.getDocument('profiles', 'planner') as any;
+      expect(profile?.planToSend).toBe(true);
+    });
+
+    it('signs up a user with planToSend=false', async () => {
+      const result = await executeHandler(
+        signupHandler,
+        makeContext({
+          body: {
+            email: 'notplanner@test.com',
+            username: 'notplanner',
+            fullName: 'Not Planning',
+            pin: 'skip',
+            planToSend: false,
+          },
+        })
+      );
+      expect(result.status).toBe(200);
+      const profile = await deps.db.getDocument('profiles', 'notplanner') as any;
+      expect(profile?.planToSend).toBe(false);
+    });
+
+    it('signs up a user without planToSend (defaults to true)', async () => {
+      const result = await executeHandler(
+        signupHandler,
+        makeContext({
+          body: {
+            email: 'default@test.com',
+            username: 'defaultuser',
+            fullName: 'Default User',
+            pin: 'skip',
+          },
+        })
+      );
+      expect(result.status).toBe(200);
+      const profile = await deps.db.getDocument('profiles', 'defaultuser') as any;
+      expect(profile?.planToSend).toBe(true);
+    });
+
+    it('migrates pending subscriptions when user signs up', async () => {
+      // Setup: Alice adds Bob by email (creating a pending subscription)
+      await createUserWithProfile(deps, 'alice@test.com', 'alice', 'Alice');
+      await executeHandler(
+        addSubscriberByEmailHandler,
+        makeContext({
+          params: { username: 'alice' },
+          body: { email: 'bob@test.com', fullName: 'Bob Smith' },
+          user: fakeSession('alice'),
+        })
+      );
+
+      // Verify pending subscription was created
+      const pendingSubscriptions = await deps.db.getChildLinks('subscriptions', 'alice');
+      const pendingSub = pendingSubscriptions.find((s: any) => s.subscriberUsername === 'pending-bob@test.com');
+      expect(pendingSub).toBeDefined();
+      expect((pendingSub as any)?.pendingEmail).toBe('bob@test.com');
+      expect((pendingSub as any)?.pendingFullName).toBe('Bob Smith');
+
+      // Bob signs up with his own username
+      await executeHandler(
+        signupHandler,
+        makeContext({
+          body: {
+            email: 'bob@test.com',
+            username: 'bob',
+            fullName: 'Bob',
+            pin: 'skip',
+          },
+        })
+      );
+
+      // Verify subscription was migrated to use Bob's chosen username
+      const updatedSubscriptions = await deps.db.getChildLinks('subscriptions', 'alice');
+      const realSub = updatedSubscriptions.find((s: any) => s.subscriberUsername === 'bob');
+      expect(realSub).toBeDefined();
+      expect((realSub as any)?.pendingEmail).toBeUndefined();
+      expect((realSub as any)?.pendingFullName).toBeUndefined();
+      expect((realSub as any)?.confirmed).toBe(false); // Still needs confirmation
+      expect((realSub as any)?.addedBy).toBe('alice');
+
+      // Old pending subscription should be removed
+      const stillPending = updatedSubscriptions.find((s: any) => s.subscriberUsername === 'pending-bob@test.com');
+      expect(stillPending).toBeUndefined();
+
+      // Bob's profile should exist with his chosen username
+      const bobProfile = await deps.db.getDocument('profiles', 'bob');
+      expect(bobProfile).toBeDefined();
+      expect((bobProfile as any)?.fullName).toBe('Bob');
+    });
+
     it('logs in with generated pin when skip mode disabled', async () => {
       const strictDeps = createTestDeps({ skipPin: false });
       await createUserWithProfile(strictDeps, 'login@test.com', 'loginUser', 'Login User');
@@ -240,6 +344,16 @@ describe('API handlers', () => {
         makeContext({ params: { username: 'owner' }, body: { expectedSendMonth: 'January' }, user: session })
       );
       expect(result.body).toMatchObject({ expectedSendMonth: 'January' });
+    });
+
+    it('allows owner to update planToSend', async () => {
+      await deps.db.addDocument('profiles', 'planner2', { username: 'planner2', fullName: 'Planner', bio: '', planToSend: true });
+      const session = fakeSession('planner2', 'Planner');
+      const result = await executeHandler(
+        updateProfileHandler,
+        makeContext({ params: { username: 'planner2' }, body: { planToSend: false }, user: session })
+      );
+      expect(result.body).toMatchObject({ planToSend: false });
     });
 
     it('allows owner to update multiple fields at once', async () => {
@@ -382,23 +496,34 @@ describe('API handlers', () => {
       expect(authDoc?.hasAccount).toBe(false);
     });
 
-    it('handles username collisions when adding subscriber by email', async () => {
-      // Create an existing user with username 'invitee'
-      await createUserWithProfile(deps, 'existing@example.com', 'invitee', 'Existing User');
-
+    it('creates pending subscriber without profile when adding by email', async () => {
       const result = await executeHandler(
         addSubscriberByEmailHandler,
         makeContext({
           params: { username: 'alice' },
-          body: { email: 'invitee@example.com', fullName: 'Invitee' },
+          body: { email: 'newperson@example.com', fullName: 'New Person' },
           user: fakeSession('alice'),
         })
       );
 
       expect(result.body.success).toBe(true);
-      expect(result.body.subscriberUsername).toBe('invitee1'); // Should get incremented username
-      const profile = await deps.db.getDocument<any>('profiles', 'invitee1');
-      expect(profile?.fullName).toBe('Invitee');
+      // Pending subscribers get a pending- identifier, not a real username
+      expect(result.body.subscriberUsername).toBe('pending-newperson@example.com');
+
+      // No profile should be created for pending subscribers
+      const profile = await deps.db.getDocument<any>('profiles', 'pending-newperson@example.com');
+      expect(profile).toBeNull();
+
+      // Auth record should be created with hasAccount=false
+      const auth = await deps.db.getDocument<any>('auth', 'newperson@example.com');
+      expect(auth?.hasAccount).toBe(false);
+
+      // Subscription should have pending info stored
+      const subscriptions = await deps.db.getChildLinks('subscriptions', 'alice');
+      const pendingSubscription = subscriptions.find((s: any) => s.subscriberUsername === 'pending-newperson@example.com');
+      expect(pendingSubscription).toBeDefined();
+      expect((pendingSubscription as any)?.pendingEmail).toBe('newperson@example.com');
+      expect((pendingSubscription as any)?.pendingFullName).toBe('New Person');
     });
 
     it('adds existing user as subscriber and updates missing profile data', async () => {
@@ -499,6 +624,35 @@ describe('API handlers', () => {
       expect(result.status).toBe(200);
       const link = await deps.db.getChildLinks<any>('subscriptions', 'alice');
       expect(link[0].confirmed).toBe(true);
+    });
+
+    it('returns subscriber emails from profiles when fetching subscribers', async () => {
+      // Create two users with emails in their profiles
+      await createUserWithProfile(deps, 'sender@test.com', 'sender', 'Sender User');
+      await createUserWithProfile(deps, 'subscriber@test.com', 'subscriber', 'Subscriber User');
+
+      // Subscriber subscribes to Sender
+      await deps.db.addLink('subscriptions', 'sender', 'subscriber', {
+        subscriberUsername: 'subscriber',
+        subscribedToUsername: 'sender',
+        isClose: false,
+        confirmed: true,
+        timestamp: new Date().toISOString(),
+      });
+
+      // Get Sender's subscribers
+      const result = await executeHandler(
+        getSubscribersHandler,
+        makeContext({
+          params: { username: 'sender' },
+        })
+      );
+
+      expect(result.status).toBe(200);
+      expect(result.body).toHaveLength(1);
+      expect(result.body[0].subscriberUsername).toBe('subscriber');
+      expect(result.body[0].fullName).toBe('Subscriber User');
+      expect(result.body[0].email).toBe('subscriber@test.com'); // Email should be returned from profile
     });
 
     it('prevents others from confirming subscription', async () => {

@@ -248,7 +248,7 @@ export class TursoAdapter implements DbAdapter {
         s.data as subscription_data,
         p.data as profile_data
       FROM links s
-      INNER JOIN documents p ON p.collection = 'profiles' AND p.key = s.child_key
+      LEFT JOIN documents p ON p.collection = 'profiles' AND p.key = s.child_key
       WHERE s.collection = 'subscriptions' AND s.parent_key = ?1
     `;
 
@@ -256,7 +256,7 @@ export class TursoAdapter implements DbAdapter {
 
     return result.rows.map((row: any) => ({
       subscription: JSON.parse(String(row.subscription_data)),
-      profile: JSON.parse(String(row.profile_data)),
+      profile: row.profile_data ? JSON.parse(String(row.profile_data)) : null,
     }));
   }
 

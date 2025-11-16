@@ -24,7 +24,7 @@ interface SubscriberWithProfile extends Subscriber {
 }
 
 export default function SubscribersPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [subscribers, setSubscribers] = useState<SubscriberWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,12 +35,15 @@ export default function SubscribersPage() {
   const [emailFilter, setEmailFilter] = useState<'all' | 'close' | 'non-close'>('all');
 
   useEffect(() => {
+    // Wait for auth to finish loading before redirecting
+    if (authLoading) return;
+
     if (!user) {
       router.push('/login');
       return;
     }
     loadSubscribers();
-  }, [user]);
+  }, [user, authLoading]);
 
   const loadSubscribers = async () => {
     if (!user) return;
@@ -51,13 +54,39 @@ export default function SubscribersPage() {
     // Enrich with profile data
     const enriched = await Promise.all(
       data.map(async (subscriber: Subscriber) => {
-        const profile = await getProfile(subscriber.subscriberUsername);
-        return {
-          ...subscriber,
-          fullName: profile?.fullName || subscriber.subscriberUsername,
-          email: profile?.email,
-          hasAccount: profile?.hasAccount !== false, // Use the hasAccount field from profile
-        };
+        // Check if this is a pending subscriber (not yet signed up)
+        const isPending = subscriber.subscriberUsername.startsWith('pending-');
+
+        if (isPending) {
+          // For pending subscribers, use the data stored in the subscription
+          return {
+            ...subscriber,
+            fullName: (subscriber as any).pendingFullName || 'Pending User',
+            email: (subscriber as any).pendingEmail,
+            hasAccount: false,
+          };
+        } else {
+          // For real users (or old manually added users with real usernames), fetch their profile
+          const profile = await getProfile(subscriber.subscriberUsername);
+
+          // If profile doesn't exist, this might be an old manually added subscriber
+          // before we implemented the pending system
+          if (!profile) {
+            return {
+              ...subscriber,
+              fullName: subscriber.subscriberUsername,
+              email: undefined, // No email available
+              hasAccount: false,
+            };
+          }
+
+          return {
+            ...subscriber,
+            fullName: profile.fullName || subscriber.subscriberUsername,
+            email: profile.email,
+            hasAccount: profile.hasAccount !== false,
+          };
+        }
       })
     );
 
@@ -118,12 +147,12 @@ export default function SubscribersPage() {
       }
     });
 
-  // Generate email list text
+  // Generate email list text - only include subscribers with valid emails
   const emailListText = sortedAndFilteredSubscribers
+    .filter(sub => sub.email) // Only include subscribers with real emails
     .map(sub => {
       const name = sub.fullName || sub.subscriberUsername;
-      const email = sub.email || `${sub.subscriberUsername}@slowpost.local`;
-      return `${name} <${email}>`;
+      return `${name} <${sub.email}>`;
     })
     .join('\n');
 
@@ -212,6 +241,11 @@ export default function SubscribersPage() {
             <>
               <div className={styles.emailListSection}>
                 <h3 className={styles.emailListTitle}>Email List</h3>
+                {sortedAndFilteredSubscribers.some(sub => !sub.email) && (
+                  <div className={styles.emailWarning}>
+                    ⚠️ {sortedAndFilteredSubscribers.filter(sub => !sub.email).length} subscriber(s) missing email addresses (not included in list below)
+                  </div>
+                )}
                 <textarea
                   className={styles.emailListTextarea}
                   value={emailListText}
@@ -230,7 +264,9 @@ export default function SubscribersPage() {
                     <Link href={`/${subscriber.subscriberUsername}`} className={styles.subscriberLink}>
                       <div className={styles.subscriberInfo}>
                         <div className={styles.subscriberName}>{subscriber.fullName}</div>
-                        <div className={styles.subscriberUsername}>@{subscriber.subscriberUsername}</div>
+                        {subscriber.email && (
+                          <div className={styles.subscriberEmail}>{subscriber.email}</div>
+                        )}
                         {subscriber.addedBy === user?.username && (
                           <div className={styles.subscriberSource}>
                             {subscriber.confirmed === false ? 'Added by you (not confirmed)' : 'Added by you'}
@@ -246,7 +282,11 @@ export default function SubscribersPage() {
                   ) : (
                     <div className={styles.subscriberInfo}>
                       <div className={styles.subscriberName}>{subscriber.fullName}</div>
-                      <div className={styles.subscriberUsername}>@{subscriber.subscriberUsername}</div>
+                      {subscriber.email ? (
+                        <div className={styles.subscriberEmail}>{subscriber.email}</div>
+                      ) : (
+                        <div className={styles.noAccountNotice}>Email not available</div>
+                      )}
                       <div className={styles.noAccountNotice}>No account created yet</div>
                       {subscriber.addedBy === user?.username && (
                         <div className={styles.subscriberSource}>

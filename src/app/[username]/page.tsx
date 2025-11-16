@@ -27,6 +27,7 @@ interface Profile {
   expectedSendMonth?: string;
   lastSentDate?: string;
   hasAccount?: boolean;
+  planToSend?: boolean;
 }
 
 export default function ProfilePage() {
@@ -40,6 +41,7 @@ export default function ProfilePage() {
   const [editedBio, setEditedBio] = useState('');
   const [editedFullName, setEditedFullName] = useState('');
   const [editedExpectedSendMonth, setEditedExpectedSendMonth] = useState('');
+  const [editedPlanToSend, setEditedPlanToSend] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
@@ -93,6 +95,7 @@ export default function ProfilePage() {
       setEditedBio(data.bio || '');
       setEditedFullName(data.fullName);
       setEditedExpectedSendMonth(data.expectedSendMonth || '');
+      setEditedPlanToSend(data.planToSend !== undefined ? data.planToSend : true);
     }
     setLoading(false);
   };
@@ -100,7 +103,19 @@ export default function ProfilePage() {
   const checkSubscription = async () => {
     if (!user) return;
     const subscribers = await getSubscribers(username);
-    const subscription = subscribers.find((s: any) => s.subscriberUsername === user.username);
+    // Check for both active subscriptions (by username) and pending ones (by email)
+    const subscription = subscribers.find((s: any) => {
+      // Check if it's their active subscription
+      if (s.subscriberUsername === user.username) return true;
+      // Check if it's a pending subscription that matches their email
+      // (this happens when they were manually added before signing up)
+      if (s.subscriberUsername.startsWith('pending-') && s.pendingEmail) {
+        // We need to get the current user's email to check
+        // For now, we'll rely on the migration happening at signup
+        return false;
+      }
+      return false;
+    });
     setIsSubscribed(!!subscription);
     setSubscriptionInfo(subscription || null);
   };
@@ -138,6 +153,7 @@ export default function ProfilePage() {
       setEditedBio(profile.bio || '');
       setEditedFullName(profile.fullName);
       setEditedExpectedSendMonth(profile.expectedSendMonth || '');
+      setEditedPlanToSend(profile.planToSend !== undefined ? profile.planToSend : true);
     }
   };
 
@@ -203,6 +219,7 @@ export default function ProfilePage() {
         fullName: editedFullName,
         bio: editedBio,
         expectedSendMonth: editedExpectedSendMonth,
+        planToSend: editedPlanToSend,
       });
 
       if (result.error) {
@@ -355,15 +372,23 @@ export default function ProfilePage() {
               <p className={styles.bio}>
                 {profile.bio || `${profile.fullName.split(' ')[0]} hasn't yet said what they'll write about in their annual letter`}
               </p>
-              {profile.expectedSendMonth && (
-                <p className={styles.expectedMonth}>
-                  Plans to send annual letter in {profile.expectedSendMonth}
+              {profile.planToSend === false ? (
+                <p className={styles.notPlanning}>
+                  Not currently planning to send annual letters
                 </p>
-              )}
-              {isOwnProfile && !profile.expectedSendMonth && (
-                <p className={styles.missingInfo}>
-                  You haven't said when you'll send your annual letter
-                </p>
+              ) : (
+                <>
+                  {profile.expectedSendMonth && (
+                    <p className={styles.expectedMonth}>
+                      Plans to send annual letter in {profile.expectedSendMonth}
+                    </p>
+                  )}
+                  {isOwnProfile && !profile.expectedSendMonth && (
+                    <p className={styles.missingInfo}>
+                      You haven't said when you'll send your annual letter
+                    </p>
+                  )}
+                </>
               )}
             </div>
           ) : (
@@ -401,6 +426,15 @@ export default function ProfilePage() {
                 <option value="November">November</option>
                 <option value="December">December</option>
               </select>
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={editedPlanToSend}
+                  onChange={(e) => setEditedPlanToSend(e.target.checked)}
+                  className={styles.checkbox}
+                />
+                <span>I plan to send an annual letter</span>
+              </label>
             </div>
           )}
         </div>
