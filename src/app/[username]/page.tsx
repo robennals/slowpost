@@ -1,16 +1,18 @@
 'use client';
 
 import React from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
+import { useProfile, useUserGroups } from '@/hooks/api';
+import { useMutation } from '@/hooks/useMutation';
+import { useForm } from '@/hooks/useForm';
 import {
   getProfile,
   updateProfile,
   subscribeToUser,
   getSubscribers,
-  getUserGroups,
   confirmSubscription,
   unsubscribeFromUser,
   uploadProfilePhoto,
@@ -34,34 +36,54 @@ export default function ProfilePage() {
   const params = useParams();
   const username = params?.username as string;
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+
+  // Data fetching with hooks
+  const { data: profile, loading, refetch: refetchProfile } = useProfile(username);
+  const { data: groups } = useUserGroups(username);
+  const { data: ownProfile } = useProfile(user?.username || '');
+
   const [editing, setEditing] = useState(false);
-  const [editedBio, setEditedBio] = useState('');
-  const [editedFullName, setEditedFullName] = useState('');
-  const [editedExpectedSendMonth, setEditedExpectedSendMonth] = useState('');
-  const [editedPlanToSend, setEditedPlanToSend] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
-  const [subscribing, setSubscribing] = useState(false);
-  const [groups, setGroups] = useState<any[]>([]);
   const [subscriptionInfo, setSubscriptionInfo] = useState<any>(null);
   const [photoEditorImage, setPhotoEditorImage] = useState<string | null>(null);
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoUploadError, setPhotoUploadError] = useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const [urlCopied, setUrlCopied] = useState(false);
-  const [ownProfile, setOwnProfile] = useState<any>(null);
-  const [ownProfileLoaded, setOwnProfileLoaded] = useState(false);
-  const [unsubscribing, setUnsubscribing] = useState(false);
 
   const isOwnProfile = user?.username === username;
 
+  // Form for profile editing
+  const profileForm = useForm(
+    {
+      fullName: profile?.fullName || '',
+      bio: profile?.bio || '',
+      expectedSendMonth: profile?.expectedSendMonth || '',
+      planToSend: profile?.planToSend !== undefined ? profile.planToSend : true,
+    },
+    async (values) => {
+      const result = await updateProfile(username, values);
+      if (result.error) {
+        alert(result.error);
+      } else {
+        refetchProfile();
+        setEditing(false);
+      }
+    }
+  );
+
+  // Update form values when profile changes
   useEffect(() => {
-    loadProfile();
-    loadGroups();
-  }, [username]);
+    if (profile) {
+      profileForm.setValues({
+        fullName: profile.fullName,
+        bio: profile.bio || '',
+        expectedSendMonth: profile.expectedSendMonth || '',
+        planToSend: profile.planToSend !== undefined ? profile.planToSend : true,
+      });
+    }
+  }, [profile]);
 
   useEffect(() => {
     if (user && !isOwnProfile) {
@@ -69,49 +91,89 @@ export default function ProfilePage() {
     }
   }, [user, username]);
 
-  useEffect(() => {
-    if (user && !isOwnProfile && !ownProfileLoaded) {
-      loadOwnProfile();
+  // Mutations
+  const { mutate: subscribe, loading: subscribing } = useMutation(
+    async () => {
+      if (!user) {
+        localStorage.setItem('redirectAfterLogin', `/subscribe/${username}`);
+        router.push('/login');
+        throw new Error('Not authenticated');
+      }
+      return await subscribeToUser(username);
+    },
+    {
+      onSuccess: (result) => {
+        if (result.error) {
+          alert(result.error);
+        } else {
+          setIsSubscribed(true);
+        }
+      },
+      onError: (error) => {
+        if (error.message !== 'Not authenticated') {
+          alert(error.message || 'Failed to subscribe');
+        }
+      },
     }
-  }, [user, isOwnProfile, ownProfileLoaded]);
+  );
 
-  const loadOwnProfile = async () => {
-    if (!user) return;
-    const data = await getProfile(user.username);
-    setOwnProfile(data);
-    setOwnProfileLoaded(true);
-  };
-
-  const loadGroups = async () => {
-    const data = await getUserGroups(username);
-    setGroups(data || []);
-  };
-
-  const loadProfile = async () => {
-    setLoading(true);
-    const data = await getProfile(username);
-    if (data) {
-      setProfile(data);
-      setEditedBio(data.bio || '');
-      setEditedFullName(data.fullName);
-      setEditedExpectedSendMonth(data.expectedSendMonth || '');
-      setEditedPlanToSend(data.planToSend !== undefined ? data.planToSend : true);
+  const { mutate: confirmSub, loading: confirming } = useMutation(
+    async () => {
+      if (!user) throw new Error('Not authenticated');
+      return await confirmSubscription(username, user.username);
+    },
+    {
+      onSuccess: () => {
+        checkSubscription();
+      },
+      onError: (error) => {
+        alert(error.message || 'Failed to confirm subscription');
+      },
     }
-    setLoading(false);
-  };
+  );
+
+  const { mutate: cancelSub, loading: canceling } = useMutation(
+    async () => {
+      if (!user) throw new Error('Not authenticated');
+      return await unsubscribeFromUser(username, user.username);
+    },
+    {
+      onSuccess: () => {
+        setIsSubscribed(false);
+        setSubscriptionInfo(null);
+      },
+      onError: (error) => {
+        alert(error.message || 'Failed to cancel subscription');
+      },
+    }
+  );
+
+  const { mutate: unsubscribe, loading: unsubscribing } = useMutation(
+    async () => {
+      if (!user) throw new Error('Not authenticated');
+      const confirmed = window.confirm(`Are you sure you want to unsubscribe from ${profile?.fullName}'s annual letter?`);
+      if (!confirmed) throw new Error('Cancelled');
+      return await unsubscribeFromUser(username, user.username);
+    },
+    {
+      onSuccess: () => {
+        setIsSubscribed(false);
+        setSubscriptionInfo(null);
+      },
+      onError: (error) => {
+        if (error.message !== 'Cancelled') {
+          alert(error.message || 'Failed to unsubscribe');
+        }
+      },
+    }
+  );
 
   const checkSubscription = async () => {
     if (!user) return;
     const subscribers = await getSubscribers(username);
-    // Check for both active subscriptions (by username) and pending ones (by email)
     const subscription = subscribers.find((s: any) => {
-      // Check if it's their active subscription
       if (s.subscriberUsername === user.username) return true;
-      // Check if it's a pending subscription that matches their email
-      // (this happens when they were manually added before signing up)
       if (s.subscriberUsername.startsWith('pending-') && s.pendingEmail) {
-        // We need to get the current user's email to check
-        // For now, we'll rely on the migration happening at signup
         return false;
       }
       return false;
@@ -120,41 +182,13 @@ export default function ProfilePage() {
     setSubscriptionInfo(subscription || null);
   };
 
-  const handleSubscribe = async () => {
-    if (!user) {
-      // Save redirect URL and send to login
-      localStorage.setItem('redirectAfterLogin', `/subscribe/${username}`);
-      router.push('/login');
-      return;
-    }
-
-    setSubscribing(true);
-    try {
-      const result = await subscribeToUser(username);
-      if (result.error) {
-        alert(result.error);
-      } else {
-        setIsSubscribed(true);
-      }
-    } catch (error: any) {
-      alert(error.message || 'Failed to subscribe');
-    } finally {
-      setSubscribing(false);
-    }
-  };
-
   const handleEdit = () => {
     setEditing(true);
   };
 
   const handleCancel = () => {
     setEditing(false);
-    if (profile) {
-      setEditedBio(profile.bio || '');
-      setEditedFullName(profile.fullName);
-      setEditedExpectedSendMonth(profile.expectedSendMonth || '');
-      setEditedPlanToSend(profile.planToSend !== undefined ? profile.planToSend : true);
-    }
+    profileForm.reset();
   };
 
   const handleSelectPhoto = () => {
@@ -197,85 +231,12 @@ export default function ProfilePage() {
       if (result?.error) {
         throw new Error(result.error);
       }
-      if (result?.profile) {
-        setProfile(result.profile);
-        setEditedBio(result.profile.bio || '');
-        setEditedFullName(result.profile.fullName);
-      } else if (result?.photoUrl) {
-        setProfile((prev) => (prev ? { ...prev, photoUrl: result.photoUrl } : prev));
-      }
+      refetchProfile();
       setPhotoEditorImage(null);
     } catch (error: any) {
       setPhotoUploadError(error.message || 'Failed to upload photo.');
     } finally {
       setPhotoUploading(false);
-    }
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      const result = await updateProfile(username, {
-        fullName: editedFullName,
-        bio: editedBio,
-        expectedSendMonth: editedExpectedSendMonth,
-        planToSend: editedPlanToSend,
-      });
-
-      if (result.error) {
-        alert(result.error);
-      } else {
-        setProfile(result);
-        setEditing(false);
-      }
-    } catch (error: any) {
-      alert(error.message || 'Failed to update profile');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleConfirmSubscription = async () => {
-    if (!user) return;
-    setSubscribing(true);
-    try {
-      await confirmSubscription(username, user.username);
-      await checkSubscription();
-    } catch (error: any) {
-      alert(error.message || 'Failed to confirm subscription');
-    } finally {
-      setSubscribing(false);
-    }
-  };
-
-  const handleCancelSubscription = async () => {
-    if (!user) return;
-    setSubscribing(true);
-    try {
-      await unsubscribeFromUser(username, user.username);
-      setIsSubscribed(false);
-      setSubscriptionInfo(null);
-    } catch (error: any) {
-      alert(error.message || 'Failed to cancel subscription');
-    } finally {
-      setSubscribing(false);
-    }
-  };
-
-  const handleUnsubscribe = async () => {
-    if (!user) return;
-    const confirmed = window.confirm(`Are you sure you want to unsubscribe from ${profile?.fullName}'s annual letter?`);
-    if (!confirmed) return;
-
-    setUnsubscribing(true);
-    try {
-      await unsubscribeFromUser(username, user.username);
-      setIsSubscribed(false);
-      setSubscriptionInfo(null);
-    } catch (error: any) {
-      alert(error.message || 'Failed to unsubscribe');
-    } finally {
-      setUnsubscribing(false);
     }
   };
 
@@ -305,9 +266,9 @@ export default function ProfilePage() {
   };
 
   const shouldShowSetupPrompt = () => {
-    if (!user || isOwnProfile || !ownProfileLoaded) return false;
-    const missingBio = !ownProfile?.bio || ownProfile.bio.trim() === '';
-    const missingPhoto = !ownProfile?.photoUrl;
+    if (!user || isOwnProfile || !ownProfile) return false;
+    const missingBio = !ownProfile.bio || ownProfile.bio.trim() === '';
+    const missingPhoto = !ownProfile.photoUrl;
     return missingBio || missingPhoto;
   };
 
@@ -395,21 +356,21 @@ export default function ProfilePage() {
             <div className={styles.editForm}>
               <input
                 type="text"
-                value={editedFullName}
-                onChange={(e) => setEditedFullName(e.target.value)}
+                value={profileForm.values.fullName}
+                onChange={profileForm.handleChange('fullName')}
                 className={styles.input}
                 placeholder="Full Name"
               />
               <textarea
-                value={editedBio}
-                onChange={(e) => setEditedBio(e.target.value)}
+                value={profileForm.values.bio}
+                onChange={profileForm.handleChange('bio')}
                 className={styles.textarea}
                 placeholder="What will you write about in your annual letter?"
                 rows={4}
               />
               <select
-                value={editedExpectedSendMonth}
-                onChange={(e) => setEditedExpectedSendMonth(e.target.value)}
+                value={profileForm.values.expectedSendMonth}
+                onChange={profileForm.handleChange('expectedSendMonth')}
                 className={styles.select}
               >
                 <option value="">When do you plan to send your annual letter?</option>
@@ -429,8 +390,8 @@ export default function ProfilePage() {
               <label className={styles.checkboxLabel}>
                 <input
                   type="checkbox"
-                  checked={editedPlanToSend}
-                  onChange={(e) => setEditedPlanToSend(e.target.checked)}
+                  checked={profileForm.values.planToSend}
+                  onChange={profileForm.handleChange('planToSend')}
                   className={styles.checkbox}
                 />
                 <span>I plan to send an annual letter</span>
@@ -448,16 +409,16 @@ export default function ProfilePage() {
             ) : (
               <>
                 <button
-                  onClick={handleSave}
+                  onClick={profileForm.handleSubmit}
                   className={styles.saveButton}
-                  disabled={saving}
+                  disabled={profileForm.submitting}
                 >
-                  {saving ? 'Saving...' : 'Save'}
+                  {profileForm.submitting ? 'Saving...' : 'Save'}
                 </button>
                 <button
                   onClick={handleCancel}
                   className={styles.cancelButton}
-                  disabled={saving}
+                  disabled={profileForm.submitting}
                 >
                   Cancel
                 </button>
@@ -470,18 +431,18 @@ export default function ProfilePage() {
               </p>
               <div className={styles.confirmActions}>
                 <button
-                  onClick={handleConfirmSubscription}
+                  onClick={() => confirmSub()}
                   className={styles.confirmButton}
-                  disabled={subscribing}
+                  disabled={confirming || canceling}
                 >
-                  {subscribing ? 'Confirming...' : 'Confirm Subscription'}
+                  {confirming ? 'Confirming...' : 'Confirm Subscription'}
                 </button>
                 <button
-                  onClick={handleCancelSubscription}
+                  onClick={() => cancelSub()}
                   className={styles.cancelSubscriptionButton}
-                  disabled={subscribing}
+                  disabled={confirming || canceling}
                 >
-                  Cancel
+                  {canceling ? 'Canceling...' : 'Cancel'}
                 </button>
               </div>
             </div>
@@ -492,7 +453,7 @@ export default function ProfilePage() {
           ) : (
             <div className={styles.subscribeContainer}>
               <button
-                onClick={handleSubscribe}
+                onClick={() => subscribe()}
                 className={isSubscribed ? styles.subscribedButton : styles.subscribeButton}
                 disabled={subscribing || isSubscribed || unsubscribing}
               >
@@ -500,7 +461,7 @@ export default function ProfilePage() {
               </button>
               {(isSubscribed || unsubscribing) && !subscribing && (
                 <button
-                  onClick={handleUnsubscribe}
+                  onClick={() => unsubscribe()}
                   className={styles.unsubscribeLink}
                   disabled={unsubscribing}
                 >
@@ -533,11 +494,11 @@ export default function ProfilePage() {
         )}
 
         <div className={styles.sections}>
-          {groups.length > 0 ? (
+          {groups && groups.length > 0 ? (
             <div className={styles.section}>
               <h2 className={styles.sectionTitle}>{profile.fullName.split(' ')[0]}'s Groups</h2>
               <div className={styles.groupList}>
-                {groups.map((group) => (
+                {groups.map((group: any) => (
                   <Link
                     key={group.groupName}
                     href={`/g/${group.groupName}`}

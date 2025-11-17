@@ -1,10 +1,13 @@
 'use client';
 
 import React from 'react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserGroups, createGroup } from '@/lib/api';
-import { useRouter } from 'next/navigation';
+import { useUserGroups } from '@/hooks/api';
+import { createGroup } from '@/lib/api';
+import { useMutation } from '@/hooks/useMutation';
+import { useForm } from '@/hooks/useForm';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Link from 'next/link';
 import styles from './groups.module.css';
 
@@ -17,64 +20,35 @@ interface Group {
   memberBio?: string;
 }
 
-export default function GroupsPage() {
+function GroupsPageContent() {
   const { user } = useAuth();
-  const router = useRouter();
-  const [groups, setGroups] = useState<Group[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [creating, setCreating] = useState(false);
+  const { data: groups, loading, refetch: refetchGroups } = useUserGroups(user?.username || '');
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [newGroup, setNewGroup] = useState({
-    groupName: '',
-    displayName: '',
-    description: '',
-    isPublic: true,
-  });
 
-  useEffect(() => {
-    if (!user) {
-      router.push('/login');
-      return;
-    }
-    loadGroups();
-  }, [user]);
-
-  const loadGroups = async () => {
-    if (!user) return;
-
-    setLoading(true);
-    const data = await getUserGroups(user.username);
-    setGroups(data);
-    setLoading(false);
-  };
-
-  const handleCreateGroup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setCreating(true);
-
-    try {
+  const createGroupForm = useForm(
+    {
+      groupName: '',
+      displayName: '',
+      description: '',
+      isPublic: true,
+    },
+    async (values) => {
       const result = await createGroup(
-        newGroup.groupName,
-        newGroup.displayName,
-        newGroup.description,
-        newGroup.isPublic
+        values.groupName,
+        values.displayName,
+        values.description,
+        values.isPublic
       );
 
       if (result.error) {
         alert(result.error);
       } else {
         setShowCreateForm(false);
-        setNewGroup({ groupName: '', displayName: '', description: '', isPublic: true });
-        await loadGroups();
+        createGroupForm.reset();
+        refetchGroups();
       }
-    } catch (error: any) {
-      alert(error.message || 'Failed to create group');
-    } finally {
-      setCreating(false);
     }
-  };
-
-  if (!user) return null;
+  );
 
   if (loading) {
     return (
@@ -104,13 +78,13 @@ export default function GroupsPage() {
         {showCreateForm && (
           <div className={styles.createForm}>
             <h2 className={styles.formTitle}>Create New Group</h2>
-            <form onSubmit={handleCreateGroup}>
+            <form onSubmit={createGroupForm.handleSubmit}>
               <div className={styles.formGroup}>
                 <label className={styles.label}>Group Name (URL slug)</label>
                 <input
                   type="text"
-                  value={newGroup.groupName}
-                  onChange={(e) => setNewGroup({ ...newGroup, groupName: e.target.value })}
+                  value={createGroupForm.values.groupName}
+                  onChange={createGroupForm.handleChange('groupName')}
                   placeholder="my-awesome-group"
                   className={styles.input}
                   required
@@ -122,8 +96,8 @@ export default function GroupsPage() {
                 <label className={styles.label}>Display Name</label>
                 <input
                   type="text"
-                  value={newGroup.displayName}
-                  onChange={(e) => setNewGroup({ ...newGroup, displayName: e.target.value })}
+                  value={createGroupForm.values.displayName}
+                  onChange={createGroupForm.handleChange('displayName')}
                   placeholder="My Awesome Group"
                   className={styles.input}
                   required
@@ -133,8 +107,8 @@ export default function GroupsPage() {
               <div className={styles.formGroup}>
                 <label className={styles.label}>Description</label>
                 <textarea
-                  value={newGroup.description}
-                  onChange={(e) => setNewGroup({ ...newGroup, description: e.target.value })}
+                  value={createGroupForm.values.description}
+                  onChange={createGroupForm.handleChange('description')}
                   placeholder="What is this group about?"
                   className={styles.textarea}
                   rows={3}
@@ -145,16 +119,16 @@ export default function GroupsPage() {
                 <label className={styles.checkboxLabel}>
                   <input
                     type="checkbox"
-                    checked={newGroup.isPublic}
-                    onChange={(e) => setNewGroup({ ...newGroup, isPublic: e.target.checked })}
+                    checked={createGroupForm.values.isPublic}
+                    onChange={createGroupForm.handleChange('isPublic')}
                     className={styles.checkbox}
                   />
                   <span>Public group (visible to everyone)</span>
                 </label>
               </div>
 
-              <button type="submit" className={styles.submitButton} disabled={creating}>
-                {creating ? 'Creating...' : 'Create Group'}
+              <button type="submit" className={styles.submitButton} disabled={createGroupForm.submitting}>
+                {createGroupForm.submitting ? 'Creating...' : 'Create Group'}
               </button>
             </form>
           </div>
@@ -162,10 +136,10 @@ export default function GroupsPage() {
 
         <div className={styles.section}>
           <h2 className={styles.sectionTitle}>
-            {groups.length} {groups.length === 1 ? 'Group' : 'Groups'}
+            {groups?.length || 0} {groups?.length === 1 ? 'Group' : 'Groups'}
           </h2>
 
-          {groups.length === 0 ? (
+          {!groups || groups.length === 0 ? (
             <div className={styles.emptyState}>
               <p>No groups yet</p>
               <p className={styles.emptyHint}>
@@ -174,7 +148,7 @@ export default function GroupsPage() {
             </div>
           ) : (
             <div className={styles.groupList}>
-              {groups.map((group) => (
+              {groups.map((group: Group) => (
                 <Link
                   key={group.groupName}
                   href={`/g/${group.groupName}`}
@@ -197,5 +171,13 @@ export default function GroupsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function GroupsPage() {
+  return (
+    <ProtectedRoute loadingComponent={<div className={styles.loading}>Loading...</div>}>
+      <GroupsPageContent />
+    </ProtectedRoute>
   );
 }

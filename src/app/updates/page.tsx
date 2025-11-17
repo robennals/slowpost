@@ -3,7 +3,9 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUpdates, getProfile, getGroup } from '@/lib/api';
+import { useUpdates } from '@/hooks/api';
+import { getProfile, getGroup } from '@/lib/api';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Link from 'next/link';
 import styles from './updates.module.css';
 
@@ -20,44 +22,39 @@ interface EnrichedUpdate extends Update {
   groupDisplayName?: string;
 }
 
-export default function UpdatesPage() {
-  const { user, loading: authLoading } = useAuth();
-  const [updates, setUpdates] = useState<EnrichedUpdate[]>([]);
-  const [loading, setLoading] = useState(true);
+function UpdatesPageContent() {
+  const { user } = useAuth();
+  const { data: updatesRaw, loading: updatesLoading } = useUpdates(user?.username || '');
+  const [enrichedUpdates, setEnrichedUpdates] = useState<EnrichedUpdate[]>([]);
 
+  // Enrich updates with profile and group data
   useEffect(() => {
-    if (user) {
-      loadUpdates();
-    }
-  }, [user]);
+    if (!updatesRaw) return;
 
-  const loadUpdates = async () => {
-    if (!user) return;
-    setLoading(true);
-    const data = await getUpdates(user.username);
+    const enrichUpdates = async () => {
+      const enriched = await Promise.all(
+        updatesRaw.map(async (update: Update) => {
+          const enrichedUpdate: EnrichedUpdate = { ...update };
 
-    // Enrich updates with profile and group data
-    const enriched = await Promise.all(
-      data.map(async (update: Update) => {
-        const enrichedUpdate: EnrichedUpdate = { ...update };
+          if (update.username) {
+            const profile = await getProfile(update.username);
+            enrichedUpdate.fullName = profile?.fullName || update.username;
+          }
 
-        if (update.username) {
-          const profile = await getProfile(update.username);
-          enrichedUpdate.fullName = profile?.fullName || update.username;
-        }
+          if (update.groupName) {
+            const group = await getGroup(update.groupName);
+            enrichedUpdate.groupDisplayName = group?.displayName || update.groupName;
+          }
 
-        if (update.groupName) {
-          const group = await getGroup(update.groupName);
-          enrichedUpdate.groupDisplayName = group?.displayName || update.groupName;
-        }
+          return enrichedUpdate;
+        })
+      );
 
-        return enrichedUpdate;
-      })
-    );
+      setEnrichedUpdates(enriched);
+    };
 
-    setUpdates(enriched);
-    setLoading(false);
-  };
+    enrichUpdates();
+  }, [updatesRaw]);
 
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -71,18 +68,10 @@ export default function UpdatesPage() {
     return date.toLocaleDateString();
   };
 
-  if (authLoading || loading) {
+  if (updatesLoading) {
     return (
       <div className={styles.container}>
         <div className={styles.loading}>Loading...</div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.error}>Please log in to view updates</div>
       </div>
     );
   }
@@ -92,9 +81,9 @@ export default function UpdatesPage() {
       <div className={styles.content}>
         <h1 className={styles.title}>Updates</h1>
 
-        {updates.length > 0 ? (
+        {enrichedUpdates.length > 0 ? (
           <div className={styles.updateList}>
-            {updates.map((update) => {
+            {enrichedUpdates.map((update) => {
               // Determine the link destination based on update type
               let linkHref = '/';
               if (update.type === 'new_subscriber') {
@@ -165,5 +154,13 @@ export default function UpdatesPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function UpdatesPage() {
+  return (
+    <ProtectedRoute loadingComponent={<div className={styles.loading}>Loading...</div>}>
+      <UpdatesPageContent />
+    </ProtectedRoute>
   );
 }

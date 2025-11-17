@@ -3,8 +3,11 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getSubscribers, updateSubscriber, getProfile, addSubscriberByEmail, getSubscriptions, subscribeToUser } from '@/lib/api';
-import { useRouter } from 'next/navigation';
+import { updateSubscriber, getProfile, addSubscriberByEmail, subscribeToUser } from '@/lib/api';
+import { useSubscribers, useSubscriptions } from '@/hooks/api';
+import { useMutation } from '@/hooks/useMutation';
+import { useForm } from '@/hooks/useForm';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Link from 'next/link';
 import styles from './subscribers.module.css';
 
@@ -23,93 +26,118 @@ interface SubscriberWithProfile extends Subscriber {
   hasAccount?: boolean; // Whether they have created a full account
 }
 
-export default function SubscribersPage() {
-  const { user, loading: authLoading } = useAuth();
-  const router = useRouter();
-  const [subscribers, setSubscribers] = useState<SubscriberWithProfile[]>([]);
+function SubscribersPageContent() {
+  const { user } = useAuth();
+
+  // Use hooks for data fetching
+  const { data: subscribersRaw, loading: subscribersLoading, refetch: refetchSubscribers } = useSubscribers(user?.username || '');
+  const { data: subscriptionsRaw, loading: subscriptionsLoading } = useSubscriptions(user?.username || '');
+
+  const [enrichedSubscribers, setEnrichedSubscribers] = useState<SubscriberWithProfile[]>([]);
   const [subscriptions, setSubscriptions] = useState<string[]>([]); // Usernames of people this user subscribes to
-  const [loading, setLoading] = useState(true);
-  const [addingEmail, setAddingEmail] = useState('');
-  const [addingName, setAddingName] = useState('');
-  const [adding, setAdding] = useState(false);
   const [sortBy, setSortBy] = useState<'recent' | 'alphabetical'>('recent');
   const [emailFilter, setEmailFilter] = useState<'all' | 'close' | 'non-close'>('all');
 
-  useEffect(() => {
-    // Wait for auth to finish loading before redirecting
-    if (authLoading) return;
+  const loading = subscribersLoading || subscriptionsLoading;
 
-    if (!user) {
-      router.push('/login');
-      return;
+  // Form management
+  const addSubscriberForm = useForm(
+    { email: '', fullName: '' },
+    async (values) => {
+      if (!user) throw new Error('Not authenticated');
+      const result = await addSubscriberByEmail(
+        user.username,
+        values.email,
+        values.fullName || undefined
+      );
+      if (result.error) {
+        alert(result.error);
+      } else {
+        refetchSubscribers();
+        addSubscriberForm.reset();
+      }
     }
-    loadSubscribers();
-  }, [user, authLoading]);
+  );
 
-  const loadSubscribers = async () => {
-    if (!user) return;
+  const { mutate: subscribeBack } = useMutation(
+    async (subscriberUsername: string) => {
+      return await subscribeToUser(subscriberUsername);
+    },
+    {
+      onSuccess: (result) => {
+        if (result.error) {
+          alert(result.error);
+        } else {
+          // Update subscriptions list locally
+          setSubscriptions(prev => [...prev, result.subscription.subscribedToUsername]);
+        }
+      },
+      onError: (error) => {
+        alert(error.message || 'Failed to subscribe');
+      },
+    }
+  );
 
-    setLoading(true);
-
-    // Fetch both subscribers and subscriptions in parallel
-    const [subscribersData, subscriptionsData] = await Promise.all([
-      getSubscribers(user.username),
-      getSubscriptions(user.username)
-    ]);
+  // Enrich subscribers with profile data and extract subscription usernames
+  useEffect(() => {
+    if (!subscribersRaw || !subscriptionsRaw) return;
 
     // Extract usernames of people this user subscribes to
-    const subscribedToUsernames = subscriptionsData.map((sub: any) => sub.subscribedToUsername);
+    const subscribedToUsernames = subscriptionsRaw.map((sub: any) => sub.subscribedToUsername);
     setSubscriptions(subscribedToUsernames);
 
     // Enrich with profile data
-    const enriched = await Promise.all(
-      subscribersData.map(async (subscriber: Subscriber) => {
-        // Check if this is a pending subscriber (not yet signed up)
-        const isPending = subscriber.subscriberUsername.startsWith('pending-');
+    const enrichSubscribers = async () => {
+      const enriched = await Promise.all(
+        subscribersRaw.map(async (subscriber: Subscriber) => {
+          // Check if this is a pending subscriber (not yet signed up)
+          const isPending = subscriber.subscriberUsername.startsWith('pending-');
 
-        if (isPending) {
-          // For pending subscribers, use the data stored in the subscription
-          return {
-            ...subscriber,
-            fullName: (subscriber as any).pendingFullName || 'Pending User',
-            email: (subscriber as any).pendingEmail,
-            hasAccount: false,
-          };
-        } else {
-          // For real users (or old manually added users with real usernames), fetch their profile
-          const profile = await getProfile(subscriber.subscriberUsername);
-
-          // If profile doesn't exist, this might be an old manually added subscriber
-          // before we implemented the pending system
-          if (!profile) {
+          if (isPending) {
+            // For pending subscribers, use the data stored in the subscription
             return {
               ...subscriber,
-              fullName: subscriber.subscriberUsername,
-              email: undefined, // No email available
+              fullName: (subscriber as any).pendingFullName || 'Pending User',
+              email: (subscriber as any).pendingEmail,
               hasAccount: false,
             };
+          } else {
+            // For real users (or old manually added users with real usernames), fetch their profile
+            const profile = await getProfile(subscriber.subscriberUsername);
+
+            // If profile doesn't exist, this might be an old manually added subscriber
+            // before we implemented the pending system
+            if (!profile) {
+              return {
+                ...subscriber,
+                fullName: subscriber.subscriberUsername,
+                email: undefined, // No email available
+                hasAccount: false,
+              };
+            }
+
+            return {
+              ...subscriber,
+              fullName: profile.fullName || subscriber.subscriberUsername,
+              email: profile.email,
+              hasAccount: profile.hasAccount !== false,
+            };
           }
+        })
+      );
 
-          return {
-            ...subscriber,
-            fullName: profile.fullName || subscriber.subscriberUsername,
-            email: profile.email,
-            hasAccount: profile.hasAccount !== false,
-          };
-        }
-      })
-    );
+      setEnrichedSubscribers(enriched);
+    };
 
-    setSubscribers(enriched);
-    setLoading(false);
-  };
+    enrichSubscribers();
+  }, [subscribersRaw, subscriptionsRaw]);
 
   const handleToggleClose = async (subscriberUsername: string, currentIsClose: boolean) => {
     if (!user) return;
 
     const result = await updateSubscriber(user.username, subscriberUsername, !currentIsClose);
     if (result.success) {
-      setSubscribers(subscribers.map(s =>
+      setEnrichedSubscribers(enrichedSubscribers.map(s =>
         s.subscriberUsername === subscriberUsername
           ? { ...s, isClose: !currentIsClose }
           : s
@@ -117,46 +145,12 @@ export default function SubscribersPage() {
     }
   };
 
-  const handleAddSubscriber = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || !addingEmail) return;
-
-    setAdding(true);
-    try {
-      const result = await addSubscriberByEmail(user.username, addingEmail, addingName || undefined);
-      if (result.error) {
-        alert(result.error);
-      } else {
-        // Reload subscribers list
-        await loadSubscribers();
-        setAddingEmail('');
-        setAddingName('');
-      }
-    } catch (error: any) {
-      alert(error.message || 'Failed to add subscriber');
-    } finally {
-      setAdding(false);
-    }
-  };
-
   const handleSubscribeBack = async (subscriberUsername: string) => {
-    if (!user) return;
-
-    try {
-      const result = await subscribeToUser(subscriberUsername);
-      if (result.error) {
-        alert(result.error);
-      } else {
-        // Update subscriptions list
-        setSubscriptions([...subscriptions, subscriberUsername]);
-      }
-    } catch (error: any) {
-      alert(error.message || 'Failed to subscribe');
-    }
+    await subscribeBack(subscriberUsername);
   };
 
   // Sort and filter subscribers
-  const sortedAndFilteredSubscribers = subscribers
+  const sortedAndFilteredSubscribers = enrichedSubscribers
     .filter(sub => {
       if (emailFilter === 'close') return sub.isClose;
       if (emailFilter === 'non-close') return !sub.isClose;
@@ -191,8 +185,6 @@ export default function SubscribersPage() {
     }
   };
 
-  if (!user) return null;
-
   if (loading) {
     return (
       <div className={styles.container}>
@@ -208,24 +200,24 @@ export default function SubscribersPage() {
 
         <div className={styles.section}>
           <h2 className={styles.sectionTitle}>Add Subscriber by Email</h2>
-          <form onSubmit={handleAddSubscriber} className={styles.addForm}>
+          <form onSubmit={addSubscriberForm.handleSubmit} className={styles.addForm}>
             <input
               type="email"
-              value={addingEmail}
-              onChange={(e) => setAddingEmail(e.target.value)}
+              value={addSubscriberForm.values.email}
+              onChange={addSubscriberForm.handleChange('email')}
               placeholder="email@example.com"
               className={styles.input}
               required
             />
             <input
               type="text"
-              value={addingName}
-              onChange={(e) => setAddingName(e.target.value)}
+              value={addSubscriberForm.values.fullName}
+              onChange={addSubscriberForm.handleChange('fullName')}
               placeholder="Full name (optional)"
               className={styles.input}
             />
-            <button type="submit" className={styles.addButton} disabled={adding}>
-              {adding ? 'Adding...' : 'Add Subscriber'}
+            <button type="submit" className={styles.addButton} disabled={addSubscriberForm.submitting}>
+              {addSubscriberForm.submitting ? 'Adding...' : 'Add Subscriber'}
             </button>
           </form>
         </div>
@@ -233,7 +225,7 @@ export default function SubscribersPage() {
         <div className={styles.section}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>
-              {subscribers.length} {subscribers.length === 1 ? 'Subscriber' : 'Subscribers'}
+              {enrichedSubscribers.length} {enrichedSubscribers.length === 1 ? 'Subscriber' : 'Subscribers'}
             </h2>
             <div className={styles.controls}>
               <select
@@ -256,7 +248,7 @@ export default function SubscribersPage() {
             </div>
           </div>
 
-          {subscribers.length === 0 ? (
+          {enrichedSubscribers.length === 0 ? (
             <div className={styles.emptyState}>
               <p>No subscribers yet</p>
               <p className={styles.emptyHint}>
@@ -348,5 +340,13 @@ export default function SubscribersPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SubscribersPage() {
+  return (
+    <ProtectedRoute loadingComponent={<div className={styles.loading}>Loading...</div>}>
+      <SubscribersPageContent />
+    </ProtectedRoute>
   );
 }
