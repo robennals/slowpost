@@ -45,13 +45,29 @@ export class PostmarkMailer implements Mailer {
 
   async sendPinEmail(to: string, pin: string): Promise<void> {
     const message = this.messageFactory({ to, pin });
-    await this.client.sendEmail({
-      From: this.fromEmail,
-      To: to,
-      Subject: message.subject,
-      TextBody: message.textBody,
-      HtmlBody: message.htmlBody,
-    });
+    console.log(`[PostmarkMailer] Attempting to send PIN email to ${to}`);
+    try {
+      const response = await this.client.sendEmail({
+        From: this.fromEmail,
+        To: to,
+        Subject: message.subject,
+        TextBody: message.textBody,
+        HtmlBody: message.htmlBody,
+      });
+      console.log(`[PostmarkMailer] PIN email sent successfully to ${to}`, {
+        messageId: response.MessageID,
+        to: response.To,
+        submittedAt: response.SubmittedAt,
+        errorCode: response.ErrorCode,
+      });
+    } catch (error: any) {
+      console.error(`[PostmarkMailer] Failed to send PIN email to ${to}`, {
+        error: error.message,
+        code: error.code,
+        statusCode: error.statusCode,
+      });
+      throw error;
+    }
   }
 
   async sendNewSubscriberNotification(to: string, subscriberUsername: string, subscriberFullName: string): Promise<void> {
@@ -62,13 +78,20 @@ export class PostmarkMailer implements Mailer {
       <p><a href="https://slowpost.org/${subscriberUsername}">View their profile</a></p>
     `;
 
-    await this.client.sendEmail({
-      From: this.fromEmail,
-      To: to,
-      Subject: subject,
-      TextBody: textBody,
-      HtmlBody: htmlBody,
-    });
+    console.log(`[PostmarkMailer] Sending new subscriber notification to ${to}`);
+    try {
+      const response = await this.client.sendEmail({
+        From: this.fromEmail,
+        To: to,
+        Subject: subject,
+        TextBody: textBody,
+        HtmlBody: htmlBody,
+      });
+      console.log(`[PostmarkMailer] Subscriber notification sent successfully`, { messageId: response.MessageID });
+    } catch (error: any) {
+      console.error(`[PostmarkMailer] Failed to send subscriber notification`, { error: error.message });
+      throw error;
+    }
   }
 
   async sendGroupJoinRequestNotification(to: string, requesterUsername: string, requesterFullName: string, groupName: string, groupDisplayName: string): Promise<void> {
@@ -79,13 +102,20 @@ export class PostmarkMailer implements Mailer {
       <p><a href="https://slowpost.org/g/${groupName}">View the request</a></p>
     `;
 
-    await this.client.sendEmail({
-      From: this.fromEmail,
-      To: to,
-      Subject: subject,
-      TextBody: textBody,
-      HtmlBody: htmlBody,
-    });
+    console.log(`[PostmarkMailer] Sending group join notification to ${to} for group ${groupName}`);
+    try {
+      const response = await this.client.sendEmail({
+        From: this.fromEmail,
+        To: to,
+        Subject: subject,
+        TextBody: textBody,
+        HtmlBody: htmlBody,
+      });
+      console.log(`[PostmarkMailer] Group join notification sent successfully`, { messageId: response.MessageID });
+    } catch (error: any) {
+      console.error(`[PostmarkMailer] Failed to send group join notification`, { error: error.message });
+      throw error;
+    }
   }
 
   async sendAnnualLetterReminder(to: string, fullName: string, username: string, subscriberCount: number, expectedMonth: string): Promise<void> {
@@ -100,13 +130,20 @@ export class PostmarkMailer implements Mailer {
       <p>Need inspiration? Check out our <a href="https://slowpost.org/pages/writing-a-good-letter.html">letter writing guide</a>.</p>
     `;
 
-    await this.client.sendEmail({
-      From: this.fromEmail,
-      To: to,
-      Subject: subject,
-      TextBody: textBody,
-      HtmlBody: htmlBody,
-    });
+    console.log(`[PostmarkMailer] Sending annual letter reminder to ${to}`);
+    try {
+      const response = await this.client.sendEmail({
+        From: this.fromEmail,
+        To: to,
+        Subject: subject,
+        TextBody: textBody,
+        HtmlBody: htmlBody,
+      });
+      console.log(`[PostmarkMailer] Annual letter reminder sent successfully`, { messageId: response.MessageID });
+    } catch (error: any) {
+      console.error(`[PostmarkMailer] Failed to send annual letter reminder`, { error: error.message });
+      throw error;
+    }
   }
 
   async sendAnnualLetterFollowUp(to: string, fullName: string, username: string, subscriberCount: number, expectedMonth: string): Promise<void> {
@@ -120,19 +157,27 @@ export class PostmarkMailer implements Mailer {
       <p>Need help getting started? Check out our <a href="https://slowpost.org/pages/writing-a-good-letter.html">letter writing guide</a>.</p>
     `;
 
-    await this.client.sendEmail({
-      From: this.fromEmail,
-      To: to,
-      Subject: subject,
-      TextBody: textBody,
-      HtmlBody: htmlBody,
-    });
+    console.log(`[PostmarkMailer] Sending annual letter follow-up to ${to}`);
+    try {
+      const response = await this.client.sendEmail({
+        From: this.fromEmail,
+        To: to,
+        Subject: subject,
+        TextBody: textBody,
+        HtmlBody: htmlBody,
+      });
+      console.log(`[PostmarkMailer] Annual letter follow-up sent successfully`, { messageId: response.MessageID });
+    } catch (error: any) {
+      console.error(`[PostmarkMailer] Failed to send annual letter follow-up`, { error: error.message });
+      throw error;
+    }
   }
 }
 
 export function createPostmarkMailerFromEnv(): Mailer | undefined {
   // Use stub mailer for e2e tests
   if (process.env.DISABLE_EMAIL === 'true') {
+    console.log('[createPostmarkMailerFromEnv] Using stub mailer (DISABLE_EMAIL=true)');
     return new StubMailer();
   }
 
@@ -140,8 +185,16 @@ export function createPostmarkMailerFromEnv(): Mailer | undefined {
   const fromEmail = process.env.POSTMARK_FROM_EMAIL;
 
   if (!serverToken || !fromEmail) {
+    console.warn('[createPostmarkMailerFromEnv] Mailer not configured:', {
+      hasServerToken: !!serverToken,
+      hasFromEmail: !!fromEmail,
+    });
     return undefined;
   }
 
+  console.log('[createPostmarkMailerFromEnv] PostmarkMailer initialized successfully', {
+    fromEmail,
+    serverTokenPrefix: serverToken.substring(0, 8) + '...',
+  });
   return new PostmarkMailer({ serverToken, fromEmail });
 }
