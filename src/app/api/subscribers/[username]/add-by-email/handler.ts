@@ -113,10 +113,14 @@ export const addSubscriberByEmailHandler: Handler<
         continue;
       }
 
-      await db.addDocument('auth', input.email, {
-        email: input.email,
-        hasAccount: false,
-      });
+      // Check if auth document already exists (might have been added by another user)
+      const existingAuth = await db.getDocument('auth', input.email);
+      if (!existingAuth) {
+        await db.addDocument('auth', input.email, {
+          email: input.email,
+          hasAccount: false,
+        });
+      }
     }
 
     const subscription = {

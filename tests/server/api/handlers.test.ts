@@ -734,6 +734,38 @@ describe('API handlers', () => {
       expect(anotherNew.exists).toBe(false);
     });
 
+    it('handles adding same email by different users without duplicate auth document error', async () => {
+      // Alice adds a pending subscriber
+      await executeHandler(
+        addSubscriberByEmailHandler,
+        makeContext({
+          params: { username: 'alice' },
+          body: { email: 'shared@example.com', fullName: 'Shared Person' },
+          user: fakeSession('alice'),
+        })
+      );
+
+      // Bob adds the same email - should not fail with UNIQUE constraint error
+      const result = await executeHandler(
+        addSubscriberByEmailHandler,
+        makeContext({
+          params: { username: 'bob' },
+          body: { email: 'shared@example.com', fullName: 'Shared Person' },
+          user: fakeSession('bob'),
+        })
+      );
+
+      expect(result.status).toBe(200);
+      expect(result.body.success).toBe(true);
+
+      // Both should have the subscriber
+      const aliceSubscribers = await deps.db.getChildLinks('subscriptions', 'alice');
+      const bobSubscribers = await deps.db.getChildLinks('subscriptions', 'bob');
+
+      expect(aliceSubscribers.some((s: any) => s.pendingEmail === 'shared@example.com')).toBe(true);
+      expect(bobSubscribers.some((s: any) => s.pendingEmail === 'shared@example.com')).toBe(true);
+    });
+
     it('updates subscriber relationship flags', async () => {
       await deps.db.addLink('subscriptions', 'alice', 'bob', { subscriberUsername: 'bob', isClose: false });
       const result = await executeHandler(
