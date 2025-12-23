@@ -3,12 +3,13 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { updateSubscriber, getProfile, addSubscriberByEmail, subscribeToUser } from '@/lib/api';
+import { updateSubscriber, getProfile, addSubscribersByEmail, subscribeToUser, checkExistingSubscribers } from '@/lib/api';
 import { useSubscribers, useSubscriptions } from '@/hooks/api';
 import { useMutation } from '@/hooks/useMutation';
 import { useForm } from '@/hooks/useForm';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Link from 'next/link';
+import { parseEmailText, type ParsedEmail } from '@/shared/emailParser';
 import styles from './subscribers.module.css';
 
 interface Subscriber {
@@ -38,26 +39,17 @@ function SubscribersPageContent() {
   const [sortBy, setSortBy] = useState<'recent' | 'alphabetical'>('recent');
   const [emailFilter, setEmailFilter] = useState<'all' | 'close' | 'non-close'>('all');
 
-  const loading = subscribersLoading || subscriptionsLoading;
+  // Multi-step add subscribers flow
+  const [addStep, setAddStep] = useState<'input' | 'confirm'>('input');
+  const [emailInput, setEmailInput] = useState('');
+  const [emailInputFocused, setEmailInputFocused] = useState(false);
+  const [parsedEmails, setParsedEmails] = useState<ParsedEmail[]>([]);
+  const [parseErrors, setParseErrors] = useState<Array<{ line: number; text: string; error: string }>>([]);
+  const [editableEmails, setEditableEmails] = useState<Array<{ email: string; name: string; exists: boolean; existingName?: string }>>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [checkingExisting, setCheckingExisting] = useState(false);
 
-  // Form management
-  const addSubscriberForm = useForm(
-    { email: '', fullName: '' },
-    async (values) => {
-      if (!user) throw new Error('Not authenticated');
-      const result = await addSubscriberByEmail(
-        user.username,
-        values.email,
-        values.fullName || undefined
-      );
-      if (result.error) {
-        alert(result.error);
-      } else {
-        refetchSubscribers();
-        addSubscriberForm.reset();
-      }
-    }
-  );
+  const loading = subscribersLoading || subscriptionsLoading;
 
   const { mutate: subscribeBack } = useMutation(
     async (subscriberUsername: string) => {
@@ -77,6 +69,117 @@ function SubscribersPageContent() {
       },
     }
   );
+
+  // Parse email input in real-time
+  useEffect(() => {
+    if (!emailInput.trim()) {
+      setParsedEmails([]);
+      setParseErrors([]);
+      return;
+    }
+
+    const result = parseEmailText(emailInput);
+    setParsedEmails(result.emails);
+    setParseErrors(result.errors);
+  }, [emailInput]);
+
+  const handleProceedToConfirm = async () => {
+    if (parsedEmails.length === 0) {
+      alert('Please enter at least one valid email address');
+      return;
+    }
+
+    if (!user) return;
+
+    setCheckingExisting(true);
+    try {
+      // Check which emails already exist
+      const result = await checkExistingSubscribers(
+        user.username,
+        parsedEmails.map(e => e.email)
+      );
+
+      if (result.error) {
+        alert(result.error);
+        return;
+      }
+
+      // Map the results to include existing status
+      const emailsWithExistingStatus = parsedEmails.map(e => {
+        const checkResult = result.results?.find(
+          (r: any) => r.email.toLowerCase() === e.email.toLowerCase()
+        );
+
+        return {
+          email: e.email,
+          name: e.name || '',
+          exists: checkResult?.exists || false,
+          existingName: checkResult?.existingName,
+        };
+      });
+
+      setEditableEmails(emailsWithExistingStatus);
+      setAddStep('confirm');
+    } catch (error: any) {
+      alert(error.message || 'Failed to check existing subscribers');
+    } finally {
+      setCheckingExisting(false);
+    }
+  };
+
+  const handleConfirmAdd = async () => {
+    if (!user) return;
+
+    // Only add emails that don't already exist
+    const emailsToAdd = editableEmails.filter(e => !e.exists);
+
+    if (emailsToAdd.length === 0) {
+      alert('All selected emails are already subscribers');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const result = await addSubscribersByEmail(
+        user.username,
+        emailsToAdd.map(e => ({ email: e.email, fullName: e.name }))
+      );
+
+      if (result.error) {
+        alert(result.error);
+      } else {
+        // Show summary
+        const added = result.added?.length || 0;
+        const alreadyExisted = editableEmails.filter(e => e.exists).length;
+        let message = `Successfully added ${added} subscriber${added !== 1 ? 's' : ''}`;
+        if (alreadyExisted > 0) {
+          message += `\n${alreadyExisted} already subscribed (skipped)`;
+        }
+        alert(message);
+
+        // Reset form
+        setEmailInput('');
+        setParsedEmails([]);
+        setParseErrors([]);
+        setEditableEmails([]);
+        setAddStep('input');
+        refetchSubscribers();
+      }
+    } catch (error: any) {
+      alert(error.message || 'Failed to add subscribers');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleCancelConfirm = () => {
+    setAddStep('input');
+    setEditableEmails([]);
+  };
+
+  const updateEditableName = (index: number, newName: string) => {
+    setEditableEmails(prev => prev.map((e, i) => i === index ? { ...e, name: newName } : e));
+  };
 
   // Enrich subscribers with profile data and extract subscription usernames
   useEffect(() => {
@@ -172,7 +275,10 @@ function SubscribersPageContent() {
     .filter(sub => sub.email) // Only include subscribers with real emails
     .map(sub => {
       const name = sub.fullName || sub.subscriberUsername;
-      return `${name} <${sub.email}>`;
+      // Quote names that contain characters other than letters, numbers, spaces, and hyphens
+      const needsQuotes = /[^a-zA-Z0-9 -]/.test(name);
+      const formattedName = needsQuotes ? `"${name}"` : name;
+      return `${formattedName} <${sub.email}>,`;
     })
     .join('\n');
 
@@ -199,27 +305,131 @@ function SubscribersPageContent() {
         <h1 className={styles.title}>Your Subscribers</h1>
 
         <div className={styles.section}>
-          <h2 className={styles.sectionTitle}>Add Subscriber by Email</h2>
-          <form onSubmit={addSubscriberForm.handleSubmit} className={styles.addForm}>
-            <input
-              type="email"
-              value={addSubscriberForm.values.email}
-              onChange={addSubscriberForm.handleChange('email')}
-              placeholder="email@example.com"
-              className={styles.input}
-              required
-            />
-            <input
-              type="text"
-              value={addSubscriberForm.values.fullName}
-              onChange={addSubscriberForm.handleChange('fullName')}
-              placeholder="Full name (optional)"
-              className={styles.input}
-            />
-            <button type="submit" className={styles.addButton} disabled={addSubscriberForm.submitting}>
-              {addSubscriberForm.submitting ? 'Adding...' : 'Add Subscriber'}
-            </button>
-          </form>
+          <h2 className={styles.sectionTitle}>Add Subscribers by Email</h2>
+
+          {addStep === 'input' ? (
+            <>
+              <div className={styles.addEmailInputContainer}>
+                <textarea
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  onFocus={() => setEmailInputFocused(true)}
+                  placeholder="email@example.com or Name <email@example.com>"
+                  className={`${styles.addEmailTextarea} ${emailInputFocused ? styles.addEmailTextareaExpanded : ''}`}
+                  rows={emailInputFocused ? 6 : 1}
+                />
+                <button
+                  onClick={handleProceedToConfirm}
+                  className={styles.addButton}
+                  disabled={parsedEmails.length === 0 || checkingExisting}
+                >
+                  {checkingExisting ? 'Checking...' : 'Review and Confirm'}
+                </button>
+              </div>
+
+              {emailInputFocused && (
+                <div className={styles.formatHelp}>
+                  <div className={styles.formatHelpTitle}>Supported formats:</div>
+                  <ul className={styles.formatHelpList}>
+                    <li><code>email@example.com</code> - Name will be auto-generated</li>
+                    <li><code>John Doe &lt;email@example.com&gt;</code></li>
+                    <li><code>"Doe, John" &lt;email@example.com&gt;</code> - Use quotes for names with commas</li>
+                  </ul>
+                  <div className={styles.formatHelpNote}>
+                    Separate emails with newlines, commas, or semicolons. You can paste directly from email CC/BCC fields.
+                  </div>
+                  <div className={styles.formatHelpNote}>
+                    You'll be able to review and edit names before confirming.
+                  </div>
+                </div>
+              )}
+
+              {parseErrors.length > 0 && (
+                <div className={styles.parseErrors}>
+                  <div className={styles.parseErrorsTitle}>Errors found:</div>
+                  {parseErrors.map((err, i) => (
+                    <div key={i} className={styles.parseError}>
+                      Line {err.line}: {err.error}
+                      <div className={styles.parseErrorText}>{err.text}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {parsedEmails.length > 0 && (
+                <div className={styles.parseSummary}>
+                  ✓ {parsedEmails.length} email{parsedEmails.length !== 1 ? 's' : ''} ready to review
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div className={styles.confirmTitle}>
+                Review and confirm subscribers
+              </div>
+
+              {editableEmails.filter(e => !e.exists).length > 0 && (
+                <>
+                  <div className={styles.confirmSectionTitle}>
+                    {editableEmails.filter(e => !e.exists).length} new subscriber{editableEmails.filter(e => !e.exists).length !== 1 ? 's' : ''} to add:
+                  </div>
+                  <div className={styles.confirmList}>
+                    {editableEmails.filter(e => !e.exists).map((item, index) => {
+                      const actualIndex = editableEmails.indexOf(item);
+                      return (
+                        <div key={actualIndex} className={styles.confirmItem}>
+                          <div className={styles.confirmItemEmail}>{item.email}</div>
+                          <input
+                            type="text"
+                            value={item.name}
+                            onChange={(e) => updateEditableName(actualIndex, e.target.value)}
+                            placeholder="Full name"
+                            className={styles.confirmItemNameInput}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+
+              {editableEmails.filter(e => e.exists).length > 0 && (
+                <>
+                  <div className={styles.confirmSectionTitleExisting}>
+                    {editableEmails.filter(e => e.exists).length} already subscribed (will be skipped):
+                  </div>
+                  <div className={styles.confirmList}>
+                    {editableEmails.filter(e => e.exists).map((item, index) => (
+                      <div key={`existing-${index}`} className={styles.confirmItemExisting}>
+                        <div className={styles.confirmItemEmail}>{item.email}</div>
+                        <div className={styles.confirmItemExistingName}>
+                          {item.existingName || item.name}
+                        </div>
+                        <div className={styles.confirmItemExistingBadge}>Already subscribed</div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              <div className={styles.confirmActions}>
+                <button
+                  onClick={handleCancelConfirm}
+                  className={styles.cancelButton}
+                  disabled={submitting}
+                >
+                  Back to Edit
+                </button>
+                <button
+                  onClick={handleConfirmAdd}
+                  className={styles.addButton}
+                  disabled={submitting || editableEmails.filter(e => !e.exists).length === 0}
+                >
+                  {submitting ? 'Adding...' : `Add ${editableEmails.filter(e => !e.exists).length} Subscriber${editableEmails.filter(e => !e.exists).length !== 1 ? 's' : ''}`}
+                </button>
+              </div>
+            </>
+          )}
         </div>
 
         <div className={styles.section}>

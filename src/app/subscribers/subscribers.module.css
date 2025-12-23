@@ -332,3 +332,264 @@
   height: 18px;
   cursor: pointer;
 }
+
+/* Multi-email input styles */
+.addEmailInputContainer {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.addEmailTextarea {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--color-paper-border);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: var(--font-crimson);
+  color: var(--color-text-dark);
+  background: rgba(255, 255, 255, 0.7);
+  transition: all 0.2s;
+  resize: vertical;
+  min-height: 42px;
+}
+
+.addEmailTextarea:focus {
+  outline: none;
+  border-color: var(--color-text-medium);
+  box-shadow: 0 0 0 3px rgba(74, 59, 48, 0.1);
+}
+
+.addEmailTextareaExpanded {
+  min-height: 120px;
+}
+
+.formatHelp {
+  background: rgba(74, 59, 48, 0.05);
+  border: 1px solid var(--color-paper-border);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  font-family: var(--font-crimson);
+}
+
+.formatHelpTitle {
+  font-weight: 600;
+  color: var(--color-text-dark);
+  margin-bottom: 0.5rem;
+}
+
+.formatHelpList {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+  color: var(--color-text-medium);
+}
+
+.formatHelpList li {
+  margin: 0.25rem 0;
+}
+
+.formatHelpList code {
+  background: rgba(255, 255, 255, 0.8);
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  border: 1px solid var(--color-paper-border);
+}
+
+.formatHelpNote {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--color-text-medium);
+  font-style: italic;
+}
+
+.parseErrors {
+  background: rgba(168, 68, 55, 0.1);
+  border: 1px solid var(--color-wax-seal);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.parseErrorsTitle {
+  font-family: var(--font-crimson);
+  font-weight: 600;
+  color: var(--color-wax-seal);
+  margin-bottom: 0.5rem;
+}
+
+.parseError {
+  font-family: var(--font-crimson);
+  font-size: 0.875rem;
+  color: var(--color-text-dark);
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+}
+
+.parseErrorText {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: var(--color-text-medium);
+  margin-top: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.parseSummary {
+  font-family: var(--font-crimson);
+  font-size: 0.875rem;
+  color: var(--color-text-dark);
+  padding: 0.5rem 0.75rem;
+  background: rgba(76, 175, 80, 0.1);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+/* Confirmation step styles */
+.confirmTitle {
+  font-family: var(--font-crimson);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text-dark);
+  margin-bottom: 1.5rem;
+}
+
+.confirmSectionTitle {
+  font-family: var(--font-crimson);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-dark);
+  margin: 1rem 0 0.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.confirmSectionTitleExisting {
+  font-family: var(--font-crimson);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-medium);
+  margin: 1.5rem 0 0.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.confirmList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.confirmItem {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--color-paper-border);
+  border-radius: 8px;
+}
+
+.confirmItemEmail {
+  flex: 1;
+  font-family: var(--font-crimson);
+  font-size: 0.875rem;
+  color: var(--color-text-medium);
+  word-break: break-all;
+}
+
+.confirmItemNameInput {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 2px solid var(--color-paper-border);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-family: var(--font-crimson);
+  color: var(--color-text-dark);
+  background: rgba(255, 255, 255, 0.9);
+  transition: all 0.2s;
+}
+
+.confirmItemNameInput:focus {
+  outline: none;
+  border-color: var(--color-text-medium);
+  box-shadow: 0 0 0 2px rgba(74, 59, 48, 0.1);
+}
+
+.confirmActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.cancelButton {
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  color: var(--color-text-dark);
+  border: 2px solid var(--color-paper-border);
+  border-radius: 8px;
+  font-weight: 600;
+  font-family: var(--font-crimson);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.cancelButton:hover {
+  border-color: var(--color-text-medium);
+  background: rgba(74, 59, 48, 0.05);
+}
+
+.cancelButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.addButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.confirmItemExisting {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.75rem;
+  background: rgba(74, 59, 48, 0.05);
+  border: 1px solid rgba(74, 59, 48, 0.15);
+  border-radius: 8px;
+  opacity: 0.7;
+}
+
+.confirmItemExistingName {
+  flex: 1;
+  font-family: var(--font-crimson);
+  font-size: 0.875rem;
+  color: var(--color-text-medium);
+  font-style: italic;
+}
+
+.confirmItemExistingBadge {
+  padding: 0.25rem 0.75rem;
+  background: rgba(74, 59, 48, 0.1);
+  border: 1px solid rgba(74, 59, 48, 0.2);
+  border-radius: 4px;
+  font-family: var(--font-crimson);
+  font-size: 0.75rem;
+  color: var(--color-text-medium);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}

@@ -12,6 +12,7 @@ import {
 } from '../../../src/app/api/subscribers/[username]/handlers';
 import { getSubscriptionsHandler } from '../../../src/app/api/subscriptions/[username]/handler';
 import { addSubscriberByEmailHandler } from '../../../src/app/api/subscribers/[username]/add-by-email/handler';
+import { checkExistingSubscribersHandler } from '../../../src/app/api/subscribers/[username]/check-existing/handler';
 import {
   updateSubscriberHandler,
   unsubscribeHandler,
@@ -592,6 +593,145 @@ describe('API handlers', () => {
           })
         )
       ).rejects.toThrow('Full name is required for new users');
+    });
+
+    it('adds multiple subscribers at once', async () => {
+      const result = await executeHandler(
+        addSubscriberByEmailHandler,
+        makeContext({
+          params: { username: 'alice' },
+          body: {
+            emails: [
+              { email: 'person1@example.com', fullName: 'Person One' },
+              { email: 'person2@example.com', fullName: 'Person Two' },
+              { email: 'person3@example.com', fullName: 'Person Three' },
+            ],
+          },
+          user: fakeSession('alice'),
+        })
+      );
+
+      expect(result.status).toBe(200);
+      expect(result.body.added).toHaveLength(3);
+      expect(result.body.skipped).toHaveLength(0);
+
+      const subscribers = await deps.db.getChildLinks('subscriptions', 'alice');
+      expect(subscribers).toHaveLength(3);
+    });
+
+    it('skips existing subscribers when adding multiple emails', async () => {
+      // Add one subscriber first
+      await executeHandler(
+        addSubscriberByEmailHandler,
+        makeContext({
+          params: { username: 'alice' },
+          body: { email: 'existing@example.com', fullName: 'Existing User' },
+          user: fakeSession('alice'),
+        })
+      );
+
+      // Try to add multiple including the existing one
+      const result = await executeHandler(
+        addSubscriberByEmailHandler,
+        makeContext({
+          params: { username: 'alice' },
+          body: {
+            emails: [
+              { email: 'existing@example.com', fullName: 'Existing User' },
+              { email: 'new@example.com', fullName: 'New User' },
+            ],
+          },
+          user: fakeSession('alice'),
+        })
+      );
+
+      expect(result.status).toBe(200);
+      expect(result.body.added).toHaveLength(1);
+      expect(result.body.added[0].email).toBe('new@example.com');
+      expect(result.body.skipped).toHaveLength(1);
+      expect(result.body.skipped[0].email).toBe('existing@example.com');
+      expect(result.body.skipped[0].reason).toBe('Already a subscriber');
+
+      const subscribers = await deps.db.getChildLinks('subscriptions', 'alice');
+      expect(subscribers).toHaveLength(2);
+    });
+
+    it('skips emails without fullName in multi-email mode', async () => {
+      const result = await executeHandler(
+        addSubscriberByEmailHandler,
+        makeContext({
+          params: { username: 'alice' },
+          body: {
+            emails: [
+              { email: 'withname@example.com', fullName: 'Has Name' },
+              { email: 'noname@example.com' }, // Missing fullName
+              { email: 'alsohasname@example.com', fullName: 'Also Has Name' },
+            ],
+          },
+          user: fakeSession('alice'),
+        })
+      );
+
+      expect(result.status).toBe(200);
+      expect(result.body.added).toHaveLength(2);
+      expect(result.body.skipped).toHaveLength(1);
+      expect(result.body.skipped[0].email).toBe('noname@example.com');
+      expect(result.body.skipped[0].reason).toBe('Full name is required for new users');
+    });
+
+    it('checks for existing subscribers before adding', async () => {
+      // Add some subscribers first
+      await executeHandler(
+        addSubscriberByEmailHandler,
+        makeContext({
+          params: { username: 'alice' },
+          body: { email: 'existing1@example.com', fullName: 'Existing One' },
+          user: fakeSession('alice'),
+        })
+      );
+
+      await executeHandler(
+        addSubscriberByEmailHandler,
+        makeContext({
+          params: { username: 'alice' },
+          body: { email: 'existing2@example.com', fullName: 'Existing Two' },
+          user: fakeSession('alice'),
+        })
+      );
+
+      // Check which emails already exist
+      const result = await executeHandler(
+        checkExistingSubscribersHandler,
+        makeContext({
+          params: { username: 'alice' },
+          body: {
+            emails: [
+              'existing1@example.com',
+              'new@example.com',
+              'existing2@example.com',
+              'another-new@example.com',
+            ],
+          },
+          user: fakeSession('alice'),
+        })
+      );
+
+      expect(result.status).toBe(200);
+      expect(result.body.results).toHaveLength(4);
+
+      const existing1 = result.body.results.find((r: any) => r.email === 'existing1@example.com');
+      expect(existing1.exists).toBe(true);
+      expect(existing1.existingName).toBe('Existing One');
+
+      const existing2 = result.body.results.find((r: any) => r.email === 'existing2@example.com');
+      expect(existing2.exists).toBe(true);
+      expect(existing2.existingName).toBe('Existing Two');
+
+      const newEmail = result.body.results.find((r: any) => r.email === 'new@example.com');
+      expect(newEmail.exists).toBe(false);
+
+      const anotherNew = result.body.results.find((r: any) => r.email === 'another-new@example.com');
+      expect(anotherNew.exists).toBe(false);
     });
 
     it('updates subscriber relationship flags', async () => {

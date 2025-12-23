@@ -116,6 +116,26 @@ export async function addSubscriberByEmail(username: string, email: string, full
   return res.json();
 }
 
+export async function addSubscribersByEmail(username: string, emails: Array<{ email: string; fullName?: string }>) {
+  const res = await fetch(`${API_BASE}/subscribers/${username}/add-by-email`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ emails }),
+    credentials: 'include',
+  });
+  return res.json();
+}
+
+export async function checkExistingSubscribers(username: string, emails: string[]) {
+  const res = await fetch(`${API_BASE}/subscribers/${username}/check-existing`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ emails }),
+    credentials: 'include',
+  });
+  return res.json();
+}
+
 export async function updateSubscriber(username: string, subscriberUsername: string, isClose: boolean) {
   const res = await fetch(`${API_BASE}/subscribers/${username}/${subscriberUsername}`, {
     method: 'PUT',
