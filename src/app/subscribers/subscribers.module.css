@@ -223,7 +223,7 @@
 .subscriberCard {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   padding: 1rem;
   border: 1px solid var(--color-paper-border);
   border-radius: 8px;
@@ -592,4 +592,234 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   white-space: nowrap;
+}
+
+/* Edit and delete functionality */
+.subscriberMainContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.editNameContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.editNameInput {
+  padding: 0.5rem 0.75rem;
+  border: 2px solid var(--color-paper-border);
+  border-radius: 6px;
+  font-size: 1rem;
+  font-family: var(--font-crimson);
+  color: var(--color-text-dark);
+  background: rgba(255, 255, 255, 0.9);
+  transition: all 0.2s;
+}
+
+.editNameInput:focus {
+  outline: none;
+  border-color: var(--color-text-medium);
+  box-shadow: 0 0 0 2px rgba(74, 59, 48, 0.1);
+}
+
+.editNameButtons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.saveEditButton,
+.cancelEditButton {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-family: var(--font-crimson);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.75rem;
+}
+
+.saveEditButton {
+  background: var(--color-wax-seal);
+  color: white;
+  box-shadow:
+    0 2px 4px rgba(168, 68, 55, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.saveEditButton:hover {
+  background: var(--color-wax-seal-hover);
+  transform: translateY(-1px);
+  box-shadow:
+    0 4px 8px rgba(168, 68, 55, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.cancelEditButton {
+  background: transparent;
+  color: var(--color-text-dark);
+  border: 2px solid var(--color-paper-border);
+}
+
+.cancelEditButton:hover {
+  border-color: var(--color-text-medium);
+  background: rgba(74, 59, 48, 0.05);
+}
+
+/* Menu button and dropdown */
+.menuContainer {
+  position: relative;
+}
+
+.menuButton {
+  padding: 0.25rem 0.5rem;
+  background: transparent;
+  border: 1px solid var(--color-paper-border);
+  border-radius: 6px;
+  font-size: 1.25rem;
+  line-height: 1;
+  color: var(--color-text-medium);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+}
+
+.menuButton:hover {
+  background: rgba(74, 59, 48, 0.05);
+  border-color: var(--color-text-medium);
+  color: var(--color-text-dark);
+}
+
+.menuDropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  background: var(--color-paper);
+  border: 1px solid var(--color-paper-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(74, 59, 48, 0.2);
+  min-width: 150px;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.menuItem,
+.menuItemDanger {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: transparent;
+  font-family: var(--font-crimson);
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s;
+  color: var(--color-text-dark);
+}
+
+.menuItem:hover {
+  background: rgba(74, 59, 48, 0.1);
+}
+
+.menuItemDanger {
+  color: #dc3545;
+}
+
+.menuItemDanger:hover {
+  background: rgba(220, 53, 69, 0.1);
+}
+
+/* Modal styles */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: var(--color-paper);
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 8px 32px rgba(74, 59, 48, 0.3);
+  border: 1px solid var(--color-paper-border);
+}
+
+.modalTitle {
+  font-family: var(--font-playfair);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-dark);
+  margin: 0 0 1rem 0;
+}
+
+.modalText {
+  font-family: var(--font-crimson);
+  font-size: 1rem;
+  color: var(--color-text-dark);
+  margin: 0 0 1.5rem 0;
+  line-height: 1.5;
+}
+
+.modalActions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.modalCancelButton,
+.modalConfirmButton {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-family: var(--font-crimson);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+}
+
+.modalCancelButton {
+  background: transparent;
+  color: var(--color-text-dark);
+  border: 2px solid var(--color-paper-border);
+}
+
+.modalCancelButton:hover {
+  border-color: var(--color-text-medium);
+  background: rgba(74, 59, 48, 0.05);
+}
+
+.modalConfirmButton {
+  background: #dc3545;
+  color: white;
+  box-shadow:
+    0 2px 4px rgba(220, 53, 69, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.modalConfirmButton:hover {
+  background: #c82333;
+  transform: translateY(-1px);
+  box-shadow:
+    0 4px 8px rgba(220, 53, 69, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }

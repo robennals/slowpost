@@ -146,6 +146,24 @@ export async function updateSubscriber(username: string, subscriberUsername: str
   return res.json();
 }
 
+export async function updateSubscriberName(username: string, subscriberUsername: string, pendingFullName: string) {
+  const res = await fetch(`${API_BASE}/subscribers/${username}/${subscriberUsername}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pendingFullName }),
+    credentials: 'include',
+  });
+  return res.json();
+}
+
+export async function removeSubscriber(username: string, subscriberUsername: string) {
+  const res = await fetch(`${API_BASE}/subscribers/${username}/${subscriberUsername}/remove`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+  return res.json();
+}
+
 export async function confirmSubscription(username: string, subscriberUsername: string) {
   const res = await fetch(`${API_BASE}/subscribers/${username}/${subscriberUsername}/confirm`, {
     method: 'POST',

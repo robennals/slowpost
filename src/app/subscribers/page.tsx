@@ -3,7 +3,7 @@
 import React from 'react';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { updateSubscriber, getProfile, addSubscribersByEmail, subscribeToUser, checkExistingSubscribers } from '@/lib/api';
+import { updateSubscriber, updateSubscriberName, removeSubscriber, getProfile, addSubscribersByEmail, subscribeToUser, checkExistingSubscribers } from '@/lib/api';
 import { useSubscribers, useSubscriptions } from '@/hooks/api';
 import { useMutation } from '@/hooks/useMutation';
 import { useForm } from '@/hooks/useForm';
@@ -38,6 +38,12 @@ function SubscribersPageContent() {
   const [subscriptions, setSubscriptions] = useState<string[]>([]); // Usernames of people this user subscribes to
   const [sortBy, setSortBy] = useState<'recent' | 'alphabetical'>('recent');
   const [emailFilter, setEmailFilter] = useState<'all' | 'close' | 'non-close'>('all');
+
+  // Edit and delete state
+  const [editingSubscriber, setEditingSubscriber] = useState<string | null>(null);
+  const [editedName, setEditedName] = useState('');
+  const [subscriberToDelete, setSubscriberToDelete] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState<string | null>(null);
 
   // Multi-step add subscribers flow
   const [addStep, setAddStep] = useState<'input' | 'confirm'>('input');
@@ -250,6 +256,81 @@ function SubscribersPageContent() {
 
   const handleSubscribeBack = async (subscriberUsername: string) => {
     await subscribeBack(subscriberUsername);
+  };
+
+  const handleStartEdit = (subscriberUsername: string, currentName: string) => {
+    setEditingSubscriber(subscriberUsername);
+    setEditedName(currentName);
+    setMenuOpen(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingSubscriber(null);
+    setEditedName('');
+  };
+
+  const handleSaveEdit = async (subscriberUsername: string) => {
+    if (!user) return;
+
+    try {
+      const result = await updateSubscriberName(user.username, subscriberUsername, editedName);
+      if (result.success) {
+        setEnrichedSubscribers(enrichedSubscribers.map(s =>
+          s.subscriberUsername === subscriberUsername
+            ? { ...s, fullName: editedName }
+            : s
+        ));
+        setEditingSubscriber(null);
+        setEditedName('');
+      } else {
+        alert(result.error || 'Failed to update name');
+      }
+    } catch (error: any) {
+      alert(error.message || 'Failed to update name');
+    }
+  };
+
+  const handleDeleteClick = (subscriberUsername: string) => {
+    setSubscriberToDelete(subscriberUsername);
+    setMenuOpen(null);
+  };
+
+  const toggleMenu = (subscriberUsername: string) => {
+    setMenuOpen(menuOpen === subscriberUsername ? null : subscriberUsername);
+  };
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (menuOpen) {
+        setMenuOpen(null);
+      }
+    };
+
+    if (menuOpen) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [menuOpen]);
+
+  const handleConfirmDelete = async () => {
+    if (!user || !subscriberToDelete) return;
+
+    try {
+      const result = await removeSubscriber(user.username, subscriberToDelete);
+      if (result.success) {
+        setEnrichedSubscribers(enrichedSubscribers.filter(s => s.subscriberUsername !== subscriberToDelete));
+        setSubscriberToDelete(null);
+      } else {
+        alert(result.error || 'Failed to remove subscriber');
+      }
+    } catch (error: any) {
+      alert(error.message || 'Failed to remove subscriber');
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setSubscriberToDelete(null);
   };
 
   // Sort and filter subscribers
@@ -486,68 +567,164 @@ function SubscribersPageContent() {
               </div>
 
               <div className={styles.subscriberList}>
-                {sortedAndFilteredSubscribers.map((subscriber) => (
-                <div key={subscriber.subscriberUsername} className={styles.subscriberCard}>
-                  {subscriber.hasAccount ? (
-                    <Link href={`/${subscriber.subscriberUsername}`} className={styles.subscriberLink}>
-                      <div className={styles.subscriberInfo}>
-                        <div className={styles.subscriberName}>{subscriber.fullName}</div>
-                        {subscriber.email && (
-                          <div className={styles.subscriberEmail}>{subscriber.email}</div>
-                        )}
-                        {subscriber.addedBy === user?.username && (
-                          <div className={styles.subscriberSource}>
-                            {subscriber.confirmed === false ? 'Added by you (not confirmed)' : 'Added by you'}
-                          </div>
-                        )}
-                        {subscriber.addedBy === subscriber.subscriberUsername && (
-                          <div className={styles.subscriberSource}>
-                            They subscribed themselves
+                {sortedAndFilteredSubscribers.map((subscriber) => {
+                  const isEditing = editingSubscriber === subscriber.subscriberUsername;
+
+                  return (
+                    <div key={subscriber.subscriberUsername} className={styles.subscriberCard}>
+                      <div className={styles.subscriberMainContent}>
+                        {subscriber.hasAccount && !isEditing ? (
+                          <Link href={`/${subscriber.subscriberUsername}`} className={styles.subscriberLink}>
+                            <div className={styles.subscriberInfo}>
+                              <div className={styles.subscriberName}>{subscriber.fullName}</div>
+                              {subscriber.email && (
+                                <div className={styles.subscriberEmail}>{subscriber.email}</div>
+                              )}
+                              {subscriber.addedBy === user?.username && (
+                                <div className={styles.subscriberSource}>
+                                  {subscriber.confirmed === false ? 'Added by you (not confirmed)' : 'Added by you'}
+                                </div>
+                              )}
+                              {subscriber.addedBy === subscriber.subscriberUsername && (
+                                <div className={styles.subscriberSource}>
+                                  They subscribed themselves
+                                </div>
+                              )}
+                            </div>
+                          </Link>
+                        ) : (
+                          <div className={styles.subscriberInfo}>
+                            {isEditing ? (
+                              <div className={styles.editNameContainer}>
+                                <input
+                                  type="text"
+                                  value={editedName}
+                                  onChange={(e) => setEditedName(e.target.value)}
+                                  className={styles.editNameInput}
+                                  autoFocus
+                                />
+                                <div className={styles.editNameButtons}>
+                                  <button
+                                    onClick={() => handleSaveEdit(subscriber.subscriberUsername)}
+                                    className={styles.saveEditButton}
+                                  >
+                                    Save
+                                  </button>
+                                  <button
+                                    onClick={handleCancelEdit}
+                                    className={styles.cancelEditButton}
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className={styles.subscriberName}>{subscriber.fullName}</div>
+                            )}
+                            {!isEditing && (
+                              <>
+                                {subscriber.email ? (
+                                  <div className={styles.subscriberEmail}>{subscriber.email}</div>
+                                ) : (
+                                  <div className={styles.noAccountNotice}>Email not available</div>
+                                )}
+                                {!subscriber.hasAccount && (
+                                  <div className={styles.noAccountNotice}>No account created yet</div>
+                                )}
+                                {subscriber.addedBy === user?.username && (
+                                  <div className={styles.subscriberSource}>
+                                    {subscriber.confirmed === false ? 'Added by you (not confirmed)' : 'Added by you'}
+                                  </div>
+                                )}
+                              </>
+                            )}
                           </div>
                         )}
                       </div>
-                    </Link>
-                  ) : (
-                    <div className={styles.subscriberInfo}>
-                      <div className={styles.subscriberName}>{subscriber.fullName}</div>
-                      {subscriber.email ? (
-                        <div className={styles.subscriberEmail}>{subscriber.email}</div>
-                      ) : (
-                        <div className={styles.noAccountNotice}>Email not available</div>
-                      )}
-                      <div className={styles.noAccountNotice}>No account created yet</div>
-                      {subscriber.addedBy === user?.username && (
-                        <div className={styles.subscriberSource}>
-                          {subscriber.confirmed === false ? 'Added by you (not confirmed)' : 'Added by you'}
-                        </div>
-                      )}
+                      <div className={styles.subscriberActions}>
+                        {!isEditing && (
+                          <>
+                            {subscriber.hasAccount && !subscriptions.includes(subscriber.subscriberUsername) && (
+                              <button
+                                onClick={() => handleSubscribeBack(subscriber.subscriberUsername)}
+                                className={styles.subscribeBackButton}
+                              >
+                                Subscribe Back
+                              </button>
+                            )}
+                            <label className={styles.toggleLabel}>
+                              <input
+                                type="checkbox"
+                                checked={subscriber.isClose}
+                                onChange={() => handleToggleClose(subscriber.subscriberUsername, subscriber.isClose)}
+                                className={styles.checkbox}
+                              />
+                              <span>Close Friend</span>
+                            </label>
+                            <div className={styles.menuContainer}>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleMenu(subscriber.subscriberUsername);
+                                }}
+                                className={styles.menuButton}
+                                aria-label="More options"
+                              >
+                                ⋮
+                              </button>
+                              {menuOpen === subscriber.subscriberUsername && (
+                                <div className={styles.menuDropdown}>
+                                  {!subscriber.hasAccount && (
+                                    <button
+                                      onClick={() => handleStartEdit(subscriber.subscriberUsername, subscriber.fullName || '')}
+                                      className={styles.menuItem}
+                                    >
+                                      Edit Name
+                                    </button>
+                                  )}
+                                  <button
+                                    onClick={() => handleDeleteClick(subscriber.subscriberUsername)}
+                                    className={styles.menuItemDanger}
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </>
+                        )}
+                      </div>
                     </div>
-                  )}
-                  <div className={styles.subscriberActions}>
-                    {subscriber.hasAccount && !subscriptions.includes(subscriber.subscriberUsername) && (
-                      <button
-                        onClick={() => handleSubscribeBack(subscriber.subscriberUsername)}
-                        className={styles.subscribeBackButton}
-                      >
-                        Subscribe Back
-                      </button>
-                    )}
-                    <label className={styles.toggleLabel}>
-                      <input
-                        type="checkbox"
-                        checked={subscriber.isClose}
-                        onChange={() => handleToggleClose(subscriber.subscriberUsername, subscriber.isClose)}
-                        className={styles.checkbox}
-                      />
-                      <span>Close Friend</span>
-                    </label>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  );
+                })}
+              </div>
             </>
           )}
         </div>
+
+        {/* Delete Confirmation Dialog */}
+        {subscriberToDelete && (
+          <div className={styles.modalOverlay} onClick={handleCancelDelete}>
+            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+              <h3 className={styles.modalTitle}>Remove Subscriber?</h3>
+              <p className={styles.modalText}>
+                Are you sure you want to remove{' '}
+                <strong>
+                  {enrichedSubscribers.find(s => s.subscriberUsername === subscriberToDelete)?.fullName}
+                </strong>{' '}
+                from your subscribers? This action cannot be undone.
+              </p>
+              <div className={styles.modalActions}>
+                <button onClick={handleCancelDelete} className={styles.modalCancelButton}>
+                  Cancel
+                </button>
+                <button onClick={handleConfirmDelete} className={styles.modalConfirmButton}>
+                  Remove Subscriber
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
