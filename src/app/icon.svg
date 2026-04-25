@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <radialGradient id="wax" cx="38%" cy="32%" r="75%">
+      <stop offset="0%" stop-color="#C25548"/>
+      <stop offset="60%" stop-color="#A84437"/>
+      <stop offset="100%" stop-color="#7A2E25"/>
+    </radialGradient>
+  </defs>
+  <circle cx="32" cy="32" r="29" fill="url(#wax)"/>
+  <circle cx="32" cy="32" r="24" fill="none" stroke="#7A2E25" stroke-width="1.2" opacity="0.55"/>
+  <text
+    x="32" y="45"
+    text-anchor="middle"
+    font-family="Playfair Display, Georgia, serif"
+    font-weight="700"
+    font-style="italic"
+    font-size="36"
+    fill="#F5F0E6"
+  >S</text>
+</svg>
